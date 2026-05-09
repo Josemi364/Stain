@@ -1,0 +1,50 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cuerpo del traje -->
+  <path d="M 70 80 L 38 110 L 42 220 L 65 235 L 80 130 L 80 235 L 176 235 L 176 130 L 191 235 L 214 220 L 218 110 L 186 80 L 156 75 L 100 75 Z" fill="#1A1A3A"/>
+
+  <!-- Sombras laterales -->
+  <path d="M 80 130 L 80 235 L 96 235 L 96 130 Z" fill="#000000" opacity="0.4"/>
+  <path d="M 176 130 L 176 235 L 160 235 L 160 130 Z" fill="#000000" opacity="0.4"/>
+
+  <!-- Casco esférico -->
+  <circle cx="128" cy="55" r="35" fill="#0A0A2A"/>
+  <circle cx="128" cy="55" r="35" fill="none" stroke="#3A3A6A" stroke-width="2"/>
+
+  <!-- Visor del casco -->
+  <ellipse cx="128" cy="55" rx="26" ry="22" fill="#001020"/>
+  <ellipse cx="120" cy="48" rx="14" ry="8" fill="#2080FF" opacity="0.4"/>
+  <ellipse cx="115" cy="45" rx="6" ry="3" fill="#80C0FF" opacity="0.6"/>
+
+  <!-- Cuello de conexión -->
+  <rect x="116" y="85" width="24" height="10" fill="#2A2A4A"/>
+  <rect x="116" y="85" width="24" height="3" fill="#4A4A6A"/>
+
+  <!-- Panel de control en el pecho -->
+  <rect x="100" y="120" width="56" height="40" fill="#0A0A1A" stroke="#3A3A6A" stroke-width="1"/>
+
+  <!-- Luces del panel -->
+  <circle cx="112" cy="132" r="2.5" fill="#00FF40"/>
+  <circle cx="128" cy="132" r="2.5" fill="#FFAA00"/>
+  <circle cx="144" cy="132" r="2.5" fill="#FF2040"/>
+  <rect x="106" y="142" width="44" height="3" fill="#202050"/>
+  <rect x="106" y="142" width="30" height="3" fill="#00CCFF"/>
+  <rect x="106" y="150" width="44" height="3" fill="#202050"/>
+  <rect x="106" y="150" width="22" height="3" fill="#00CCFF"/>
+
+  <!-- Tubos laterales (a las mangas) -->
+  <path d="M 90 110 Q 70 120 65 150" stroke="#4A4A6A" stroke-width="3" fill="none"/>
+  <path d="M 166 110 Q 186 120 191 150" stroke="#4A4A6A" stroke-width="3" fill="none"/>
+
+  <!-- Insignia / logo -->
+  <circle cx="128" cy="180" r="8" fill="none" stroke="#2080FF" stroke-width="1"/>
+  <text x="128" y="184" font-family="monospace" font-size="8" fill="#2080FF" text-anchor="middle">∞</text>
+
+  <!-- Articulaciones -->
+  <rect x="78" y="160" width="6" height="3" fill="#4A4A6A"/>
+  <rect x="172" y="160" width="6" height="3" fill="#4A4A6A"/>
+  <rect x="78" y="180" width="6" height="3" fill="#4A4A6A"/>
+  <rect x="172" y="180" width="6" height="3" fill="#4A4A6A"/>
+
+  <!-- Brillo del visor -->
+  <ellipse cx="118" cy="48" rx="4" ry="2" fill="#FFFFFF" opacity="0.6"/>
+</svg>

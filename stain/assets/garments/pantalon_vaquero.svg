@@ -1,0 +1,51 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cintura -->
+  <rect x="80" y="40" width="96" height="20" fill="#1F3A6E"/>
+  <rect x="80" y="40" width="96" height="6" fill="#3A6FB0"/>
+
+  <!-- Trabillas del cinturón -->
+  <rect x="92" y="38" width="4" height="14" fill="#1A2F5E"/>
+  <rect x="124" y="38" width="4" height="14" fill="#1A2F5E"/>
+  <rect x="156" y="38" width="4" height="14" fill="#1A2F5E"/>
+
+  <!-- Pierna izquierda -->
+  <path d="M 80 60 L 78 220 L 120 220 L 122 60 Z" fill="#2B4A7E"/>
+  <!-- Pierna derecha -->
+  <path d="M 134 60 L 136 220 L 178 220 L 176 60 Z" fill="#2B4A7E"/>
+
+  <!-- Sombras interiores piernas -->
+  <path d="M 122 60 L 120 220 L 110 220 L 112 60 Z" fill="#000000" opacity="0.2"/>
+  <path d="M 134 60 L 136 220 L 146 220 L 144 60 Z" fill="#000000" opacity="0.2"/>
+
+  <!-- Costura central -->
+  <line x1="128" y1="60" x2="128" y2="62" stroke="#1A2F5E" stroke-width="2"/>
+
+  <!-- Costuras laterales (puntadas amarillas) -->
+  <line x1="80" y1="60" x2="78" y2="220" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
+  <line x1="120" y1="60" x2="120" y2="220" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
+  <line x1="136" y1="60" x2="136" y2="220" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
+  <line x1="176" y1="60" x2="178" y2="220" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
+
+  <!-- Bolsillos delanteros -->
+  <path d="M 84 65 L 100 80 L 84 80 Z" fill="#1A2F5E"/>
+  <path d="M 172 65 L 156 80 L 172 80 Z" fill="#1A2F5E"/>
+
+  <!-- Cremallera/bragueta -->
+  <line x1="128" y1="60" x2="128" y2="100" stroke="#1A2F5E" stroke-width="2"/>
+  <line x1="128" y1="60" x2="128" y2="100" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
+
+  <!-- Botón de la cintura -->
+  <circle cx="128" cy="50" r="3" fill="#D4A848"/>
+  <circle cx="128" cy="50" r="2" fill="#A88030"/>
+
+  <!-- Hebilla del cinturón sugerida -->
+  <rect x="88" y="44" width="80" height="2" fill="#1A2F5E"/>
+
+  <!-- Textura de denim (rayas verticales sutiles) -->
+  <line x1="90" y1="80" x2="88" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="100" y1="80" x2="98" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="110" y1="80" x2="108" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="146" y1="80" x2="148" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="156" y1="80" x2="158" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="166" y1="80" x2="168" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+</svg>

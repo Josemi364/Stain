@@ -1,0 +1,28 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Sombra trasera -->
+  <path d="M 70 60 L 50 80 L 60 95 L 80 90 L 80 220 L 176 220 L 176 90 L 196 95 L 206 80 L 186 60 L 156 50 Q 128 70 100 50 Z" fill="#000000" opacity="0.15" transform="translate(2,3)"/>
+
+  <!-- Camiseta principal -->
+  <path d="M 70 60 L 50 80 L 60 95 L 80 90 L 80 220 L 176 220 L 176 90 L 196 95 L 206 80 L 186 60 L 156 50 Q 128 70 100 50 Z" fill="#E8E8E8"/>
+
+  <!-- Sombras laterales -->
+  <path d="M 80 90 L 80 220 L 95 220 L 95 95 Z" fill="#000000" opacity="0.08"/>
+  <path d="M 176 90 L 176 220 L 161 220 L 161 95 Z" fill="#000000" opacity="0.08"/>
+
+  <!-- Cuello -->
+  <path d="M 100 50 Q 128 70 156 50 L 150 56 Q 128 72 106 56 Z" fill="#C8C8C8"/>
+
+  <!-- Línea de costura del cuello -->
+  <path d="M 100 50 Q 128 70 156 50" stroke="#A8A8A8" stroke-width="1" fill="none"/>
+
+  <!-- Costuras de las mangas -->
+  <line x1="80" y1="92" x2="92" y2="92" stroke="#B8B8B8" stroke-width="0.8"/>
+  <line x1="164" y1="92" x2="176" y2="92" stroke="#B8B8B8" stroke-width="0.8"/>
+
+  <!-- Pliegues sutiles -->
+  <path d="M 110 130 Q 128 135 146 130" stroke="#D0D0D0" stroke-width="0.8" fill="none" opacity="0.6"/>
+  <path d="M 105 170 Q 128 175 151 170" stroke="#D0D0D0" stroke-width="0.8" fill="none" opacity="0.6"/>
+
+  <!-- Brillo -->
+  <path d="M 90 100 L 90 200 Q 95 180 95 100 Z" fill="#FFFFFF" opacity="0.3"/>
+</svg>

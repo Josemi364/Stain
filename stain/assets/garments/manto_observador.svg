@@ -1,0 +1,55 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cloakGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1A4A6E"/>
+      <stop offset="100%" stop-color="#0A2A3E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Manto largo y amplio -->
+  <path d="M 90 50 L 30 95 L 25 235 L 80 245 L 80 110 L 176 110 L 176 245 L 231 235 L 226 95 L 166 50 Q 128 75 90 50 Z" fill="url(#cloakGrad)"/>
+
+  <!-- Capucha grande -->
+  <path d="M 90 50 Q 128 20 166 50 L 158 60 Q 128 35 98 60 Z" fill="#0A2A3E"/>
+
+  <!-- Sombra interior capucha -->
+  <ellipse cx="128" cy="58" rx="20" ry="12" fill="#000510"/>
+
+  <!-- Ojos brillantes en la capucha -->
+  <circle cx="120" cy="55" r="2.5" fill="#00CCFF"/>
+  <circle cx="136" cy="55" r="2.5" fill="#00CCFF"/>
+  <circle cx="120" cy="55" r="1.2" fill="#FFFFFF"/>
+  <circle cx="136" cy="55" r="1.2" fill="#FFFFFF"/>
+
+  <!-- Patrón de ojos en el manto (motivo de "observador") -->
+  <ellipse cx="100" cy="140" rx="10" ry="6" fill="none" stroke="#00CCFF" stroke-width="0.8" opacity="0.5"/>
+  <circle cx="100" cy="140" r="3" fill="#00CCFF" opacity="0.4"/>
+  <circle cx="100" cy="140" r="1" fill="#FFFFFF" opacity="0.8"/>
+
+  <ellipse cx="156" cy="140" rx="10" ry="6" fill="none" stroke="#00CCFF" stroke-width="0.8" opacity="0.5"/>
+  <circle cx="156" cy="140" r="3" fill="#00CCFF" opacity="0.4"/>
+  <circle cx="156" cy="140" r="1" fill="#FFFFFF" opacity="0.8"/>
+
+  <ellipse cx="128" cy="180" rx="12" ry="7" fill="none" stroke="#00CCFF" stroke-width="0.8" opacity="0.5"/>
+  <circle cx="128" cy="180" r="3.5" fill="#00CCFF" opacity="0.4"/>
+  <circle cx="128" cy="180" r="1.2" fill="#FFFFFF" opacity="0.8"/>
+
+  <ellipse cx="90" cy="200" rx="9" ry="5" fill="none" stroke="#00CCFF" stroke-width="0.6" opacity="0.4"/>
+  <circle cx="90" cy="200" r="2" fill="#00CCFF" opacity="0.4"/>
+
+  <ellipse cx="166" cy="200" rx="9" ry="5" fill="none" stroke="#00CCFF" stroke-width="0.6" opacity="0.4"/>
+  <circle cx="166" cy="200" r="2" fill="#00CCFF" opacity="0.4"/>
+
+  <!-- Cierre del manto en el pecho -->
+  <circle cx="128" cy="100" r="6" fill="#00CCFF" opacity="0.7"/>
+  <circle cx="128" cy="100" r="3" fill="#FFFFFF"/>
+
+  <!-- Pliegues fluidos -->
+  <path d="M 80 110 L 60 240" stroke="#00CCFF" stroke-width="0.8" opacity="0.3" fill="none"/>
+  <path d="M 100 110 L 92 245" stroke="#00CCFF" stroke-width="0.8" opacity="0.25" fill="none"/>
+  <path d="M 156 110 L 164 245" stroke="#00CCFF" stroke-width="0.8" opacity="0.25" fill="none"/>
+  <path d="M 176 110 L 196 240" stroke="#00CCFF" stroke-width="0.8" opacity="0.3" fill="none"/>
+
+  <!-- Borde inferior glow -->
+  <path d="M 25 235 L 80 245 L 176 245 L 231 235" stroke="#00CCFF" stroke-width="1.2" fill="none" opacity="0.4"/>
+</svg>

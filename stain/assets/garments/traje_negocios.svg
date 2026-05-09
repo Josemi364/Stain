@@ -1,0 +1,41 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Chaqueta principal -->
+  <path d="M 70 55 L 38 75 L 28 200 L 50 215 L 70 95 L 80 95 L 80 230 L 176 230 L 176 95 L 186 95 L 206 215 L 228 200 L 218 75 L 186 55 L 156 50 Q 128 75 100 50 Z" fill="#1A1A2A"/>
+
+  <!-- Sombras laterales -->
+  <path d="M 80 95 L 80 230 L 95 230 L 95 95 Z" fill="#000000" opacity="0.3"/>
+  <path d="M 176 95 L 176 230 L 161 230 L 161 95 Z" fill="#000000" opacity="0.3"/>
+
+  <!-- Solapas (típicas de traje) -->
+  <path d="M 100 50 L 88 95 L 128 130 L 128 60 Z" fill="#0A0A1A"/>
+  <path d="M 156 50 L 168 95 L 128 130 L 128 60 Z" fill="#0A0A1A"/>
+
+  <!-- Borde de solapas -->
+  <line x1="100" y1="50" x2="88" y2="95" stroke="#2A2A3A" stroke-width="0.8"/>
+  <line x1="156" y1="50" x2="168" y2="95" stroke="#2A2A3A" stroke-width="0.8"/>
+  <line x1="88" y1="95" x2="128" y2="130" stroke="#2A2A3A" stroke-width="0.8"/>
+  <line x1="168" y1="95" x2="128" y2="130" stroke="#2A2A3A" stroke-width="0.8"/>
+
+  <!-- Camisa interior visible -->
+  <path d="M 116 80 L 140 80 L 140 130 L 128 135 L 116 130 Z" fill="#E8E8E8"/>
+
+  <!-- Corbata -->
+  <path d="M 122 80 L 134 80 L 138 90 L 132 100 L 138 130 L 132 165 L 124 165 L 118 130 L 124 100 L 118 90 Z" fill="#7A0000"/>
+  <path d="M 122 80 L 134 80 L 138 90 L 132 100 L 124 100 L 118 90 Z" fill="#5A0000"/>
+  <!-- Nudo de corbata -->
+  <path d="M 122 80 Q 128 78 134 80 L 138 90 L 118 90 Z" fill="#3A0000"/>
+
+  <!-- Botones del traje -->
+  <circle cx="128" cy="170" r="2.5" fill="#0A0A0A"/>
+  <circle cx="128" cy="195" r="2.5" fill="#0A0A0A"/>
+
+  <!-- Cierre central -->
+  <line x1="128" y1="135" x2="128" y2="225" stroke="#0A0A1A" stroke-width="1.2"/>
+
+  <!-- Bolsillo del pecho con pañuelo -->
+  <rect x="148" y="120" width="22" height="3" fill="#0A0A1A"/>
+  <path d="M 152 118 L 156 110 L 160 118 Z" fill="#FFFFFF" opacity="0.7"/>
+
+  <!-- Brillo -->
+  <path d="M 88 100 L 88 225 Q 95 205 95 100 Z" fill="#FFFFFF" opacity="0.05"/>
+</svg>

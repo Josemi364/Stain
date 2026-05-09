@@ -1,0 +1,45 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="dimGlow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#6A2A8E"/>
+      <stop offset="60%" stop-color="#3A1A5E"/>
+      <stop offset="100%" stop-color="#1A0A3E"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Cuerpo de la túnica largo y fluido -->
+  <path d="M 80 50 L 50 75 L 35 230 L 75 240 L 75 100 L 80 100 L 70 235 L 186 235 L 176 100 L 181 100 L 181 240 L 221 230 L 206 75 L 176 50 L 146 45 Q 128 65 110 45 Z" fill="url(#dimGlow)"/>
+
+  <!-- Capucha -->
+  <path d="M 110 45 Q 128 25 146 45 L 138 55 Q 128 45 118 55 Z" fill="#2A0A4A"/>
+
+  <!-- Hueco interior de la capucha (oscuro) -->
+  <ellipse cx="128" cy="55" rx="14" ry="8" fill="#0A0020" opacity="0.8"/>
+
+  <!-- Símbolos místicos -->
+  <circle cx="128" cy="120" r="20" fill="none" stroke="#AA40FF" stroke-width="1" opacity="0.7"/>
+  <circle cx="128" cy="120" r="14" fill="none" stroke="#CC60FF" stroke-width="0.8" opacity="0.8"/>
+  <circle cx="128" cy="120" r="3" fill="#FFAAFF"/>
+
+  <!-- Triángulos místicos -->
+  <path d="M 128 105 L 138 122 L 118 122 Z" fill="none" stroke="#AA40FF" stroke-width="0.8" opacity="0.6"/>
+  <path d="M 128 135 L 138 118 L 118 118 Z" fill="none" stroke="#AA40FF" stroke-width="0.8" opacity="0.6"/>
+
+  <!-- Pliegues luminosos -->
+  <path d="M 90 105 L 80 230" stroke="#AA40FF" stroke-width="1.2" fill="none" opacity="0.4"/>
+  <path d="M 110 105 L 105 230" stroke="#AA40FF" stroke-width="1" fill="none" opacity="0.3"/>
+  <path d="M 128 105 L 128 230" stroke="#AA40FF" stroke-width="0.8" fill="none" opacity="0.3"/>
+  <path d="M 146 105 L 151 230" stroke="#AA40FF" stroke-width="1" fill="none" opacity="0.3"/>
+  <path d="M 166 105 L 176 230" stroke="#AA40FF" stroke-width="1.2" fill="none" opacity="0.4"/>
+
+  <!-- Estrellas pequeñas -->
+  <circle cx="100" cy="160" r="1" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="160" cy="180" r="1" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="115" cy="200" r="0.8" fill="#FFFFFF" opacity="0.7"/>
+  <circle cx="145" cy="210" r="1" fill="#FFFFFF" opacity="0.8"/>
+  <circle cx="90" cy="190" r="0.7" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="170" cy="160" r="0.8" fill="#FFFFFF" opacity="0.7"/>
+
+  <!-- Borde inferior con glow -->
+  <path d="M 35 230 L 75 240 L 70 235 L 186 235 L 181 240 L 221 230" stroke="#AA40FF" stroke-width="1.5" fill="none" opacity="0.5"/>
+</svg>

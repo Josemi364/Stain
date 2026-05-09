@@ -1,0 +1,43 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Stain"
+run/main_scene="uid://cjcfon14bbbyc"
+config/features=PackedStringArray("4.6", "Forward Plus")
+
+[autoload]
+
+GarmentData="*uid://dd0kpan2d8prr"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+
+[editor]
+
+version_control/autoload_on_startup=true
+
+[importer_defaults]
+
+animation_library={
+&"animation/fps": 60.0
+}
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"

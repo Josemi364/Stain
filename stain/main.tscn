@@ -1,0 +1,159 @@
+[gd_scene format=3 uid="uid://cjcfon14bbbyc"]
+
+[ext_resource type="Script" uid="uid://bogkyen55yl5g" path="res://main.gd" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://qj76wh024pko" path="res://sink_area.gd" id="2_0xm2m"]
+[ext_resource type="Script" uid="uid://dryle5gohpkq2" path="res://queue_panel.gd" id="3_h2yge"]
+[ext_resource type="Script" uid="uid://bp281f3rx76ke" path="res://shop_panel.gd" id="4_1bvp3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xm2m"]
+bg_color = Color(0.2509804, 1, 0.5019608, 1)
+corner_detail = 6
+
+[node name="Main" type="Node2D" unique_id=1514226539]
+script = ExtResource("1_ig7tw")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1191787141]
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1280.0
+offset_bottom = 720.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.050980393, 0.050980393, 0.101960786, 1)
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=917040872]
+
+[node name="CoinsPanel" type="HBoxContainer" parent="HUD" unique_id=1506865212]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 75.0
+offset_bottom = 65.0
+theme_override_constants/separation = 30
+
+[node name="EurosLabel" type="Label" parent="HUD/CoinsPanel" unique_id=457257404]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.6666667, 0, 1)
+theme_override_font_sizes/font_size = 28
+text = "€ 0"
+
+[node name="CenizaLabel" type="Label" parent="HUD/CoinsPanel" unique_id=1056429714]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.53333336, 0.53333336, 0.53333336, 1)
+
+[node name="FragmentosLabel" type="Label" parent="HUD/CoinsPanel" unique_id=1610512734]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6666667, 0.2509804, 1, 1)
+
+[node name="NotifLabel" type="Label" parent="HUD" unique_id=1611826467]
+offset_left = 490.0
+offset_top = 60.0
+offset_right = 530.0
+offset_bottom = 83.0
+theme_override_font_sizes/font_size = 22
+horizontal_alignment = 1
+
+[node name="SinkArea" type="Control" parent="." unique_id=1901457597]
+custom_minimum_size = Vector2(500, 500)
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 390.0
+offset_top = 100.0
+offset_right = 890.0
+offset_bottom = 620.0
+grow_horizontal = 2
+script = ExtResource("2_0xm2m")
+
+[node name="SinkBackground" type="ColorRect" parent="SinkArea" unique_id=1826607029]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07058824, 0.07058824, 0.16470589, 1)
+
+[node name="GarmentImage" type="TextureRect" parent="SinkArea" unique_id=2118432306]
+layout_mode = 0
+offset_right = 500.0
+offset_bottom = 500.0
+mouse_filter = 2
+expand_mode = 3
+stretch_mode = 5
+
+[node name="StainTexture" type="TextureRect" parent="SinkArea" unique_id=582517645]
+custom_minimum_size = Vector2(256, 256)
+layout_mode = 0
+offset_left = 122.0
+offset_top = 122.0
+offset_right = 378.0
+offset_bottom = 378.0
+mouse_filter = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="SinkArea" unique_id=2029123064]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 410.0
+offset_right = 450.0
+offset_bottom = 440.0
+
+[node name="DeliverButton" type="Button" parent="SinkArea" unique_id=646194835]
+layout_mode = 0
+offset_left = 175.0
+offset_top = 450.0
+offset_right = 325.0
+offset_bottom = 490.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_0xm2m")
+text = "Entregar"
+
+[node name="InfoLabel" type="Label" parent="SinkArea" unique_id=2105771460]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 10.0
+offset_right = 450.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.8156863, 0.8156863, 0.9411765, 1)
+
+[node name="QueuePanel" type="HBoxContainer" parent="." unique_id=1525884138]
+offset_left = 390.0
+offset_top = 620.0
+offset_right = 430.0
+offset_bottom = 660.0
+script = ExtResource("3_h2yge")
+metadata/_edit_use_anchors_ = true
+
+[node name="NotifTimer" type="Timer" parent="." unique_id=906936844]
+
+[node name="ShopPanel" type="Panel" parent="." unique_id=2069734774]
+custom_minimum_size = Vector2(350, 500)
+offset_left = 910.0
+offset_top = 100.0
+offset_right = 950.0
+offset_bottom = 140.0
+script = ExtResource("4_1bvp3")
+
+[node name="Titulo" type="Label" parent="ShopPanel" unique_id=2041933940]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 10.0
+offset_right = 335.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.3764706, 0.3764706, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "TIENDA"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ShopPanel" unique_id=505799771]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 60.0
+offset_right = 355.0
+offset_bottom = 500.0
+mouse_filter = 0
+
+[node name="ItemsContainer" type="VBoxContainer" parent="ShopPanel/ScrollContainer" unique_id=1383321018]
+custom_minimum_size = Vector2(310, 0)
+layout_mode = 2
+theme_override_constants/separation = 8

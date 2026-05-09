@@ -1,0 +1,52 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <!-- Chaqueta del uniforme -->
+  <path d="M 70 55 L 38 80 L 30 220 L 55 235 L 70 100 L 80 100 L 80 235 L 176 235 L 176 100 L 186 100 L 201 235 L 226 220 L 218 80 L 186 55 L 156 50 Q 128 75 100 50 Z" fill="#1A1A1A"/>
+
+  <!-- Sombras (negro muy profundo) -->
+  <path d="M 80 100 L 80 235 L 96 235 L 96 100 Z" fill="#000000" opacity="0.5"/>
+  <path d="M 176 100 L 176 235 L 160 235 L 160 100 Z" fill="#000000" opacity="0.5"/>
+
+  <!-- Solapas afiladas, casi militares -->
+  <path d="M 100 50 L 86 100 L 128 130 L 128 60 Z" fill="#080808"/>
+  <path d="M 156 50 L 170 100 L 128 130 L 128 60 Z" fill="#080808"/>
+
+  <!-- Borde rojo en las solapas (detalle siniestro) -->
+  <path d="M 100 50 L 86 100" stroke="#8B0000" stroke-width="1.5"/>
+  <path d="M 156 50 L 170 100" stroke="#8B0000" stroke-width="1.5"/>
+  <path d="M 86 100 L 128 130" stroke="#3A0000" stroke-width="0.8"/>
+  <path d="M 170 100 L 128 130" stroke="#3A0000" stroke-width="0.8"/>
+
+  <!-- Camisa interior -->
+  <path d="M 116 80 L 140 80 L 140 130 L 128 135 L 116 130 Z" fill="#2A2A2A"/>
+
+  <!-- Corbata negra (con un sutil tono rojizo siniestro) -->
+  <path d="M 122 80 L 134 80 L 138 90 L 132 100 L 138 130 L 132 165 L 124 165 L 118 130 L 124 100 L 118 90 Z" fill="#0A0A0A"/>
+  <path d="M 122 80 Q 128 78 134 80 L 138 90 L 118 90 Z" fill="#000000"/>
+
+  <!-- Insignia del agente en el pecho -->
+  <g transform="translate(150, 115)">
+    <!-- Estrella de 6 puntas con triángulo en el medio -->
+    <circle cx="0" cy="0" r="9" fill="#1A0505" stroke="#8B0000" stroke-width="0.8"/>
+    <circle cx="0" cy="0" r="6" fill="none" stroke="#CC0000" stroke-width="0.5"/>
+    <path d="M 0 -5 L 4 3 L -4 3 Z" fill="#CC0000"/>
+    <circle cx="0" cy="0" r="1.5" fill="#FFAAAA"/>
+  </g>
+
+  <!-- Botones siniestros -->
+  <circle cx="128" cy="170" r="2.8" fill="#000000"/>
+  <circle cx="128" cy="170" r="1.5" fill="#3A0000"/>
+  <circle cx="128" cy="200" r="2.8" fill="#000000"/>
+  <circle cx="128" cy="200" r="1.5" fill="#3A0000"/>
+
+  <!-- Cierre central -->
+  <line x1="128" y1="135" x2="128" y2="230" stroke="#080808" stroke-width="1.5"/>
+
+  <!-- Pequeño detalle en el cuello (cordón rojo) -->
+  <line x1="118" y1="78" x2="138" y2="78" stroke="#8B0000" stroke-width="0.8"/>
+
+  <!-- Anillo de "agente" sobre la corbata -->
+  <circle cx="128" cy="105" r="3" fill="none" stroke="#CC0000" stroke-width="0.8" opacity="0.7"/>
+
+  <!-- Ligero brillo siniestro -->
+  <path d="M 90 105 L 90 230 Q 95 210 95 105 Z" fill="#3A0000" opacity="0.15"/>
+</svg>
