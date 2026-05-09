@@ -15,7 +15,7 @@ signal siguiente_prenda_lista(prenda: Dictionary)
 const MAX_COLA: int = 5
 const SLOT_SIZE: Vector2 = Vector2(80, 100)
 const SLOT_SEPARACION: int = 10
-
+#aaa
 # ============================================================
 # ESTADO INTERNO
 # ============================================================
