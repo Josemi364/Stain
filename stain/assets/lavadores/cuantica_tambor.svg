@@ -1,0 +1,41 @@
+<svg width="80" height="80" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="quantDrum" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#000000"/>
+      <stop offset="40%" stop-color="#3A0A6E"/>
+      <stop offset="80%" stop-color="#AA40FF"/>
+      <stop offset="100%" stop-color="#5A20A0"/>
+    </radialGradient>
+  </defs>
+  <!-- Cilindro exterior con glow -->
+  <circle cx="0" cy="0" r="36" fill="url(#quantDrum)"/>
+  <!-- Aro místico -->
+  <circle cx="0" cy="0" r="34" fill="none" stroke="#CC60FF" stroke-width="1.2"/>
+  <!-- Símbolos rotacionales en círculo (como un sello) -->
+  <g fill="#FFFFFF" font-family="serif" font-size="10" text-anchor="middle">
+    <text x="0" y="-22">⟁</text>
+    <text x="22" y="0" transform="rotate(90 22 0)">⟁</text>
+    <text x="0" y="26">⟁</text>
+    <text x="-22" y="0" transform="rotate(-90 -22 0)">⟁</text>
+  </g>
+  <g fill="#CC60FF" font-family="serif" font-size="6" text-anchor="middle">
+    <text x="16" y="-16" transform="rotate(45 16 -16)">◈</text>
+    <text x="16" y="20" transform="rotate(135 16 16)">◈</text>
+    <text x="-16" y="20" transform="rotate(-135 -16 16)">◈</text>
+    <text x="-16" y="-16" transform="rotate(-45 -16 -16)">◈</text>
+  </g>
+  <!-- Anillo interior de runas pequeñas -->
+  <circle cx="0" cy="0" r="14" fill="none" stroke="#AA40FF" stroke-width="0.6"/>
+  <!-- Estrellas pequeñas -->
+  <circle cx="-6" cy="-10" r="0.8" fill="#FFFFFF"/>
+  <circle cx="10" cy="-4" r="0.6" fill="#FFFFFF"/>
+  <circle cx="-10" cy="6" r="0.7" fill="#FFFFFF"/>
+  <circle cx="6" cy="10" r="0.5" fill="#FFFFFF"/>
+  <!-- Núcleo: portal (agujero negro pequeño con halo) -->
+  <circle cx="0" cy="0" r="6" fill="#000000"/>
+  <circle cx="0" cy="0" r="6" fill="none" stroke="#FFFFFF" stroke-width="0.5"/>
+  <circle cx="0" cy="0" r="3" fill="#1A0030"/>
+  <circle cx="0" cy="0" r="1" fill="#AA40FF"/>
+  <!-- Reflejo cristal -->
+  <ellipse cx="-12" cy="-15" rx="9" ry="5" fill="#FFFFFF" opacity="0.2"/>
+</svg>

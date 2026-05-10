@@ -1,0 +1,47 @@
+<svg width="84" height="84" viewBox="-42 -42 84 84" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="indDrum" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FF8030"/>
+      <stop offset="60%" stop-color="#A04010"/>
+      <stop offset="100%" stop-color="#1A0808"/>
+    </radialGradient>
+  </defs>
+  <!-- Cilindro exterior -->
+  <circle cx="0" cy="0" r="38" fill="url(#indDrum)"/>
+  <!-- Aro metálico grueso (industrial) -->
+  <circle cx="0" cy="0" r="34" fill="none" stroke="#FFAA60" stroke-width="2"/>
+  <circle cx="0" cy="0" r="36" fill="none" stroke="#3A1808" stroke-width="1"/>
+  <!-- Aspas/elevadores grandes (3 brazos rotacionales) -->
+  <g>
+    <path d="M 0 -30 L 6 -18 L -6 -18 Z" fill="#3A1808" opacity="0.85"/>
+    <path d="M 26 15 L 14 9 L 16 22 Z" fill="#3A1808" opacity="0.85"/>
+    <path d="M -26 15 L -14 9 L -16 22 Z" fill="#3A1808" opacity="0.85"/>
+  </g>
+  <!-- Agujeros del tambor distribuidos en anillos -->
+  <g fill="#1A0808">
+    <circle cx="0" cy="-25" r="2"/>
+    <circle cx="17.5" cy="-17.5" r="2"/>
+    <circle cx="25" cy="0" r="2"/>
+    <circle cx="17.5" cy="17.5" r="2"/>
+    <circle cx="0" cy="25" r="2"/>
+    <circle cx="-17.5" cy="17.5" r="2"/>
+    <circle cx="-25" cy="0" r="2"/>
+    <circle cx="-17.5" cy="-17.5" r="2"/>
+    <!-- Anillo medio -->
+    <circle cx="8" cy="-14" r="1.5"/>
+    <circle cx="14" cy="-8" r="1.5"/>
+    <circle cx="14" cy="8" r="1.5"/>
+    <circle cx="8" cy="14" r="1.5"/>
+    <circle cx="-8" cy="14" r="1.5"/>
+    <circle cx="-14" cy="8" r="1.5"/>
+    <circle cx="-14" cy="-8" r="1.5"/>
+    <circle cx="-8" cy="-14" r="1.5"/>
+  </g>
+  <!-- Reflejo cromado -->
+  <ellipse cx="-12" cy="-18" rx="11" ry="7" fill="#FFFFFF" opacity="0.2"/>
+  <ellipse cx="-15" cy="-20" rx="5" ry="2" fill="#FFFFFF" opacity="0.5"/>
+  <!-- Centro reforzado -->
+  <circle cx="0" cy="0" r="4" fill="#FFAA60"/>
+  <circle cx="0" cy="0" r="2.5" fill="#3A1808"/>
+  <circle cx="0" cy="0" r="1" fill="#FFE0A0"/>
+</svg>

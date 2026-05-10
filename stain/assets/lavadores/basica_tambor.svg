@@ -1,0 +1,43 @@
+<svg width="80" height="80" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="basicaDrum" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4878B8"/>
+      <stop offset="70%" stop-color="#284878"/>
+      <stop offset="100%" stop-color="#0A1828"/>
+    </radialGradient>
+  </defs>
+  <!-- Cristal exterior del tambor -->
+  <circle cx="0" cy="0" r="36" fill="url(#basicaDrum)"/>
+  <!-- Aro metálico interior -->
+  <circle cx="0" cy="0" r="32" fill="none" stroke="#90B0E0" stroke-width="1.5"/>
+  <!-- Agujeros del tambor (radial) -->
+  <g fill="#0A1828">
+    <circle cx="0" cy="-22" r="2.2"/>
+    <circle cx="15.5" cy="-15.5" r="2.2"/>
+    <circle cx="22" cy="0" r="2.2"/>
+    <circle cx="15.5" cy="15.5" r="2.2"/>
+    <circle cx="0" cy="22" r="2.2"/>
+    <circle cx="-15.5" cy="15.5" r="2.2"/>
+    <circle cx="-22" cy="0" r="2.2"/>
+    <circle cx="-15.5" cy="-15.5" r="2.2"/>
+    <!-- Anillo interior -->
+    <circle cx="0" cy="-12" r="1.5"/>
+    <circle cx="8.5" cy="-8.5" r="1.5"/>
+    <circle cx="12" cy="0" r="1.5"/>
+    <circle cx="8.5" cy="8.5" r="1.5"/>
+    <circle cx="0" cy="12" r="1.5"/>
+    <circle cx="-8.5" cy="8.5" r="1.5"/>
+    <circle cx="-12" cy="0" r="1.5"/>
+    <circle cx="-8.5" cy="-8.5" r="1.5"/>
+  </g>
+  <!-- Aspas/elevadores que dan sensación de rotación -->
+  <path d="M -28 -8 L -32 -2 L -30 6 L -25 0 Z" fill="#1A2840" opacity="0.7"/>
+  <path d="M 28 8 L 32 2 L 30 -6 L 25 0 Z" fill="#1A2840" opacity="0.7"/>
+  <path d="M -8 28 L -2 32 L 6 30 L 0 25 Z" fill="#1A2840" opacity="0.7"/>
+  <!-- Reflejo de cristal -->
+  <ellipse cx="-12" cy="-15" rx="10" ry="6" fill="#FFFFFF" opacity="0.25"/>
+  <ellipse cx="-14" cy="-17" rx="4" ry="2" fill="#FFFFFF" opacity="0.5"/>
+  <!-- Centro -->
+  <circle cx="0" cy="0" r="3" fill="#90B0E0"/>
+  <circle cx="0" cy="0" r="1.5" fill="#1A2840"/>
+</svg>

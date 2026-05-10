@@ -1,0 +1,40 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="basicaBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5090DC"/>
+      <stop offset="100%" stop-color="#2858A0"/>
+    </linearGradient>
+  </defs>
+  <!-- Sombra base -->
+  <ellipse cx="64" cy="120" rx="48" ry="4" fill="#000000" opacity="0.35"/>
+  <!-- Cuerpo principal con esquinas redondeadas -->
+  <rect x="14" y="10" width="100" height="110" rx="6" fill="url(#basicaBody)"/>
+  <!-- Borde superior plateado (panel de control) -->
+  <rect x="14" y="10" width="100" height="22" rx="6" fill="#1A3858"/>
+  <rect x="14" y="26" width="100" height="6" fill="#1A3858"/>
+  <!-- Display LED -->
+  <rect x="22" y="15" width="34" height="12" rx="2" fill="#0A1828"/>
+  <text x="39" y="24" font-family="monospace" font-size="8" fill="#40FF80" text-anchor="middle">30:00</text>
+  <!-- Botones del panel -->
+  <circle cx="74" cy="21" r="3.5" fill="#1A1A1A"/>
+  <circle cx="74" cy="21" r="2.2" fill="#3858A0"/>
+  <circle cx="86" cy="21" r="3.5" fill="#1A1A1A"/>
+  <circle cx="86" cy="21" r="2.2" fill="#1A1A1A"/>
+  <!-- Selector circular grande -->
+  <circle cx="102" cy="21" r="6" fill="#1A1A1A"/>
+  <circle cx="102" cy="21" r="4.5" fill="#4878B8"/>
+  <line x1="102" y1="21" x2="102" y2="17" stroke="#FFFFFF" stroke-width="1.2"/>
+  <!-- Hueco circular grande del tambor (más oscuro, para que el tambor SVG encima destaque) -->
+  <circle cx="64" cy="72" r="38" fill="#0A1A30"/>
+  <circle cx="64" cy="72" r="38" fill="none" stroke="#1A2840" stroke-width="2"/>
+  <!-- Tornillos de las esquinas -->
+  <circle cx="20" cy="38" r="2" fill="#1A2840"/>
+  <circle cx="108" cy="38" r="2" fill="#1A2840"/>
+  <circle cx="20" cy="114" r="2" fill="#1A2840"/>
+  <circle cx="108" cy="114" r="2" fill="#1A2840"/>
+  <!-- Etiqueta inferior -->
+  <rect x="46" y="110" width="36" height="6" rx="1" fill="#1A3858"/>
+  <text x="64" y="115" font-family="monospace" font-size="5" fill="#90C0FF" text-anchor="middle">STAIN-01</text>
+  <!-- Brillo lateral -->
+  <path d="M 18 38 L 18 110 L 26 100 L 26 50 Z" fill="#FFFFFF" opacity="0.12"/>
+</svg>

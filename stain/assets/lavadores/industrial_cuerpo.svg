@@ -1,0 +1,55 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="indBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF8030"/>
+      <stop offset="100%" stop-color="#A04010"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="64" cy="122" rx="50" ry="4" fill="#000000" opacity="0.4"/>
+  <!-- Patas reforzadas -->
+  <rect x="18" y="116" width="8" height="8" fill="#1A1010"/>
+  <rect x="102" y="116" width="8" height="8" fill="#1A1010"/>
+  <!-- Cuerpo principal cuadrado y robusto -->
+  <rect x="10" y="8" width="108" height="112" rx="3" fill="url(#indBody)"/>
+  <!-- Marco metálico (industrial) -->
+  <rect x="10" y="8" width="108" height="112" rx="3" fill="none" stroke="#3A1808" stroke-width="2"/>
+  <!-- Remaches en los bordes (típico industrial) -->
+  <g fill="#1A0808">
+    <circle cx="16" cy="14" r="1.8"/>
+    <circle cx="112" cy="14" r="1.8"/>
+    <circle cx="16" cy="62" r="1.8"/>
+    <circle cx="112" cy="62" r="1.8"/>
+    <circle cx="16" cy="114" r="1.8"/>
+    <circle cx="112" cy="114" r="1.8"/>
+    <circle cx="64" cy="14" r="1.8"/>
+    <circle cx="64" cy="114" r="1.8"/>
+  </g>
+  <!-- Panel de control (más industrial: pulsadores grandes) -->
+  <rect x="10" y="8" width="108" height="26" fill="#3A1808"/>
+  <rect x="10" y="32" width="108" height="3" fill="#1A0808"/>
+  <!-- Display industrial -->
+  <rect x="20" y="14" width="40" height="14" rx="1" fill="#0A0808"/>
+  <rect x="20" y="14" width="40" height="14" rx="1" fill="none" stroke="#FF8030" stroke-width="0.8"/>
+  <text x="40" y="24" font-family="monospace" font-size="9" fill="#FF6020" text-anchor="middle">20:00</text>
+  <!-- Pulsadores grandes industriales -->
+  <circle cx="74" cy="21" r="5" fill="#1A0808"/>
+  <circle cx="74" cy="21" r="3.5" fill="#CC2020"/>
+  <circle cx="74" cy="21" r="1.5" fill="#FF6060"/>
+  <circle cx="90" cy="21" r="5" fill="#1A0808"/>
+  <circle cx="90" cy="21" r="3.5" fill="#20CC40"/>
+  <circle cx="106" cy="21" r="5" fill="#1A0808"/>
+  <circle cx="106" cy="21" r="3.5" fill="#FFAA00"/>
+  <!-- Hueco del tambor más grande (mayor capacidad) -->
+  <circle cx="64" cy="74" r="40" fill="#1A0808"/>
+  <circle cx="64" cy="74" r="40" fill="none" stroke="#3A1808" stroke-width="3"/>
+  <circle cx="64" cy="74" r="42" fill="none" stroke="#1A0808" stroke-width="1"/>
+  <!-- Etiqueta de advertencia -->
+  <rect x="44" y="116" width="40" height="8" rx="1" fill="#FFAA00"/>
+  <text x="64" y="122" font-family="monospace" font-size="5" fill="#1A0808" text-anchor="middle" font-weight="bold">⚠ INDUSTRIAL</text>
+  <!-- Tubería lateral derecha -->
+  <rect x="116" y="48" width="6" height="40" fill="#3A1808"/>
+  <circle cx="119" cy="50" r="3" fill="#1A0808"/>
+  <circle cx="119" cy="86" r="3" fill="#1A0808"/>
+  <!-- Brillo -->
+  <path d="M 14 38 L 14 114 L 22 104 L 22 50 Z" fill="#FFFFFF" opacity="0.15"/>
+</svg>

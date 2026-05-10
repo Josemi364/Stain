@@ -2,12 +2,7 @@ extends Node
 ##
 ## GarmentData.gd — AUTOLOAD (FASE 2 · BALANCE SCRATCHCARD)
 ## ============================================================
-## Sistema tipo Scritchy Scratchy:
-##  - Probabilidad base de alien MUY baja (1.5%)
-##  - "Suerte" acumulable mediante upgrades y prestigio
-##  - Tope máximo para que nunca se sienta gratis
-##
-## Recompensas reducidas para grind más satisfactorio.
+## ACTUALIZADO: texture_path correcto para camisa_oficina y abrigo_lana.
 ##
 
 # ============================================================
@@ -38,7 +33,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 		"ceniza_bonus": 0,
 		"fragmentos_bonus": 0,
 		"forma": "camiseta",
-		"texture_path": "res://assets/garments/camiseta_blanca.svg" #¿?
+		"texture_path": "res://assets/garments/camisa_oficina.svg"
 	},
 	{
 		"id": "pantalon_vaquero",
@@ -77,7 +72,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 		"ceniza_bonus": 0,
 		"fragmentos_bonus": 0,
 		"forma": "abrigo",
-		"texture_path": "res://assets/garments/camiseta_blanca.svg" #¿?
+		"texture_path": "res://assets/garments/abrigo_lana.svg"
 	},
 	{
 		"id": "traje_negocios",
@@ -95,7 +90,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 ]
 
 # ============================================================
-# PRENDAS ALIENÍGENAS (jackpot raro)
+# PRENDAS ALIENÍGENAS
 # ============================================================
 const PRENDAS_ALIEN: Array[Dictionary] = [
 	{
@@ -153,46 +148,26 @@ const PRENDAS_ALIEN: Array[Dictionary] = [
 ]
 
 # ============================================================
-# SISTEMA DE SUERTE (estilo Scritchy Scratchy)
+# SISTEMA DE SUERTE
 # ============================================================
-const PROBABILIDAD_BASE: float = 0.015   # 1.5% sin mejoras (1 de cada ~67)
-const PROBABILIDAD_MAX: float = 0.25     # 25% — tope máximo con upgrades
+const PROBABILIDAD_BASE: float = 0.015
+const PROBABILIDAD_MAX: float = 0.25
+var suerte_acumulada: float = 0.0
 
-var suerte_acumulada: float = 0.0        # Bonus de upgrades/prestigio
 
-
-# ============================================================
-# API PÚBLICA — PROBABILIDAD
-# ============================================================
-
-## Devuelve la probabilidad final de que salga una alien.
-## Es la suma de la base + suerte acumulada, capada al máximo.
 func get_probabilidad_alien() -> float:
 	return min(PROBABILIDAD_BASE + suerte_acumulada, PROBABILIDAD_MAX)
 
 
-## Suma una cantidad a la suerte acumulada (la usan upgrades de tienda).
-## Ej: añadir_suerte(0.01) sube la probabilidad un +1%.
 func añadir_suerte(cantidad: float) -> void:
 	suerte_acumulada += cantidad
 	suerte_acumulada = max(suerte_acumulada, 0.0)
-	print("Suerte acumulada: %.1f%% (probabilidad final: %.1f%%)" % [
-		suerte_acumulada * 100.0,
-		get_probabilidad_alien() * 100.0
-	])
 
 
-## Resetea la suerte (útil al hacer prestigio si se quiere).
-## OJO: por defecto el prestigio NO resetea suerte si viene de Ceniza permanente.
 func resetear_suerte() -> void:
 	suerte_acumulada = 0.0
 
 
-# ============================================================
-# API PÚBLICA — PRENDAS
-# ============================================================
-
-## Devuelve una prenda aleatoria según la probabilidad actual.
 func get_prenda_aleatoria() -> Dictionary:
 	if randf() < get_probabilidad_alien():
 		return PRENDAS_ALIEN[randi() % PRENDAS_ALIEN.size()].duplicate()
@@ -200,7 +175,6 @@ func get_prenda_aleatoria() -> Dictionary:
 		return PRENDAS_NORMALES[randi() % PRENDAS_NORMALES.size()].duplicate()
 
 
-## Devuelve N prendas aleatorias para llenar la cola inicial.
 func get_cola_inicial(cantidad: int) -> Array[Dictionary]:
 	var cola: Array[Dictionary] = []
 	for i in cantidad:
@@ -208,7 +182,6 @@ func get_cola_inicial(cantidad: int) -> Array[Dictionary]:
 	return cola
 
 
-## Devuelve una prenda concreta por su ID.
 func get_prenda_por_id(id: String) -> Dictionary:
 	for p in PRENDAS_NORMALES:
 		if p["id"] == id:

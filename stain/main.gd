@@ -1,8 +1,10 @@
 extends Node2D
 ##
-## Main.gd — FASE 3
+## Main.gd — FASE 4 (revisado v2)
 ## ============================================================
-## Estado global + orquestador de tienda y mejoras.
+## - Sink: FIFO automático (consumir_siguiente al inicio y al entregar).
+## - Click en cola: intento de asignar prenda a una lavadora libre.
+##   Si no hay hueco compatible, la prenda se queda en la cola y avisamos.
 ##
 
 # ============================================================
@@ -26,15 +28,16 @@ signal favores_changed(new_val: int)
 # ============================================================
 # REFERENCIAS A NODOS
 # ============================================================
-@onready var sink_area: Control         = $SinkArea
-@onready var queue_panel: HBoxContainer = $QueuePanel
-@onready var shop_panel: Panel          = $ShopPanel
-@onready var notif_timer: Timer         = $NotifTimer
+@onready var sink_area: Control          = $SinkArea
+@onready var queue_panel: HBoxContainer  = $QueuePanel
+@onready var shop_panel: Panel           = $ShopPanel
+@onready var machines_panel: Panel       = $MachinesPanel
+@onready var notif_timer: Timer          = $NotifTimer
 
-@onready var euros_label: Label         = $HUD/CoinsPanel/EurosLabel
-@onready var ceniza_label: Label        = $HUD/CoinsPanel/CenizaLabel
-@onready var fragmentos_label: Label    = $HUD/CoinsPanel/FragmentosLabel
-@onready var notif_label: Label         = $HUD/NotifLabel
+@onready var euros_label: Label          = $HUD/CoinsPanel/EurosLabel
+@onready var ceniza_label: Label         = $HUD/CoinsPanel/CenizaLabel
+@onready var fragmentos_label: Label     = $HUD/CoinsPanel/FragmentosLabel
+@onready var notif_label: Label          = $HUD/NotifLabel
 
 
 # ============================================================
@@ -45,9 +48,14 @@ func _ready() -> void:
 	sink_area.garment_delivered.connect(_on_garment_delivered)
 	# QueuePanel
 	queue_panel.siguiente_prenda_lista.connect(_on_siguiente_prenda_lista)
+	queue_panel.intento_seleccion_lavadora.connect(_on_intento_seleccion_lavadora)
 	# ShopPanel
 	shop_panel.upgrade_solicitado.connect(_on_upgrade_solicitado)
-	# Señales globales → HUD
+	# MachinesPanel
+	machines_panel.lavadora_compra_solicitada.connect(_on_lavadora_compra_solicitada)
+	machines_panel.prenda_procesada.connect(_on_prenda_procesada_lavadora)
+
+	# Globales → HUD
 	euros_changed.connect(_on_euros_changed)
 	ceniza_changed.connect(_on_ceniza_changed)
 	fragmentos_changed.connect(_on_fragmentos_changed)
@@ -60,13 +68,15 @@ func _ready() -> void:
 
 	_update_hud()
 	shop_panel.actualizar_euros(euros)
+	machines_panel.actualizar_recursos(euros, ceniza)
 
+	# Cargamos la primera prenda al sink (FIFO)
 	await get_tree().process_frame
 	queue_panel.consumir_siguiente()
 
 
 # ============================================================
-# GESTIÓN DE PRENDAS
+# SINK (FIFO)
 # ============================================================
 func _on_siguiente_prenda_lista(prenda: Dictionary) -> void:
 	sink_area.cargar_prenda(prenda)
@@ -96,35 +106,59 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 		texto_notif = "ALIEN!  " + texto_notif
 
 	mostrar_notificacion(texto_notif, prenda.get("es_alien", false))
+
+	# Cargar la siguiente prenda al sink
 	queue_panel.consumir_siguiente()
 
 
 # ============================================================
-# TIENDA — COMPRA Y APLICACIÓN DE UPGRADES
+# CLICK EN COLA → ASIGNAR A LAVADORA
 # ============================================================
-## ShopPanel emite cuando el jugador pulsa un botón de compra.
-## Verificamos si tiene dinero, cobramos y aplicamos el efecto.
+func _on_intento_seleccion_lavadora(idx: int) -> void:
+	# Si no hay lavadoras compradas: avisar y salir.
+	if not machines_panel.tiene_lavadoras():
+		mostrar_notificacion("Compra una lavadora primero", false)
+		return
+
+	# Leemos la prenda sin sacarla de la cola
+	var prenda: Dictionary = queue_panel.peek_prenda(idx)
+	if prenda.is_empty():
+		return
+
+	var es_alien: bool = bool(prenda.get("es_alien", false))
+
+	# Si es alien y no tienes ninguna cuántica: avisar y no sacar.
+	if es_alien and not machines_panel.tiene_lavadora_alien():
+		mostrar_notificacion("Solo la lavadora cuántica acepta alien", true)
+		return
+
+	# Intentar asignar
+	var asignada: bool = machines_panel.asignar_prenda(prenda)
+	if asignada:
+		queue_panel.confirmar_extraccion(idx)
+		mostrar_notificacion("→ Lavadora", false)
+	else:
+		mostrar_notificacion("Lavadoras llenas", false)
+
+
+# ============================================================
+# TIENDA — UPGRADES
+# ============================================================
 func _on_upgrade_solicitado(upgrade_id: String, precio: int) -> void:
 	if euros < precio:
 		mostrar_notificacion("No tienes suficiente dinero", false)
 		return
 
-	# Cobramos
 	euros -= precio
 	euros_changed.emit(euros)
 
-	# Aplicamos efecto
 	var datos: Dictionary = shop_panel.get_upgrade(upgrade_id)
 	_aplicar_efecto(datos)
 
-	# Confirmamos a la tienda para que marque el upgrade como comprado
 	shop_panel.confirmar_compra(upgrade_id)
-
 	mostrar_notificacion("✓ %s comprado" % datos["nombre"], false)
 
 
-## Aplica el efecto de un upgrade según su tipo.
-## Sistema aditivo (estilo Scritchy Scratchy): los bonos SE SUMAN, no se multiplican.
 func _aplicar_efecto(datos: Dictionary) -> void:
 	var efecto: Dictionary = datos.get("efecto", {})
 	var tipo: String = efecto.get("tipo", "")
@@ -133,14 +167,61 @@ func _aplicar_efecto(datos: Dictionary) -> void:
 	match tipo:
 		"fuerza_plus":
 			sink_area.bonus_fuerza += valor
-			print("Bonus fuerza: +%.2f (total: %.2f)" % [valor, sink_area.bonus_fuerza])
 		"radio_plus":
 			sink_area.bonus_radio += int(valor)
-			print("Bonus radio: +%d (total: %d)" % [int(valor), sink_area.bonus_radio])
 		"suerte":
 			GarmentData.añadir_suerte(valor)
 		_:
 			push_warning("Tipo de efecto desconocido: " + tipo)
+
+
+# ============================================================
+# COMPRA DE LAVADORAS
+# ============================================================
+func _on_lavadora_compra_solicitada(tipo: String, precio: int, ceniza_req: int) -> void:
+	if euros < precio:
+		mostrar_notificacion("No tienes suficiente dinero", false)
+		return
+	if ceniza < ceniza_req:
+		mostrar_notificacion("Te falta Ceniza (necesitas %d)" % ceniza_req, false)
+		return
+
+	euros -= precio
+	euros_changed.emit(euros)
+	if ceniza_req > 0:
+		ceniza -= ceniza_req
+		ceniza_changed.emit(ceniza)
+
+	machines_panel.confirmar_compra(tipo)
+	mostrar_notificacion("✓ Lavadora %s comprada" % tipo, false)
+
+
+# ============================================================
+# LAVADORA TERMINA UN CICLO
+# ============================================================
+func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuantica: bool) -> void:
+	euros += earned
+	euros_totales_ganados += earned
+	euros_changed.emit(euros)
+
+	var ceniza_ganada: int = prenda.get("ceniza_bonus", 0)
+	var fragmentos_ganados: int = prenda.get("fragmentos_bonus", 0)
+
+	# Cuántica = mitad de fragmentos (incentivo a lavar a mano)
+	if era_cuantica and fragmentos_ganados > 0:
+		fragmentos_ganados = max(1, int(round(fragmentos_ganados * 0.5)))
+
+	if ceniza_ganada > 0:
+		ceniza += ceniza_ganada
+		ceniza_changed.emit(ceniza)
+	if fragmentos_ganados > 0:
+		fragmentos += fragmentos_ganados
+		fragmentos_changed.emit(fragmentos)
+
+	var texto := "🌀 +%d€" % int(earned)
+	if prenda.get("es_alien", false):
+		texto = "🌀 ALIEN  +%d€" % int(earned)
+	mostrar_notificacion(texto, prenda.get("es_alien", false))
 
 
 # ============================================================
@@ -149,9 +230,17 @@ func _aplicar_efecto(datos: Dictionary) -> void:
 func _on_euros_changed(_val: float) -> void:
 	_update_hud()
 	shop_panel.actualizar_euros(euros)
+	machines_panel.actualizar_recursos(euros, ceniza)
 
-func _on_ceniza_changed(_val: int) -> void: _update_hud()
-func _on_fragmentos_changed(_val: int) -> void: _update_hud()
+
+func _on_ceniza_changed(_val: int) -> void:
+	_update_hud()
+	machines_panel.actualizar_recursos(euros, ceniza)
+
+
+func _on_fragmentos_changed(_val: int) -> void:
+	_update_hud()
+
 
 func _update_hud() -> void:
 	euros_label.text = "€ %d" % int(euros)
