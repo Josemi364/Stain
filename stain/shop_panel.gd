@@ -328,3 +328,20 @@ func _on_boton_pressed(upgrade_id: String) -> void:
 		return
 	# Emitimos a Main, que decide si cobra y aplica
 	upgrade_solicitado.emit(upgrade_id, int(datos["precio"]))
+
+
+# ============================================================
+# PRESTIGIO
+# ============================================================
+
+## API canónica: vacía las mejoras compradas con euros y refresca la UI.
+## Llamada por prestige_realizado y por el debug F2.
+func reset_compras() -> void:
+	upgrades_comprados.clear()
+	euros_actuales = 0.0
+	_refrescar_todo()
+
+
+## Compatibilidad con señal prestige_realizado (delega a reset_compras).
+func reset_para_prestigio() -> void:
+	reset_compras()

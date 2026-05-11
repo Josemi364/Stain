@@ -88,6 +88,18 @@ func get_cantidad() -> int:
 	return cola.size()
 
 
+## API canónica: regenera la cola entera con prendas frescas.
+## Llamada por prestige_realizado y por el debug F2.
+func reset_cola() -> void:
+	cola = GarmentData.get_cola_inicial(MAX_COLA)
+	_refrescar_visual()
+
+
+## Compatibilidad con código anterior (delega a reset_cola).
+func reiniciar_cola() -> void:
+	reset_cola()
+
+
 ## Útil si en el futuro queremos lavadoras con búsqueda automática.
 func extraer_prenda_compatible(acepta_alien: bool) -> Dictionary:
 	for i in cola.size():

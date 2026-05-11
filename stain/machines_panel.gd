@@ -16,25 +16,24 @@ signal prenda_procesada(prenda: Dictionary, earned: float, era_cuantica: bool)
 const TIPOS_LAVADORA: Dictionary = {
 	"basica": {
 		"nombre": "Lavadora básica",
-		"descripcion": "Procesa prendas normales. Lenta.",
-		"precio": 150,
+		"descripcion": "Procesa prendas normales.",
+		"precio": 100,
 		"ceniza": 0,
-		"ciclo_seg": 30.0,
+		"ciclo_seg": 20.0,
 		"acepta_alien": false,
 		"max_unidades": 3,
 		"color": Color("#4080CC"),
 		"cuerpo_path": "res://assets/lavadoras/basica_cuerpo.svg",
 		"tambor_path": "res://assets/lavadoras/basica_tambor.svg",
-		# Coords donde colocar el tambor relativas al cuerpo (cuerpo es 128x128)
 		"tambor_offset": Vector2(64, 72),
 		"velocidad_giro": 4.0,
 	},
 	"industrial": {
 		"nombre": "Lavadora industrial",
 		"descripcion": "Más rápida. Solo prendas normales.",
-		"precio": 400,
+		"precio": 350,
 		"ceniza": 3,
-		"ciclo_seg": 20.0,
+		"ciclo_seg": 15.0,
 		"acepta_alien": false,
 		"max_unidades": 2,
 		"color": Color("#FF6020"),
@@ -46,9 +45,9 @@ const TIPOS_LAVADORA: Dictionary = {
 	"cuantica": {
 		"nombre": "Lavadora cuántica",
 		"descripcion": "Procesa cualquier prenda, incluso alien.",
-		"precio": 1500,
-		"ceniza": 15,
-		"ciclo_seg": 15.0,
+		"precio": 1200,
+		"ceniza": 12,
+		"ciclo_seg": 12.0,
 		"acepta_alien": true,
 		"max_unidades": 1,
 		"color": Color("#AA40FF"),
@@ -67,6 +66,8 @@ var lavadoras: Array[Dictionary] = []
 var euros_actuales: float = 0.0
 var ceniza_actual: int = 0
 var contador_por_tipo: Dictionary = {"basica": 0, "industrial": 0, "cuantica": 0}
+# Cuando es true, todas las lavadoras aceptan prendas alien (mejora de Ceniza)
+var memoria_prendas: bool = false
 
 var titulo_label: Label
 var lista_compra: VBoxContainer
@@ -215,7 +216,8 @@ func asignar_prenda(prenda: Dictionary) -> bool:
 		var lav: Dictionary = lavadoras[i]
 		if not lav["prenda_actual"].is_empty():
 			continue
-		if es_alien and not lav["acepta_alien"]:
+		# Con memoria_prendas activa todas las lavadoras aceptan alien
+		if es_alien and not lav["acepta_alien"] and not memoria_prendas:
 			continue
 		lav["prenda_actual"] = prenda
 		lav["tiempo"] = 0.0
@@ -428,3 +430,44 @@ func _on_boton_compra(tipo: String) -> void:
 		int(datos["precio"]),
 		int(datos["ceniza"])
 	)
+
+
+# ============================================================
+# PRESTIGIO
+# ============================================================
+
+## API canónica: destruye todas las lavadoras activas y reinicia contadores.
+## Llamada por prestige_realizado y por el debug F2.
+func reset_lavadoras() -> void:
+	for lav in lavadoras:
+		if lav.has("card") and is_instance_valid(lav["card"]):
+			lav["card"].queue_free()
+	lavadoras.clear()
+	contador_por_tipo = {"basica": 0, "industrial": 0, "cuantica": 0}
+	memoria_prendas = false
+	_refrescar_botones()
+
+
+## Compatibilidad con señal prestige_realizado (delega a reset_lavadoras).
+func reset_para_prestigio() -> void:
+	reset_lavadoras()
+
+
+## [Debug F4] Completa instantáneamente todos los ciclos activos y emite sus recompensas.
+func completar_todos_los_ciclos() -> void:
+	for lav in lavadoras:
+		if lav["prenda_actual"].is_empty():
+			continue
+		var prenda: Dictionary = lav["prenda_actual"]
+		var recompensa: float = float(prenda.get("recompensa", 0.0))
+		var es_cuantica: bool = (lav["tipo"] == "cuantica")
+		prenda_procesada.emit(prenda, recompensa, es_cuantica)
+		lav["prenda_actual"] = {}
+		lav["tiempo"] = 0.0
+		lav["barra"].value = 0.0
+		lav["label_estado"].text = "Esperando asignación..."
+
+
+## Activa que todas las lavadoras acepten prendas alien (mejora permanente de Ceniza).
+func activar_memoria_prendas() -> void:
+	memoria_prendas = true

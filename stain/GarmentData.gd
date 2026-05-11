@@ -1,8 +1,15 @@
 extends Node
 ##
-## GarmentData.gd — AUTOLOAD (FASE 2 · BALANCE SCRATCHCARD)
+## GarmentData.gd — AUTOLOAD (FASE 5 · REBALANCE)
 ## ============================================================
-## ACTUALIZADO: texture_path correcto para camisa_oficina y abrigo_lana.
+## Cambios de rebalance:
+##   - Rewards normales +36% (avg 4.67€ → 6.33€)
+##   - Rewards alien ×2 (avg 25€ → 55€), jackpot más visible
+##   - ceniza_bonus = 0 en TODAS las alien (la Ceniza sale solo del prestigio)
+##   - fragmentos_bonus +1 en cada alien para compensar
+##
+## Cambio FASE 5: suerte separada en suerte_euros (reseteable) y suerte_ceniza (permanente).
+## Cambio depuración: flag _forzar_siguiente_alien para el panel de debug.
 ##
 
 # ============================================================
@@ -13,7 +20,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 		"id": "camiseta_blanca",
 		"nombre": "Camiseta blanca",
 		"tipo_mancha": "Ketchup",
-		"recompensa": 2.0,
+		"recompensa": 3.0,
 		"color_prenda": Color("#D8D8D8"),
 		"color_mancha": Color("#CC2200"),
 		"es_alien": false,
@@ -26,7 +33,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 		"id": "camisa_oficina",
 		"nombre": "Camisa de oficina",
 		"tipo_mancha": "Café",
-		"recompensa": 3.0,
+		"recompensa": 4.0,
 		"color_prenda": Color("#3A4A6E"),
 		"color_mancha": Color("#5C3A1E"),
 		"es_alien": false,
@@ -39,7 +46,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 		"id": "pantalon_vaquero",
 		"nombre": "Pantalón vaquero",
 		"tipo_mancha": "Barro",
-		"recompensa": 4.0,
+		"recompensa": 6.0,
 		"color_prenda": Color("#2B4A7E"),
 		"color_mancha": Color("#4A3520"),
 		"es_alien": false,
@@ -52,7 +59,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 		"id": "vestido_fiesta",
 		"nombre": "Vestido de fiesta",
 		"tipo_mancha": "Vino tinto",
-		"recompensa": 5.0,
+		"recompensa": 7.0,
 		"color_prenda": Color("#5A1A2E"),
 		"color_mancha": Color("#7A0A1E"),
 		"es_alien": false,
@@ -65,7 +72,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 		"id": "abrigo_lana",
 		"nombre": "Abrigo de lana",
 		"tipo_mancha": "Aceite de motor",
-		"recompensa": 6.0,
+		"recompensa": 8.0,
 		"color_prenda": Color("#5A3E28"),
 		"color_mancha": Color("#1A1A1A"),
 		"es_alien": false,
@@ -78,7 +85,7 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 		"id": "traje_negocios",
 		"nombre": "Traje de negocios",
 		"tipo_mancha": "Sangre",
-		"recompensa": 8.0,
+		"recompensa": 10.0,
 		"color_prenda": Color("#1A1A2A"),
 		"color_mancha": Color("#8B0000"),
 		"es_alien": false,
@@ -92,17 +99,19 @@ const PRENDAS_NORMALES: Array[Dictionary] = [
 # ============================================================
 # PRENDAS ALIENÍGENAS
 # ============================================================
+# ceniza_bonus = 0 en todas: la Ceniza sale EXCLUSIVAMENTE del prestigio.
+# fragmentos_bonus sube para compensar: alien → progreso narrativo (Fase 6).
 const PRENDAS_ALIEN: Array[Dictionary] = [
 	{
 		"id": "tunica_dimensional",
 		"nombre": "Túnica dimensional",
 		"tipo_mancha": "Plasma interestelar",
-		"recompensa": 15.0,
+		"recompensa": 30.0,
 		"color_prenda": Color("#3A1A5E"),
 		"color_mancha": Color("#AA40FF"),
 		"es_alien": true,
-		"ceniza_bonus": 1,
-		"fragmentos_bonus": 1,
+		"ceniza_bonus": 0,
+		"fragmentos_bonus": 2,
 		"forma": "vestido",
 		"texture_path": "res://assets/garments/tunica_dimensional.svg"
 	},
@@ -110,12 +119,12 @@ const PRENDAS_ALIEN: Array[Dictionary] = [
 		"id": "traje_vacio",
 		"nombre": "Traje de vacío",
 		"tipo_mancha": "Materia oscura",
-		"recompensa": 20.0,
+		"recompensa": 45.0,
 		"color_prenda": Color("#0A0A1E"),
 		"color_mancha": Color("#2A2AFF"),
 		"es_alien": true,
-		"ceniza_bonus": 1,
-		"fragmentos_bonus": 1,
+		"ceniza_bonus": 0,
+		"fragmentos_bonus": 2,
 		"forma": "abrigo",
 		"texture_path": "res://assets/garments/traje_vacio.svg"
 	},
@@ -123,12 +132,12 @@ const PRENDAS_ALIEN: Array[Dictionary] = [
 		"id": "manto_observador",
 		"nombre": "Manto del Observador",
 		"tipo_mancha": "Cronofluido",
-		"recompensa": 28.0,
+		"recompensa": 65.0,
 		"color_prenda": Color("#0A2A3E"),
 		"color_mancha": Color("#00CCFF"),
 		"es_alien": true,
-		"ceniza_bonus": 1,
-		"fragmentos_bonus": 2,
+		"ceniza_bonus": 0,
+		"fragmentos_bonus": 3,
 		"forma": "vestido",
 		"texture_path": "res://assets/garments/manto_observador.svg"
 	},
@@ -136,43 +145,67 @@ const PRENDAS_ALIEN: Array[Dictionary] = [
 		"id": "uniforme_agente",
 		"nombre": "Uniforme del Agente",
 		"tipo_mancha": "¿Sangre humana?",
-		"recompensa": 40.0,
+		"recompensa": 80.0,
 		"color_prenda": Color("#1A1A1A"),
 		"color_mancha": Color("#CC0000"),
 		"es_alien": true,
-		"ceniza_bonus": 2,
-		"fragmentos_bonus": 2,
+		"ceniza_bonus": 0,
+		"fragmentos_bonus": 3,
 		"forma": "abrigo",
 		"texture_path": "res://assets/garments/uniforme_agente.svg"
 	},
 ]
 
 # ============================================================
-# SISTEMA DE SUERTE
+# SISTEMA DE SUERTE — separado por fuente de mejora
 # ============================================================
 const PROBABILIDAD_BASE: float = 0.015
 const PROBABILIDAD_MAX: float = 0.25
-var suerte_acumulada: float = 0.0
+
+var suerte_euros: float = 0.0    # de upgrades con €, se resetea en prestigio
+var suerte_ceniza: float = 0.0   # de upgrades con Ceniza, nunca se resetea
+
+# ============================================================
+# DEBUG — forzar siguiente prenda como alien
+# ============================================================
+var _forzar_siguiente_alien: bool = false
 
 
 func get_probabilidad_alien() -> float:
-	return min(PROBABILIDAD_BASE + suerte_acumulada, PROBABILIDAD_MAX)
+	return min(PROBABILIDAD_BASE + suerte_euros + suerte_ceniza, PROBABILIDAD_MAX)
 
 
 func añadir_suerte(cantidad: float) -> void:
-	suerte_acumulada += cantidad
-	suerte_acumulada = max(suerte_acumulada, 0.0)
+	suerte_euros += cantidad
+	suerte_euros = max(suerte_euros, 0.0)
+
+
+func añadir_suerte_ceniza(cantidad: float) -> void:
+	suerte_ceniza += cantidad
+	suerte_ceniza = max(suerte_ceniza, 0.0)
+
+
+func resetear_suerte_euros() -> void:
+	suerte_euros = 0.0
 
 
 func resetear_suerte() -> void:
-	suerte_acumulada = 0.0
+	suerte_euros = 0.0
+	suerte_ceniza = 0.0
+
+
+## [Debug] Fuerza que la siguiente prenda generada sea alien. Se consume al usarse.
+func forzar_siguiente_alien() -> void:
+	_forzar_siguiente_alien = true
 
 
 func get_prenda_aleatoria() -> Dictionary:
+	if _forzar_siguiente_alien:
+		_forzar_siguiente_alien = false
+		return PRENDAS_ALIEN[randi() % PRENDAS_ALIEN.size()].duplicate()
 	if randf() < get_probabilidad_alien():
 		return PRENDAS_ALIEN[randi() % PRENDAS_ALIEN.size()].duplicate()
-	else:
-		return PRENDAS_NORMALES[randi() % PRENDAS_NORMALES.size()].duplicate()
+	return PRENDAS_NORMALES[randi() % PRENDAS_NORMALES.size()].duplicate()
 
 
 func get_cola_inicial(cantidad: int) -> Array[Dictionary]:

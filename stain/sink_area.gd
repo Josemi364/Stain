@@ -272,7 +272,7 @@ func _generar_manchas(color_base: Color, tipo_mancha: String) -> void:
 		var chorr: int = perfil["chorretones"]
 		var chorr_largo: int = perfil["chorreton_largo"]
 		for c in chorr:
-			var offset_x: int = randi_range(-radio / 2, radio / 2)
+			var offset_x: int = randi_range(-(radio / 2), radio / 2)
 			# El cronofluido chorrea en ambas direcciones
 			var direccion: int = 1 if tipo_mancha != "Cronofluido" else (1 if randf() < 0.5 else -1)
 			var largo_real: int = randi_range(int(chorr_largo * 0.5), chorr_largo)
@@ -457,6 +457,41 @@ func _autocompletar_limpieza() -> void:
 	clean_pct = 1.0
 	progress_bar.value = 100.0
 	deliver_button.disabled = false
+
+
+# ============================================================
+# PRESTIGIO
+# ============================================================
+
+## API canónica: resetea bonuses de mejoras y limpia el estado de la prenda actual.
+## Llamada por prestige_realizado y por el debug F2.
+func reset_sink() -> void:
+	bonus_fuerza = 0.0
+	bonus_radio = 0
+	tiene_prenda = false
+	prenda_actual = {}
+	ya_autocompletado = false
+	frotando = false
+	if stain_image != null:
+		stain_image.fill(Color(0, 0, 0, 0))
+		if stain_image_texture != null:
+			stain_image_texture.update(stain_image)
+	garment_image.texture = null
+	progress_bar.value = 0
+	deliver_button.disabled = true
+	info_label.text = ""
+
+
+## Compatibilidad con señal prestige_realizado (delega a reset_sink).
+func reset_para_prestigio() -> void:
+	reset_sink()
+
+
+## [Debug F5] Completa la limpieza de la prenda actual al instante.
+func limpiar_instantaneo() -> void:
+	if not tiene_prenda:
+		return
+	_autocompletar_limpieza()
 
 
 func _on_deliver_pressed() -> void:
