@@ -1,92 +1,86 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="mg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#061E2E"/>
-      <stop offset="25%"  stop-color="#0E3448"/>
-      <stop offset="50%"  stop-color="#143E56"/>
-      <stop offset="75%"  stop-color="#0E3448"/>
-      <stop offset="100%" stop-color="#04182A"/>
+      <stop offset="0%"   stop-color="#041828"/>
+      <stop offset="25%"  stop-color="#0C2E44"/>
+      <stop offset="50%"  stop-color="#123850"/>
+      <stop offset="75%"  stop-color="#0C2E44"/>
+      <stop offset="100%" stop-color="#02121E"/>
     </linearGradient>
-    <linearGradient id="mg_v" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#0A2E42"/>
-      <stop offset="100%" stop-color="#061826"/>
-    </linearGradient>
-    <radialGradient id="eye_r" cx="50%" cy="50%" r="50%">
+    <radialGradient id="ojo" cx="50%" cy="50%" r="50%">
       <stop offset="0%"   stop-color="#00E8FF"/>
       <stop offset="50%"  stop-color="#0080AA"/>
-      <stop offset="100%" stop-color="#002040" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#002040" stop-opacity="0.2"/>
     </radialGradient>
-    <linearGradient id="cyan_edge" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#00CCFF" stop-opacity="0"/>
-      <stop offset="50%"  stop-color="#00CCFF" stop-opacity="0.55"/>
-      <stop offset="100%" stop-color="#00CCFF" stop-opacity="0"/>
-    </linearGradient>
   </defs>
 
   <!-- Sombra -->
-  <path d="M86,44 C68,44 44,58 28,80 L18,116 C16,148 20,196 22,244 L234,244 C236,196 240,148 238,116 L228,80 C212,58 188,44 170,44 L148,36 Q128,58 108,36 Z"
-        fill="#000820" opacity="0.45" transform="translate(3,6)"/>
+  <path d="M 14,50 L 242,50 L 242,140 L 192,140 L 192,248 L 64,248 L 64,140 L 14,140 Z"
+        fill="#000818" opacity="0.45" transform="translate(3,5)"/>
 
-  <!-- Cuerpo del manto (fluido, muy amplio) -->
-  <path d="M86,44 C68,44 44,58 28,80 L18,116 C16,148 20,196 22,244 L234,244 C236,196 240,148 238,116 L228,80 C212,58 188,44 170,44 L148,36 Q128,58 108,36 Z"
+  <!-- Cuerpo del manto (T muy ancha, larga, dramática) -->
+  <path d="M 14,50 L 242,50 L 242,140 L 192,140 L 192,248 L 64,248 L 64,140 L 14,140 Z"
         fill="url(#mg)"/>
 
-  <!-- Capucha grande y puntiaguda -->
-  <path d="M108,36 Q128,8 148,36 L140,50 Q128,28 116,50 Z" fill="#041626"/>
-  <ellipse cx="128" cy="52" rx="22" ry="14" fill="#020C18" opacity="0.9"/>
+  <!-- Capucha (puntiaguda, mística) -->
+  <polygon points="128,8 100,50 156,50" fill="#041628"/>
+  <ellipse cx="128" cy="54" rx="22" ry="14" fill="#010C18" opacity="0.9"/>
 
-  <!-- Sombras laterales del manto (profundidad) -->
-  <path d="M28,80 L18,116 C16,148 20,196 22,244 L56,244 C48,196 42,150 44,116 L54,88 Z" fill="#000" opacity="0.22"/>
-  <path d="M228,80 L238,116 C240,148 236,196 234,244 L200,244 C208,196 214,150 212,116 L202,88 Z" fill="#000" opacity="0.22"/>
+  <!-- Ojos brillantes en la capucha -->
+  <ellipse cx="120" cy="52" rx="6"   ry="4"   fill="url(#ojo)"/>
+  <ellipse cx="136" cy="52" rx="6"   ry="4"   fill="url(#ojo)"/>
+  <circle  cx="120" cy="52" r="2"    fill="#FFFFFF" opacity="0.9"/>
+  <circle  cx="136" cy="52" r="2"    fill="#FFFFFF" opacity="0.9"/>
+  <ellipse cx="120" cy="52" rx="2.5" ry="1.8" fill="#001828"/>
+  <ellipse cx="136" cy="52" rx="2.5" ry="1.8" fill="#001828"/>
 
-  <!-- Ojos brillantes en la capucha (Los Observadores) -->
-  <ellipse cx="120" cy="50" rx="5"   ry="3.5" fill="url(#eye_r)"/>
-  <ellipse cx="136" cy="50" rx="5"   ry="3.5" fill="url(#eye_r)"/>
-  <circle  cx="120" cy="50" r="1.5"  fill="#FFFFFF" opacity="0.9"/>
-  <circle  cx="136" cy="50" r="1.5"  fill="#FFFFFF" opacity="0.9"/>
-  <!-- Pupila -->
-  <ellipse cx="120" cy="50" rx="2"   ry="1.5" fill="#001828"/>
-  <ellipse cx="136" cy="50" rx="2"   ry="1.5" fill="#001828"/>
+  <!-- Sombras laterales del cuerpo -->
+  <rect x="64"  y="140" width="14" height="108" fill="#000000" opacity="0.22"/>
+  <rect x="178" y="140" width="14" height="108" fill="#000000" opacity="0.22"/>
+  <!-- Sombras inferiores de mangas -->
+  <rect x="14"  y="122" width="78" height="18" fill="#000000" opacity="0.2"/>
+  <rect x="164" y="122" width="78" height="18" fill="#000000" opacity="0.2"/>
 
-  <!-- Broche del pecho (gema circular) -->
-  <circle cx="128" cy="106" r="9"    fill="#002030" stroke="#00CCFF" stroke-width="1.5"/>
-  <circle cx="128" cy="106" r="6"    fill="url(#eye_r)"/>
-  <circle cx="128" cy="106" r="2"    fill="#FFFFFF" opacity="0.9"/>
+  <!-- Broche de pecho (gema cyan) -->
+  <circle cx="128" cy="110" r="10"  fill="#001E30" stroke="#00CCFF" stroke-width="1.8"/>
+  <circle cx="128" cy="110" r="6"   fill="url(#ojo)"/>
+  <circle cx="128" cy="110" r="2.5" fill="#FFFFFF" opacity="0.95"/>
 
-  <!-- Motivos de ojo distribuidos por el manto -->
-  <!-- Ojo grande izquierdo -->
-  <ellipse cx="82"  cy="152" rx="16" ry="9"  fill="#061E2E" stroke="#00CCFF" stroke-width="1.2" opacity="0.7"/>
-  <ellipse cx="82"  cy="152" rx="9"  ry="5"  fill="#002E42"/>
-  <circle  cx="82"  cy="152" r="4"   fill="url(#eye_r)" opacity="0.8"/>
-  <circle  cx="82"  cy="152" r="1.5" fill="#FFFFFF" opacity="0.9"/>
-  <!-- Ojo grande derecho -->
-  <ellipse cx="174" cy="152" rx="16" ry="9"  fill="#061E2E" stroke="#00CCFF" stroke-width="1.2" opacity="0.7"/>
-  <ellipse cx="174" cy="152" rx="9"  ry="5"  fill="#002E42"/>
-  <circle  cx="174" cy="152" r="4"   fill="url(#eye_r)" opacity="0.8"/>
-  <circle  cx="174" cy="152" r="1.5" fill="#FFFFFF" opacity="0.9"/>
-  <!-- Ojo central -->
-  <ellipse cx="128" cy="188" rx="18" ry="10" fill="#061E2E" stroke="#00CCFF" stroke-width="1.5" opacity="0.8"/>
-  <ellipse cx="128" cy="188" rx="10" ry="6"  fill="#002E42"/>
-  <circle  cx="128" cy="188" r="5"   fill="url(#eye_r)" opacity="0.9"/>
-  <circle  cx="128" cy="188" r="2"   fill="#FFFFFF" opacity="0.95"/>
+  <!-- Motivos de OJO repartidos por el manto -->
+  <!-- Ojo izquierdo grande -->
+  <ellipse cx="84"  cy="168" rx="18" ry="10" fill="#041828" stroke="#00CCFF" stroke-width="1.2" opacity="0.8"/>
+  <circle  cx="84"  cy="168" r="5"   fill="url(#ojo)" opacity="0.85"/>
+  <circle  cx="84"  cy="168" r="2"   fill="#FFFFFF"   opacity="0.95"/>
+  <!-- Ojo derecho grande -->
+  <ellipse cx="172" cy="168" rx="18" ry="10" fill="#041828" stroke="#00CCFF" stroke-width="1.2" opacity="0.8"/>
+  <circle  cx="172" cy="168" r="5"   fill="url(#ojo)" opacity="0.85"/>
+  <circle  cx="172" cy="168" r="2"   fill="#FFFFFF"   opacity="0.95"/>
+  <!-- Ojo central (más grande, más prominente) -->
+  <ellipse cx="128" cy="200" rx="22" ry="12" fill="#041828" stroke="#00CCFF" stroke-width="1.8" opacity="0.9"/>
+  <circle  cx="128" cy="200" r="7"   fill="url(#ojo)" opacity="0.9"/>
+  <circle  cx="128" cy="200" r="2.8" fill="#FFFFFF"   opacity="0.95"/>
   <!-- Ojos pequeños adicionales -->
-  <ellipse cx="54"  cy="195" rx="11" ry="6"  fill="#061E2E" stroke="#00AACC" stroke-width="0.8" opacity="0.5"/>
-  <circle  cx="54"  cy="195" r="3"   fill="url(#eye_r)" opacity="0.6"/>
-  <circle  cx="54"  cy="195" r="1.2" fill="#FFFFFF" opacity="0.8"/>
-  <ellipse cx="202" cy="195" rx="11" ry="6"  fill="#061E2E" stroke="#00AACC" stroke-width="0.8" opacity="0.5"/>
-  <circle  cx="202" cy="195" r="3"   fill="url(#eye_r)" opacity="0.6"/>
-  <circle  cx="202" cy="195" r="1.2" fill="#FFFFFF" opacity="0.8"/>
+  <ellipse cx="46"  cy="195" rx="12" ry="7"  fill="#041828" stroke="#00AACC" stroke-width="0.9" opacity="0.6"/>
+  <circle  cx="46"  cy="195" r="3.5" fill="url(#ojo)" opacity="0.65"/>
+  <circle  cx="46"  cy="195" r="1.5" fill="#FFFFFF" opacity="0.85"/>
+  <ellipse cx="210" cy="195" rx="12" ry="7"  fill="#041828" stroke="#00AACC" stroke-width="0.9" opacity="0.6"/>
+  <circle  cx="210" cy="195" r="3.5" fill="url(#ojo)" opacity="0.65"/>
+  <circle  cx="210" cy="195" r="1.5" fill="#FFFFFF" opacity="0.85"/>
 
-  <!-- Pliegues luminosos del manto -->
-  <path d="M44,88 C40,150 38,200 40,244"  stroke="#00CCFF" stroke-width="1.2" fill="none" opacity="0.28"/>
-  <path d="M86,58 C82,140 80,200 82,244"  stroke="#00AACC" stroke-width="0.9" fill="none" opacity="0.22"/>
-  <path d="M128,58 L128,244"              stroke="#00CCFF" stroke-width="0.7" fill="none" opacity="0.18"/>
-  <path d="M170,58 C174,140 176,200 174,244" stroke="#00AACC" stroke-width="0.9" fill="none" opacity="0.22"/>
-  <path d="M212,88 C216,150 218,200 216,244" stroke="#00CCFF" stroke-width="1.2" fill="none" opacity="0.28"/>
+  <!-- Pliegues luminosos verticales -->
+  <line x1="36"  y1="58"  x2="28"  y2="246" stroke="#00CCFF" stroke-width="1.2" opacity="0.28"/>
+  <line x1="90"  y1="58"  x2="82"  y2="246" stroke="#00AACC" stroke-width="0.8" opacity="0.22"/>
+  <line x1="128" y1="60"  x2="128" y2="246" stroke="#00CCFF" stroke-width="0.7" opacity="0.18"/>
+  <line x1="166" y1="58"  x2="174" y2="246" stroke="#00AACC" stroke-width="0.8" opacity="0.22"/>
+  <line x1="220" y1="58"  x2="228" y2="246" stroke="#00CCFF" stroke-width="1.2" opacity="0.28"/>
 
-  <!-- Borde inferior glow -->
-  <path d="M22,244 L234,244" stroke="url(#cyan_edge)" stroke-width="2.5" fill="none"/>
+  <!-- Ribetes de puños (cyan) -->
+  <rect x="14"  y="134" width="78" height="6" fill="#00CCFF" opacity="0.45"/>
+  <rect x="164" y="134" width="78" height="6" fill="#00CCFF" opacity="0.45"/>
+
+  <!-- Ribete inferior (glow cyan) -->
+  <rect x="64" y="243" width="128" height="5" fill="#00CCFF" opacity="0.4"/>
 
   <!-- Brillo central -->
-  <path d="M118,44 C116,150 116,210 118,244 L126,244 C124,210 124,150 126,44 Z" fill="#FFFFFF" opacity="0.05"/>
+  <rect x="118" y="56" width="20" height="190" fill="#FFFFFF" opacity="0.05"/>
 </svg>

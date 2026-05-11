@@ -1,86 +1,79 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#3A2610"/>
-      <stop offset="20%"  stop-color="#5A3C22"/>
-      <stop offset="50%"  stop-color="#6A4828"/>
-      <stop offset="80%"  stop-color="#5A3C22"/>
-      <stop offset="100%" stop-color="#342010"/>
+      <stop offset="0%"   stop-color="#38220E"/>
+      <stop offset="22%"  stop-color="#5A3A20"/>
+      <stop offset="50%"  stop-color="#6A4628"/>
+      <stop offset="78%"  stop-color="#5A3A20"/>
+      <stop offset="100%" stop-color="#321C0A"/>
     </linearGradient>
-    <linearGradient id="wg2" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#5C3E24"/>
-      <stop offset="100%" stop-color="#3A2410"/>
-    </linearGradient>
-    <!-- Textura de lana: puntos pequeños -->
-    <pattern id="wool" patternUnits="userSpaceOnUse" width="6" height="6">
-      <circle cx="3" cy="3" r="0.8" fill="#7A5238" opacity="0.35"/>
-      <circle cx="0" cy="0" r="0.5" fill="#7A5238" opacity="0.2"/>
-      <circle cx="6" cy="6" r="0.5" fill="#7A5238" opacity="0.2"/>
+    <pattern id="wool" patternUnits="userSpaceOnUse" width="5" height="5">
+      <circle cx="2.5" cy="2.5" r="0.7" fill="#7A5230" opacity="0.4"/>
     </pattern>
   </defs>
 
   <!-- Sombra -->
-  <path d="M82,48 C68,48 52,56 42,72 L18,88 L22,244 L68,248 L76,108 L76,248 L180,248 L180,108 L188,248 L234,244 L238,88 L214,72 C204,56 188,48 174,48 L152,44 Q128,64 104,44 Z"
-        fill="#000" opacity="0.2" transform="translate(3,5)"/>
+  <path d="M 18,50 L 238,50 L 238,130 L 182,130 L 182,245 L 74,245 L 74,130 L 18,130 Z"
+        fill="#000000" opacity="0.2" transform="translate(3,4)"/>
 
-  <!-- Cuerpo principal del abrigo -->
-  <path d="M82,48 C68,48 52,56 42,72 L18,88 L22,244 L68,248 L76,108 L76,248 L180,248 L180,108 L188,248 L234,244 L238,88 L214,72 C204,56 188,48 174,48 L152,44 Q128,64 104,44 Z"
+  <!-- Cuerpo del abrigo (T muy ancha y larga) -->
+  <path d="M 18,50 L 238,50 L 238,130 L 182,130 L 182,245 L 74,245 L 74,130 L 18,130 Z"
         fill="url(#wg)"/>
 
-  <!-- Textura de lana superpuesta -->
-  <path d="M82,48 C68,48 52,56 42,72 L18,88 L22,244 L68,248 L76,108 L76,248 L180,248 L180,108 L188,248 L234,244 L238,88 L214,72 C204,56 188,48 174,48 L152,44 Q128,64 104,44 Z"
-        fill="url(#wool)"/>
+  <!-- Textura de lana encima -->
+  <path d="M 18,50 L 238,50 L 238,130 L 182,130 L 182,245 L 74,245 L 74,130 L 18,130 Z"
+        fill="url(#wool)" opacity="0.9"/>
 
   <!-- Sombras laterales del cuerpo -->
-  <path d="M76,108 L76,248 L92,248 L92,108 Z" fill="#000" opacity="0.2"/>
-  <path d="M180,108 L180,248 L164,248 L164,108 Z" fill="#000" opacity="0.2"/>
-  <!-- Sombras de las mangas (exterior) -->
-  <path d="M42,72 L18,88 L22,150 L50,140 L52,100 Z" fill="#000" opacity="0.18"/>
-  <path d="M214,72 L238,88 L234,150 L206,140 L204,100 Z" fill="#000" opacity="0.18"/>
+  <rect x="74"  y="130" width="14" height="115" fill="#000000" opacity="0.18"/>
+  <rect x="168" y="130" width="14" height="115" fill="#000000" opacity="0.18"/>
+  <!-- Sombras inferiores mangas -->
+  <rect x="18"  y="114" width="56" height="16" fill="#000000" opacity="0.16"/>
+  <rect x="182" y="114" width="56" height="16" fill="#000000" opacity="0.16"/>
 
-  <!-- Solapas grandes del abrigo — izquierda -->
-  <path d="M104,44 C100,48 94,56 82,70 L76,108 L128,136 L128,58 Z"
-        fill="#2E1A08"/>
-  <!-- Solapas — derecha -->
-  <path d="M152,44 C156,48 162,56 174,70 L180,108 L128,136 L128,58 Z"
-        fill="#2E1A08"/>
-  <!-- Borde interior de solapas (costuras) -->
-  <path d="M104,44 C96,52 88,64 82,70 L76,108 L128,136" stroke="#1E0E04" stroke-width="1" fill="none"/>
-  <path d="M152,44 C160,52 168,64 174,70 L180,108 L128,136" stroke="#1E0E04" stroke-width="1" fill="none"/>
+  <!-- Solapas del abrigo (izquierda) -->
+  <polygon points="128,50 82,50 82,130 128,155" fill="#2A1608"/>
+  <!-- Solapas (derecha) -->
+  <polygon points="128,50 174,50 174,130 128,155" fill="#2A1608"/>
+  <!-- Borde interior de solapas -->
+  <line x1="82"  y1="50"  x2="82"  y2="130" stroke="#1A0C04" stroke-width="1"/>
+  <line x1="174" y1="50"  x2="174" y2="130" stroke="#1A0C04" stroke-width="1"/>
+  <line x1="82"  y1="130" x2="128" y2="155" stroke="#1A0C04" stroke-width="1"/>
+  <line x1="174" y1="130" x2="128" y2="155" stroke="#1A0C04" stroke-width="1"/>
 
   <!-- Cuello visible entre solapas -->
-  <path d="M104,44 Q128,36 152,44 L148,50 Q128,44 108,50 Z" fill="#4A3018"/>
+  <polygon points="112,50 128,50 128,60" fill="#3A2010"/>
+  <polygon points="144,50 128,50 128,60" fill="#3A2010"/>
 
   <!-- Cinturón -->
-  <rect x="76"  y="148" width="104" height="12" rx="1" fill="#221408"/>
-  <rect x="76"  y="148" width="104" height="3"  rx="1" fill="#4A3018"/>
-  <!-- Hebilla del cinturón -->
-  <rect x="120" y="145" width="16" height="18" rx="2" fill="#8A6C48"/>
-  <rect x="122" y="147" width="12" height="14" rx="1" fill="none" stroke="#4A3018" stroke-width="1.2"/>
-  <line x1="128" y1="147" x2="128" y2="161" stroke="#4A3018" stroke-width="0.8"/>
+  <rect x="74" y="162" width="108" height="11" fill="#1E0E04"/>
+  <rect x="74" y="162" width="108" height="3"  fill="#4A2E14"/>
+  <!-- Hebilla -->
+  <rect x="120" y="160" width="16" height="15" rx="1" fill="#8A6840"/>
+  <rect x="122" y="162" width="12" height="11" rx="1" fill="none" stroke="#4A2E14" stroke-width="1.2"/>
 
-  <!-- Botones grandes de cuerno -->
-  <circle cx="112" cy="126" r="5.5" fill="#1E0E04"/>
-  <circle cx="112" cy="126" r="4"   fill="#3A2010"/>
-  <circle cx="111" cy="125" r="1"   fill="#5A3820" opacity="0.7"/>
-  <circle cx="112" cy="168" r="5.5" fill="#1E0E04"/>
-  <circle cx="112" cy="168" r="4"   fill="#3A2010"/>
-  <circle cx="112" cy="200" r="5.5" fill="#1E0E04"/>
-  <circle cx="112" cy="200" r="4"   fill="#3A2010"/>
+  <!-- Botones -->
+  <circle cx="98" cy="148" r="6"   fill="#1A0A04"/>
+  <circle cx="98" cy="148" r="4.2" fill="#3A2010"/>
+  <circle cx="98" cy="185" r="6"   fill="#1A0A04"/>
+  <circle cx="98" cy="185" r="4.2" fill="#3A2010"/>
+  <circle cx="98" cy="220" r="6"   fill="#1A0A04"/>
+  <circle cx="98" cy="220" r="4.2" fill="#3A2010"/>
 
   <!-- Cierre central -->
-  <line x1="128" y1="136" x2="128" y2="248" stroke="#1E0E04" stroke-width="1.5"/>
+  <line x1="128" y1="155" x2="128" y2="244" stroke="#1A0A04" stroke-width="1.5"/>
 
-  <!-- Bolsillos laterales con solapa -->
-  <rect x="82"  y="162" width="46" height="8" rx="2" fill="#2A1608"/>
-  <rect x="128" y="162" width="46" height="8" rx="2" fill="#2A1608"/>
+  <!-- Costuras de las mangas -->
+  <line x1="18"  y1="130" x2="74"  y2="130" stroke="#38220E" stroke-width="1.2"/>
+  <line x1="182" y1="130" x2="238" y2="130" stroke="#38220E" stroke-width="1.2"/>
 
-  <!-- Pliegues de lana (verticales, de caída natural) -->
-  <path d="M88,110 C86,170 84,210 86,248"  stroke="#7A5238" stroke-width="0.8" fill="none" opacity="0.35"/>
-  <path d="M108,136 C108,185 108,220 108,248" stroke="#7A5238" stroke-width="0.7" fill="none" opacity="0.3"/>
-  <path d="M148,136 C148,185 148,220 148,248" stroke="#7A5238" stroke-width="0.7" fill="none" opacity="0.3"/>
-  <path d="M168,110 C170,170 172,210 170,248" stroke="#7A5238" stroke-width="0.8" fill="none" opacity="0.35"/>
+  <!-- Ribetes de puños -->
+  <rect x="18"  y="124" width="56" height="6" fill="#2A1608"/>
+  <rect x="182" y="124" width="56" height="6" fill="#2A1608"/>
 
-  <!-- Brillo central del abrigo -->
-  <path d="M118,58 C116,148 116,210 118,248 L124,248 C122,210 122,148 124,58 Z" fill="#FFFFFF" opacity="0.07"/>
+  <!-- Ribete inferior -->
+  <rect x="74" y="239" width="108" height="6" fill="#2A1608"/>
+
+  <!-- Brillo central -->
+  <rect x="118" y="155" width="20" height="89" fill="#FFFFFF" opacity="0.05"/>
 </svg>

@@ -1,89 +1,51 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="dg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#1A3262"/>
-      <stop offset="25%"  stop-color="#273E78"/>
-      <stop offset="50%"  stop-color="#2E4882"/>
-      <stop offset="75%"  stop-color="#273E78"/>
-      <stop offset="100%" stop-color="#182E5E"/>
-    </linearGradient>
-    <linearGradient id="dg_l" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#1A3262"/>
-      <stop offset="40%"  stop-color="#273E78"/>
-      <stop offset="100%" stop-color="#1E3870"/>
-    </linearGradient>
-    <linearGradient id="dg_r" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#1E3870"/>
-      <stop offset="60%"  stop-color="#273E78"/>
-      <stop offset="100%" stop-color="#1A3262"/>
-    </linearGradient>
-    <linearGradient id="wb" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"   stop-color="#0E2050"/>
-      <stop offset="50%"  stop-color="#1A3262"/>
-      <stop offset="100%" stop-color="#0E2050"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Sombra del pantalón completo -->
-  <path d="M68,38 C64,38 60,40 58,44 L56,58 C52,58 50,60 50,64 L50,80 C48,88 48,96 50,104 L50,240 L114,240 L120,104 L128,100 L136,104 L142,240 L206,240 L206,104 C208,96 208,88 206,80 L206,64 C206,60 204,58 200,58 L198,44 C196,40 192,38 188,38 Z"
-        fill="#000" opacity="0.18" transform="translate(3,5)"/>
-
-  <!-- Pierna izquierda -->
-  <path d="M50,84 C48,90 48,100 50,108 L50,240 L118,240 L120,108 C118,96 118,86 122,80 L100,78 C86,78 72,80 64,82 Z"
-        fill="url(#dg_l)"/>
-
-  <!-- Pierna derecha -->
-  <path d="M206,84 C208,90 208,100 206,108 L206,240 L138,240 L136,108 C138,96 138,86 134,80 L156,78 C170,78 184,80 192,82 Z"
-        fill="url(#dg_r)"/>
-
-  <!-- Área ingle/entrepierna (más oscuro) -->
-  <path d="M114,82 C118,90 124,96 128,100 C132,96 138,90 142,82 L128,78 Z" fill="#0E2050"/>
-
-  <!-- Cintura / yoke de cadera -->
-  <path d="M68,38 C64,38 60,40 58,44 L56,82 C68,80 90,78 128,78 C166,78 188,80 200,82 L198,44 C196,40 192,38 188,38 Z"
-        fill="url(#wb)"/>
-
-  <!-- Cinturilla superior (ribete más oscuro) -->
-  <rect x="58" y="38" width="140" height="16" rx="2" fill="#0A1840" opacity="0.7"/>
-  <rect x="58" y="38" width="140" height="5" rx="2" fill="#1A3262"/>
+  <!-- Cintura -->
+  <rect x="80" y="40" width="96" height="20" fill="#1F3A6E"/>
+  <rect x="80" y="40" width="96" height="6" fill="#3A6FB0"/>
 
   <!-- Trabillas del cinturón -->
-  <rect x="72"  y="36" width="6" height="18" rx="1" fill="#0A1840"/>
-  <rect x="96"  y="36" width="6" height="18" rx="1" fill="#0A1840"/>
-  <rect x="125" y="36" width="6" height="18" rx="1" fill="#0A1840"/>
-  <rect x="154" y="36" width="6" height="18" rx="1" fill="#0A1840"/>
-  <rect x="178" y="36" width="6" height="18" rx="1" fill="#0A1840"/>
+  <rect x="92" y="38" width="4" height="14" fill="#1A2F5E"/>
+  <rect x="124" y="38" width="4" height="14" fill="#1A2F5E"/>
+  <rect x="156" y="38" width="4" height="14" fill="#1A2F5E"/>
 
-  <!-- Botón de la cinturilla -->
-  <circle cx="128" cy="46" r="4" fill="#C8A840"/>
-  <circle cx="128" cy="46" r="2.5" fill="#A88828"/>
+  <!-- Pierna izquierda -->
+  <path d="M 80 60 L 78 220 L 120 220 L 122 60 Z" fill="#2B4A7E"/>
+  <!-- Pierna derecha -->
+  <path d="M 134 60 L 136 220 L 178 220 L 176 60 Z" fill="#2B4A7E"/>
 
-  <!-- Cremallera / bragueta -->
-  <line x1="128" y1="55" x2="128" y2="82" stroke="#0A1840" stroke-width="2.5"/>
-  <line x1="128" y1="55" x2="128" y2="82" stroke="#C8A840" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <!-- Sombras interiores piernas -->
+  <path d="M 122 60 L 120 220 L 110 220 L 112 60 Z" fill="#000000" opacity="0.2"/>
+  <path d="M 134 60 L 136 220 L 146 220 L 144 60 Z" fill="#000000" opacity="0.2"/>
 
-  <!-- Bolsillos frontales (corte diagonal característico de los vaqueros) -->
-  <path d="M62,58 C68,56 80,60 88,70 L62,70 Z" fill="#0A1840" opacity="0.7"/>
-  <path d="M194,58 C188,56 176,60 168,70 L194,70 Z" fill="#0A1840" opacity="0.7"/>
+  <!-- Costura central -->
+  <line x1="128" y1="60" x2="128" y2="62" stroke="#1A2F5E" stroke-width="2"/>
 
-  <!-- Costuras amarillas de denim -->
-  <line x1="62" y1="58" x2="50" y2="238" stroke="#C8A840" stroke-width="0.8" stroke-dasharray="3,2.5"/>
-  <line x1="116" y1="80" x2="114" y2="238" stroke="#C8A840" stroke-width="0.8" stroke-dasharray="3,2.5"/>
-  <line x1="140" y1="80" x2="142" y2="238" stroke="#C8A840" stroke-width="0.8" stroke-dasharray="3,2.5"/>
-  <line x1="194" y1="58" x2="206" y2="238" stroke="#C8A840" stroke-width="0.8" stroke-dasharray="3,2.5"/>
+  <!-- Costuras laterales (puntadas amarillas) -->
+  <line x1="80" y1="60" x2="78" y2="220" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
+  <line x1="120" y1="60" x2="120" y2="220" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
+  <line x1="136" y1="60" x2="136" y2="220" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
+  <line x1="176" y1="60" x2="178" y2="220" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
 
-  <!-- Sombra interior pierna izquierda (costura) -->
-  <path d="M116,82 L114,240 L106,240 L108,82 Z" fill="#000" opacity="0.15"/>
-  <!-- Sombra interior pierna derecha -->
-  <path d="M140,82 L142,240 L150,240 L148,82 Z" fill="#000" opacity="0.15"/>
+  <!-- Bolsillos delanteros -->
+  <path d="M 84 65 L 100 80 L 84 80 Z" fill="#1A2F5E"/>
+  <path d="M 172 65 L 156 80 L 172 80 Z" fill="#1A2F5E"/>
 
-  <!-- Textura de denim (líneas diagonales muy sutiles) -->
-  <path d="M58,90 L58,130" stroke="#2A4C8A" stroke-width="0.4" opacity="0.4"/>
-  <path d="M58,140 L58,180" stroke="#2A4C8A" stroke-width="0.4" opacity="0.4"/>
-  <path d="M194,90 L194,130" stroke="#2A4C8A" stroke-width="0.4" opacity="0.4"/>
+  <!-- Cremallera/bragueta -->
+  <line x1="128" y1="60" x2="128" y2="100" stroke="#1A2F5E" stroke-width="2"/>
+  <line x1="128" y1="60" x2="128" y2="100" stroke="#D4A848" stroke-width="0.6" stroke-dasharray="2,2"/>
 
-  <!-- Brillo pierna izquierda -->
-  <path d="M68,90 C66,160 66,210 68,240 L74,240 C72,210 72,160 74,90 Z" fill="#FFFFFF" opacity="0.08"/>
-  <!-- Brillo pierna derecha -->
-  <path d="M188,90 C190,160 190,210 188,240 L182,240 C184,210 184,160 182,90 Z" fill="#FFFFFF" opacity="0.08"/>
+  <!-- Botón de la cintura -->
+  <circle cx="128" cy="50" r="3" fill="#D4A848"/>
+  <circle cx="128" cy="50" r="2" fill="#A88030"/>
+
+  <!-- Hebilla del cinturón sugerida -->
+  <rect x="88" y="44" width="80" height="2" fill="#1A2F5E"/>
+
+  <!-- Textura de denim (rayas verticales sutiles) -->
+  <line x1="90" y1="80" x2="88" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="100" y1="80" x2="98" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="110" y1="80" x2="108" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="146" y1="80" x2="148" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="156" y1="80" x2="158" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
+  <line x1="166" y1="80" x2="168" y2="215" stroke="#1F3A6E" stroke-width="0.4" opacity="0.5"/>
 </svg>

@@ -1,96 +1,79 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="vg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#04041A"/>
-      <stop offset="25%"  stop-color="#0A0A26"/>
-      <stop offset="50%"  stop-color="#0E0E30"/>
-      <stop offset="75%"  stop-color="#0A0A26"/>
+      <stop offset="0%"   stop-color="#04041C"/>
+      <stop offset="25%"  stop-color="#0A0A28"/>
+      <stop offset="50%"  stop-color="#0E0E32"/>
+      <stop offset="75%"  stop-color="#0A0A28"/>
       <stop offset="100%" stop-color="#02021A"/>
     </linearGradient>
-    <radialGradient id="visor" cx="42%" cy="38%" r="58%">
-      <stop offset="0%"   stop-color="#2080FF" stop-opacity="0.9"/>
-      <stop offset="40%"  stop-color="#0040AA" stop-opacity="0.7"/>
+    <radialGradient id="visor" cx="38%" cy="35%" r="65%">
+      <stop offset="0%"   stop-color="#4090FF" stop-opacity="0.9"/>
+      <stop offset="45%"  stop-color="#0040AA" stop-opacity="0.7"/>
       <stop offset="100%" stop-color="#000820" stop-opacity="0.95"/>
     </radialGradient>
-    <linearGradient id="helmet_g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%"   stop-color="#1A1A3A"/>
-      <stop offset="100%" stop-color="#06061E"/>
-    </linearGradient>
-    <linearGradient id="blue_edge" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#2060FF" stop-opacity="0"/>
-      <stop offset="50%"  stop-color="#2060FF" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#2060FF" stop-opacity="0"/>
-    </linearGradient>
   </defs>
 
-  <!-- Sombra -->
-  <path d="M82,90 L42,110 L38,230 L62,240 L76,140 L76,240 L180,240 L180,140 L194,240 L218,230 L214,110 L174,90 L156,84 L100,84 Z"
-        fill="#000" opacity="0.35" transform="translate(3,5)"/>
+  <!-- Sombra del cuerpo -->
+  <path d="M 26,100 L 230,100 L 230,138 L 184,138 L 184,242 L 72,242 L 72,138 L 26,138 Z"
+        fill="#000000" opacity="0.3" transform="translate(3,4)"/>
 
-  <!-- Cuerpo del traje (torso + piernas fusionadas) -->
-  <path d="M82,90 L42,110 L38,230 L62,240 L76,140 L76,240 L180,240 L180,140 L194,240 L218,230 L214,110 L174,90 L156,84 L100,84 Z"
+  <!-- Cuerpo del traje (T-shape) -->
+  <path d="M 26,100 L 230,100 L 230,138 L 184,138 L 184,242 L 72,242 L 72,138 L 26,138 Z"
         fill="url(#vg)"/>
 
-  <!-- Sombras profundas en los costados -->
-  <path d="M76,140 L76,240 L94,240 L94,140 Z" fill="#000" opacity="0.3"/>
-  <path d="M180,140 L180,240 L162,240 L162,140 Z" fill="#000" opacity="0.3"/>
-  <!-- Sombras en los brazos -->
-  <path d="M42,110 L38,230 L58,234 L66,140 Z" fill="#000" opacity="0.2"/>
-  <path d="M214,110 L218,230 L198,234 L190,140 Z" fill="#000" opacity="0.2"/>
-
-  <!-- Casco esférico -->
-  <circle cx="128" cy="52" r="40" fill="url(#helmet_g)"/>
-  <circle cx="128" cy="52" r="40" fill="none" stroke="#2A2A50" stroke-width="2.5"/>
-  <circle cx="128" cy="52" r="38" fill="none" stroke="#1A1A3A" stroke-width="1"/>
-
-  <!-- Visor del casco -->
-  <ellipse cx="128" cy="52" rx="30" ry="25" fill="url(#visor)"/>
+  <!-- Casco esférico centrado arriba -->
+  <circle cx="128" cy="56" r="44" fill="#101030"/>
+  <circle cx="128" cy="56" r="44" fill="none" stroke="#2A2A50" stroke-width="2.5"/>
+  <!-- Visor -->
+  <ellipse cx="128" cy="56" rx="32" ry="27" fill="url(#visor)"/>
   <!-- Reflejos del visor -->
-  <ellipse cx="116" cy="42" rx="10" ry="6" fill="#4090FF" opacity="0.4"/>
-  <ellipse cx="112" cy="39" rx="5"  ry="3" fill="#80C0FF" opacity="0.55"/>
-  <ellipse cx="128" cy="52" rx="30" ry="25" fill="none" stroke="#3070CC" stroke-width="1"/>
+  <ellipse cx="115" cy="45" rx="12" ry="7" fill="#5090FF" opacity="0.4"/>
+  <ellipse cx="111" cy="41" rx="5"  ry="3" fill="#90C0FF" opacity="0.6"/>
+  <circle  cx="116" cy="43" r="2.5" fill="#FFFFFF" opacity="0.55"/>
 
-  <!-- Cuello de conexión casco-traje -->
-  <rect x="110" y="88" width="36" height="10" rx="3" fill="#121230"/>
-  <rect x="112" y="89" width="32" height="4"  rx="2" fill="#2A2A50"/>
+  <!-- Cuello de conexión -->
+  <rect x="112" y="96"  width="32" height="12" rx="3" fill="#141432"/>
+  <rect x="114" y="97"  width="28" height="5"  rx="2" fill="#2A2A50"/>
+
+  <!-- Sombras laterales del cuerpo del traje -->
+  <rect x="72"  y="138" width="14" height="104" fill="#000000" opacity="0.28"/>
+  <rect x="170" y="138" width="14" height="104" fill="#000000" opacity="0.28"/>
+  <!-- Sombras inferiores de mangas -->
+  <rect x="26"  y="122" width="58" height="16" fill="#000000" opacity="0.2"/>
+  <rect x="172" y="122" width="58" height="16" fill="#000000" opacity="0.2"/>
 
   <!-- Panel de control en el pecho -->
-  <rect x="96"  y="118" width="64" height="52" rx="3" fill="#080820" stroke="#2A2A50" stroke-width="1.2"/>
-  <rect x="98"  y="120" width="60" height="48" rx="2" fill="#06061C"/>
-  <!-- Pantallita -->
-  <rect x="100" y="122" width="56" height="24" rx="1" fill="#000C20"/>
-  <rect x="100" y="122" width="34" height="24" rx="1" fill="#001040" opacity="0.8"/>
-  <!-- Barras de estado -->
-  <rect x="102" y="126" width="50" height="3" rx="1" fill="#001A40"/>
-  <rect x="102" y="126" width="38" height="3" rx="1" fill="#00AAFF"/>
-  <rect x="102" y="132" width="50" height="3" rx="1" fill="#001A40"/>
-  <rect x="102" y="132" width="20" height="3" rx="1" fill="#00AAFF"/>
-  <rect x="102" y="138" width="50" height="3" rx="1" fill="#001A40"/>
-  <rect x="102" y="138" width="44" height="3" rx="1" fill="#0060FF"/>
-  <!-- Botones del panel -->
-  <circle cx="112" cy="152" r="2.5" fill="#00FF60"/>
-  <circle cx="122" cy="152" r="2.5" fill="#FFAA00"/>
-  <circle cx="132" cy="152" r="2.5" fill="#FF2040"/>
-  <circle cx="144" cy="152" r="2"   fill="#4060FF"/>
+  <rect x="96"  y="152" width="64" height="48" rx="3" fill="#080820" stroke="#2A2A50" stroke-width="1.2"/>
+  <!-- Pantalla -->
+  <rect x="98"  y="154" width="60" height="26" rx="1" fill="#000C22"/>
+  <!-- Barras de progreso -->
+  <rect x="100" y="158" width="56" height="4" rx="1" fill="#001840"/>
+  <rect x="100" y="158" width="40" height="4" rx="1" fill="#00AAFF"/>
+  <rect x="100" y="165" width="56" height="4" rx="1" fill="#001840"/>
+  <rect x="100" y="165" width="18" height="4" rx="1" fill="#0060FF"/>
+  <!-- Botones indicadores -->
+  <circle cx="108" cy="188" r="3" fill="#00FF60"/>
+  <circle cx="120" cy="188" r="3" fill="#FFAA00"/>
+  <circle cx="132" cy="188" r="3" fill="#FF2040"/>
+  <circle cx="144" cy="188" r="3" fill="#4060FF"/>
 
-  <!-- Tuberías laterales (entre cuerpo y brazos) -->
-  <path d="M86,112 C70,122 60,138 60,160"  stroke="#2A2A50" stroke-width="4"   fill="none"/>
-  <path d="M86,112 C70,122 60,138 60,160"  stroke="#0A0A28" stroke-width="2.5" fill="none"/>
-  <path d="M170,112 C186,122 196,138 196,160" stroke="#2A2A50" stroke-width="4"   fill="none"/>
-  <path d="M170,112 C186,122 196,138 196,160" stroke="#0A0A28" stroke-width="2.5" fill="none"/>
+  <!-- Insignia central inferior -->
+  <circle cx="128" cy="218" r="10"  fill="#080820" stroke="#2060FF" stroke-width="1"/>
+  <circle cx="128" cy="218" r="6"   fill="none"    stroke="#1040A0" stroke-width="0.8"/>
+  <polygon points="128,212 131,220 128,218 125,220" fill="#2060FF"/>
 
-  <!-- Insignia -->
-  <circle cx="128" cy="184" r="10"  fill="#060618" stroke="#2060FF" stroke-width="1"/>
-  <circle cx="128" cy="184" r="7"   fill="none"    stroke="#1040A0" stroke-width="0.8"/>
-  <path   d="M128,178 L131,186 L128,184 L125,186 Z" fill="#2060FF" opacity="0.9"/>
+  <!-- Ribetes de puños (azules) -->
+  <rect x="26"  y="132" width="58" height="6" fill="#2060FF" opacity="0.6"/>
+  <rect x="172" y="132" width="58" height="6" fill="#2060FF" opacity="0.6"/>
+
+  <!-- Ribete inferior (azul glow) -->
+  <rect x="72"  y="237" width="112" height="5" fill="#2060FF" opacity="0.5"/>
 
   <!-- Articulaciones de rodilla -->
-  <rect x="74"  y="190" width="8" height="4" rx="1" fill="#1E1E3A"/>
-  <rect x="174" y="190" width="8" height="4" rx="1" fill="#1E1E3A"/>
-
-  <!-- Borde inferior azul (glow) -->
-  <path d="M62,240 L194,240" stroke="url(#blue_edge)" stroke-width="2" fill="none"/>
+  <rect x="70"  y="195" width="8" height="5" rx="1" fill="#1E1E3A"/>
+  <rect x="178" y="195" width="8" height="5" rx="1" fill="#1E1E3A"/>
 
   <!-- Brillo central del traje -->
-  <path d="M120,92 C118,155 118,205 120,240 L126,240 C124,205 124,155 126,92 Z" fill="#FFFFFF" opacity="0.05"/>
+  <rect x="118" y="104" width="20" height="136" fill="#FFFFFF" opacity="0.04"/>
 </svg>
