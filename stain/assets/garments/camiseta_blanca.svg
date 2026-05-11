@@ -1,56 +1,54 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#C8C8C8"/>
-      <stop offset="28%"  stop-color="#E8E8E8"/>
-      <stop offset="50%"  stop-color="#F2F2F2"/>
-      <stop offset="72%"  stop-color="#E8E8E8"/>
-      <stop offset="100%" stop-color="#C4C4C4"/>
+      <stop offset="0%"   stop-color="#C2C2C0"/>
+      <stop offset="30%"  stop-color="#E6E6E4"/>
+      <stop offset="55%"  stop-color="#F2F2F0"/>
+      <stop offset="80%"  stop-color="#E6E6E4"/>
+      <stop offset="100%" stop-color="#BEBEBE"/>
     </linearGradient>
   </defs>
 
-  <!-- Sombra (mismo path desplazado) -->
-  <path d="M 26,50 L 108,50 A 20,22 0 0 1 148,50 L 230,50 L 230,110 L 180,110 L 180,235 L 76,235 L 76,110 L 26,110 Z"
-        fill="#000000" opacity="0.15" transform="translate(3,4)"/>
+  <!-- Sombra -->
+  <path d="M 80,36 L 18,66 L 28,94 L 76,106 L 74,236 L 182,236 L 180,106 L 228,94 L 238,66 L 176,36 Q 128,62 80,36 Z"
+        fill="#000" opacity="0.16" transform="translate(3,5)"/>
 
-  <!-- Cuerpo principal en forma de T -->
-  <path d="M 26,50 L 108,50 A 20,22 0 0 1 148,50 L 230,50 L 230,110 L 180,110 L 180,235 L 76,235 L 76,110 L 26,110 Z"
+  <!-- Cuerpo principal: mangas en paralelo diagonal (inspirado en MDI tshirt-crew) -->
+  <!-- Collar izquierdo → hombro → sleeve paralelo → armhole → cuerpo → hem → cuerpo → armhole → sleeve → hombro → collar curvo -->
+  <path d="M 80,36 L 18,66 L 28,94 L 76,106 L 74,236 L 182,236 L 180,106 L 228,94 L 238,66 L 176,36 Q 128,62 80,36 Z"
         fill="url(#tg)"/>
 
-  <!-- Ribete del cuello (banda más oscura alrededor de la abertura) -->
-  <path d="M 104,50 A 24,26 0 0 1 152,50 L 148,50 A 20,22 0 0 0 108,50 Z"
-        fill="#D0D0D0"/>
-  <!-- Línea interior del cuello -->
-  <path d="M 108,50 A 20,22 0 0 1 148,50" stroke="#C0C0C0" stroke-width="1" fill="none"/>
+  <!-- Ribete del cuello (banda más oscura: los 2 lados del arco de cuello) -->
+  <path d="M 80,36 Q 128,64 176,36 Q 128,56 80,36 Z" fill="#CACAC8"/>
 
-  <!-- Sombra lateral izquierda del cuerpo -->
-  <rect x="76" y="110" width="12" height="125" fill="#000000" opacity="0.07"/>
-  <!-- Sombra lateral derecha del cuerpo -->
-  <rect x="168" y="110" width="12" height="125" fill="#000000" opacity="0.07"/>
-  <!-- Sombra inferior de la manga izquierda (donde se une al cuerpo) -->
-  <rect x="26" y="96" width="50" height="14" fill="#000000" opacity="0.07"/>
-  <!-- Sombra inferior de la manga derecha -->
-  <rect x="180" y="96" width="50" height="14" fill="#000000" opacity="0.07"/>
+  <!-- Sombras para dar volumen a las mangas -->
+  <!-- Manga izquierda: triángulo oscuro en la parte interior -->
+  <path d="M 80,36 L 18,66 L 28,94 L 76,106 Z" fill="#000" opacity="0.06"/>
+  <!-- Manga derecha -->
+  <path d="M 176,36 L 238,66 L 228,94 L 180,106 Z" fill="#000" opacity="0.06"/>
 
-  <!-- Costuras de las mangas (horizontal donde se unen al cuerpo) -->
-  <line x1="76" y1="110" x2="26" y2="110" stroke="#C8C8C8" stroke-width="1.2"/>
-  <line x1="180" y1="110" x2="230" y2="110" stroke="#C8C8C8" stroke-width="1.2"/>
+  <!-- Costura hombro-cuerpo (línea diagonal de la sisa) -->
+  <line x1="76" y1="106" x2="28"  y2="94"  stroke="#C8C8C6" stroke-width="1"/>
+  <line x1="180" y1="106" x2="228" y2="94"  stroke="#C8C8C6" stroke-width="1"/>
 
-  <!-- Costura lateral del cuerpo (muy sutil) -->
-  <line x1="76" y1="110" x2="76" y2="235" stroke="#D4D4D4" stroke-width="0.6"/>
-  <line x1="180" y1="110" x2="180" y2="235" stroke="#D4D4D4" stroke-width="0.6"/>
+  <!-- Sombra lateral del cuerpo -->
+  <rect x="74"  y="106" width="12" height="130" fill="#000" opacity="0.06"/>
+  <rect x="170" y="106" width="12" height="130" fill="#000" opacity="0.06"/>
 
-  <!-- Pliegues horizontales del tejido -->
-  <line x1="84"  y1="148" x2="172" y2="148" stroke="#D8D8D8" stroke-width="0.8" opacity="0.7"/>
-  <line x1="82"  y1="188" x2="174" y2="188" stroke="#D8D8D8" stroke-width="0.8" opacity="0.6"/>
+  <!-- Ribete de los puños (cuello de manga) -->
+  <path d="M 18,66 L 28,94 L 38,90 L 26,66 Z"   fill="#D4D4D2"/>
+  <path d="M 238,66 L 228,94 L 218,90 L 230,66 Z" fill="#D4D4D2"/>
+
+  <!-- Pliegues horizontales en el cuerpo -->
+  <line x1="82"  y1="150" x2="174" y2="150" stroke="#D8D8D6" stroke-width="0.9" opacity="0.7"/>
+  <line x1="80"  y1="192" x2="176" y2="192" stroke="#D8D8D6" stroke-width="0.8" opacity="0.6"/>
 
   <!-- Ribete inferior (hem) -->
-  <rect x="76" y="230" width="104" height="5" fill="#D8D8D8"/>
+  <rect x="74" y="231" width="108" height="5" fill="#D4D4D2"/>
 
-  <!-- Ribetes de los puños -->
-  <rect x="26" y="105" width="50" height="5" fill="#D8D8D8"/>
-  <rect x="180" y="105" width="50" height="5" fill="#D8D8D8"/>
+  <!-- Costura central sutil -->
+  <line x1="128" y1="62" x2="128" y2="236" stroke="#DCDCDA" stroke-width="0.5" opacity="0.5"/>
 
-  <!-- Brillo central sutil -->
-  <rect x="114" y="50" width="28" height="185" fill="#FFFFFF" opacity="0.12"/>
+  <!-- Brillo central -->
+  <rect x="116" y="62" width="24" height="170" fill="#FFF" opacity="0.12"/>
 </svg>

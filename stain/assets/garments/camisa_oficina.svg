@@ -1,69 +1,64 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#2A3A70"/>
-      <stop offset="30%"  stop-color="#3A4E8E"/>
-      <stop offset="55%"  stop-color="#3E549A"/>
-      <stop offset="80%"  stop-color="#3A4E8E"/>
-      <stop offset="100%" stop-color="#263468"/>
+      <stop offset="0%"   stop-color="#263870"/>
+      <stop offset="30%"  stop-color="#344C8E"/>
+      <stop offset="55%"  stop-color="#3A549A"/>
+      <stop offset="80%"  stop-color="#344C8E"/>
+      <stop offset="100%" stop-color="#203068"/>
     </linearGradient>
   </defs>
 
   <!-- Sombra -->
-  <path d="M 26,50 L 230,50 L 230,110 L 180,110 L 180,238 L 76,238 L 76,110 L 26,110 Z"
-        fill="#000000" opacity="0.18" transform="translate(3,4)"/>
+  <path d="M 80,36 L 18,66 L 28,94 L 76,106 L 74,240 L 182,240 L 180,106 L 228,94 L 238,66 L 176,36 L 148,36 L 128,60 L 108,36 Z"
+        fill="#000" opacity="0.2" transform="translate(3,5)"/>
 
-  <!-- Cuerpo de la camisa en forma de T -->
-  <path d="M 26,50 L 230,50 L 230,110 L 180,110 L 180,238 L 76,238 L 76,110 L 26,110 Z"
+  <!-- Cuerpo completo con mangas diagonales -->
+  <path d="M 80,36 L 18,66 L 28,94 L 76,106 L 74,240 L 182,240 L 180,106 L 228,94 L 238,66 L 176,36 L 148,36 L 128,60 L 108,36 Z"
         fill="url(#sg)"/>
 
-  <!-- Cuello solapa izquierda (triángulo hacia abajo) -->
-  <polygon points="128,50 96,50 110,88" fill="#1A2A50"/>
-  <!-- Cuello solapa derecha -->
-  <polygon points="128,50 160,50 146,88" fill="#1A2A50"/>
-  <!-- Cuello visible entre las solapas (camisa interior) -->
-  <polygon points="110,88 128,50 146,88 128,78" fill="#F0EEE8"/>
+  <!-- Solapa izquierda del cuello (spread collar) -->
+  <polygon points="128,36 92,36 104,90 128,110" fill="#1A2C5A"/>
+  <!-- Solapa derecha -->
+  <polygon points="128,36 164,36 152,90 128,110" fill="#1A2C5A"/>
+  <!-- Camisa blanca visible entre solapas -->
+  <polygon points="104,90 128,60 152,90 128,110 128,108" fill="#EAE8E2"/>
 
-  <!-- Sombra lateral cuerpo -->
-  <rect x="76"  y="110" width="12" height="128" fill="#000000" opacity="0.12"/>
-  <rect x="168" y="110" width="12" height="128" fill="#000000" opacity="0.12"/>
-  <!-- Sombra inferior mangas -->
-  <rect x="26"  y="96"  width="50" height="14" fill="#000000" opacity="0.12"/>
-  <rect x="180" y="96"  width="50" height="14" fill="#000000" opacity="0.12"/>
+  <!-- Sombras en las mangas -->
+  <path d="M 80,36 L 18,66 L 28,94 L 76,106 Z" fill="#000" opacity="0.09"/>
+  <path d="M 176,36 L 238,66 L 228,94 L 180,106 Z" fill="#000" opacity="0.09"/>
+
+  <!-- Costura de sisa -->
+  <line x1="76"  y1="106" x2="28"  y2="94"  stroke="#243880" stroke-width="1"/>
+  <line x1="180" y1="106" x2="228" y2="94"  stroke="#243880" stroke-width="1"/>
+
+  <!-- Sombra lateral del cuerpo -->
+  <rect x="74"  y="106" width="12" height="134" fill="#000" opacity="0.1"/>
+  <rect x="170" y="106" width="12" height="134" fill="#000" opacity="0.1"/>
 
   <!-- Tira de botones central -->
-  <rect x="122" y="88" width="12" height="148" fill="#1A2A50" opacity="0.6"/>
-
-  <!-- Botones -->
-  <circle cx="128" cy="108" r="2.8" fill="#E8E6E0"/>
-  <circle cx="128" cy="130" r="2.8" fill="#E8E6E0"/>
-  <circle cx="128" cy="152" r="2.8" fill="#E8E6E0"/>
-  <circle cx="128" cy="174" r="2.8" fill="#E8E6E0"/>
-  <circle cx="128" cy="196" r="2.8" fill="#E8E6E0"/>
-  <circle cx="128" cy="218" r="2.8" fill="#E8E6E0"/>
+  <rect x="124" y="110" width="8" height="128" fill="#162850" opacity="0.5"/>
+  <circle cx="128" cy="120" r="2.8" fill="#E0DEDC"/>
+  <circle cx="128" cy="142" r="2.8" fill="#E0DEDC"/>
+  <circle cx="128" cy="164" r="2.8" fill="#E0DEDC"/>
+  <circle cx="128" cy="186" r="2.8" fill="#E0DEDC"/>
+  <circle cx="128" cy="208" r="2.8" fill="#E0DEDC"/>
 
   <!-- Bolsillo del pecho izquierdo -->
-  <rect x="94" y="118" width="24" height="26" rx="1" fill="none" stroke="#1A2A50" stroke-width="1.2"/>
-  <line x1="94" y1="124" x2="118" y2="124" stroke="#1A2A50" stroke-width="0.7"/>
+  <rect x="94"  y="120" width="24" height="26" rx="1" fill="none" stroke="#162850" stroke-width="1.2"/>
+  <line x1="94" y1="126" x2="118" y2="126" stroke="#162850" stroke-width="0.7"/>
 
-  <!-- Costuras de las mangas -->
-  <line x1="76" y1="110" x2="26"  y2="110" stroke="#2A3A70" stroke-width="1.2"/>
-  <line x1="180" y1="110" x2="230" y2="110" stroke="#2A3A70" stroke-width="1.2"/>
+  <!-- Ribetes de puños (banda diagonal paralela a la manga) -->
+  <path d="M 18,66 L 28,94 L 38,90 L 26,66 Z"   fill="#203070"/>
+  <path d="M 238,66 L 228,94 L 218,90 L 230,66 Z" fill="#203070"/>
 
-  <!-- Costuras laterales del cuerpo -->
-  <line x1="76"  y1="110" x2="76"  y2="238" stroke="#2A3A70" stroke-width="0.7"/>
-  <line x1="180" y1="110" x2="180" y2="238" stroke="#2A3A70" stroke-width="0.7"/>
-
-  <!-- Pliegues de tela -->
-  <line x1="84"  y1="150" x2="172" y2="150" stroke="#2A3A70" stroke-width="0.8" opacity="0.5"/>
-  <line x1="82"  y1="190" x2="174" y2="190" stroke="#2A3A70" stroke-width="0.8" opacity="0.5"/>
+  <!-- Pliegues -->
+  <line x1="82"  y1="154" x2="174" y2="154" stroke="#2A3A78" stroke-width="0.8" opacity="0.5"/>
+  <line x1="80"  y1="196" x2="176" y2="196" stroke="#2A3A78" stroke-width="0.8" opacity="0.5"/>
 
   <!-- Ribete inferior -->
-  <rect x="76" y="233" width="104" height="5" fill="#2A3A70"/>
-  <!-- Ribetes de puños -->
-  <rect x="26" y="105" width="50" height="5" fill="#2A3A70"/>
-  <rect x="180" y="105" width="50" height="5" fill="#2A3A70"/>
+  <rect x="74" y="235" width="108" height="5" fill="#203070"/>
 
   <!-- Brillo central -->
-  <rect x="116" y="90" width="24" height="148" fill="#FFFFFF" opacity="0.08"/>
+  <rect x="118" y="110" width="20" height="130" fill="#FFF" opacity="0.07"/>
 </svg>

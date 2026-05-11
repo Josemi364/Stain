@@ -1,79 +1,78 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="wg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#38220E"/>
-      <stop offset="22%"  stop-color="#5A3A20"/>
-      <stop offset="50%"  stop-color="#6A4628"/>
-      <stop offset="78%"  stop-color="#5A3A20"/>
-      <stop offset="100%" stop-color="#321C0A"/>
+      <stop offset="0%"   stop-color="#32200C"/>
+      <stop offset="25%"  stop-color="#543A1E"/>
+      <stop offset="50%"  stop-color="#634826"/>
+      <stop offset="75%"  stop-color="#543A1E"/>
+      <stop offset="100%" stop-color="#2C1A08"/>
     </linearGradient>
     <pattern id="wool" patternUnits="userSpaceOnUse" width="5" height="5">
       <circle cx="2.5" cy="2.5" r="0.7" fill="#7A5230" opacity="0.4"/>
     </pattern>
   </defs>
 
-  <!-- Sombra -->
-  <path d="M 18,50 L 238,50 L 238,130 L 182,130 L 182,245 L 74,245 L 74,130 L 18,130 Z"
-        fill="#000000" opacity="0.2" transform="translate(3,4)"/>
+  <!-- Sombra — abrigo con mangas largas diagonales, muy amplio -->
+  <path d="M 74,34 L 10,74 L 26,118 L 72,108 L 70,248 L 186,248 L 184,108 L 230,118 L 246,74 L 182,34 Q 128,64 74,34 Z"
+        fill="#000" opacity="0.22" transform="translate(3,5)"/>
 
-  <!-- Cuerpo del abrigo (T muy ancha y larga) -->
-  <path d="M 18,50 L 238,50 L 238,130 L 182,130 L 182,245 L 74,245 L 74,130 L 18,130 Z"
+  <!-- Cuerpo del abrigo con mangas largas diagonales -->
+  <path d="M 74,34 L 10,74 L 26,118 L 72,108 L 70,248 L 186,248 L 184,108 L 230,118 L 246,74 L 182,34 Q 128,64 74,34 Z"
         fill="url(#wg)"/>
 
   <!-- Textura de lana encima -->
-  <path d="M 18,50 L 238,50 L 238,130 L 182,130 L 182,245 L 74,245 L 74,130 L 18,130 Z"
-        fill="url(#wool)" opacity="0.9"/>
+  <path d="M 74,34 L 10,74 L 26,118 L 72,108 L 70,248 L 186,248 L 184,108 L 230,118 L 246,74 L 182,34 Q 128,64 74,34 Z"
+        fill="url(#wool)" opacity="0.8"/>
 
-  <!-- Sombras laterales del cuerpo -->
-  <rect x="74"  y="130" width="14" height="115" fill="#000000" opacity="0.18"/>
-  <rect x="168" y="130" width="14" height="115" fill="#000000" opacity="0.18"/>
-  <!-- Sombras inferiores mangas -->
-  <rect x="18"  y="114" width="56" height="16" fill="#000000" opacity="0.16"/>
-  <rect x="182" y="114" width="56" height="16" fill="#000000" opacity="0.16"/>
+  <!-- Sombras en las mangas largas (la parte diagonal) -->
+  <path d="M 74,34 L 10,74 L 26,118 L 72,108 Z" fill="#000" opacity="0.14"/>
+  <path d="M 182,34 L 246,74 L 230,118 L 184,108 Z" fill="#000" opacity="0.14"/>
 
-  <!-- Solapas del abrigo (izquierda) -->
-  <polygon points="128,50 82,50 82,130 128,155" fill="#2A1608"/>
-  <!-- Solapas (derecha) -->
-  <polygon points="128,50 174,50 174,130 128,155" fill="#2A1608"/>
-  <!-- Borde interior de solapas -->
-  <line x1="82"  y1="50"  x2="82"  y2="130" stroke="#1A0C04" stroke-width="1"/>
-  <line x1="174" y1="50"  x2="174" y2="130" stroke="#1A0C04" stroke-width="1"/>
-  <line x1="82"  y1="130" x2="128" y2="155" stroke="#1A0C04" stroke-width="1"/>
-  <line x1="174" y1="130" x2="128" y2="155" stroke="#1A0C04" stroke-width="1"/>
+  <!-- Sombra lateral del cuerpo -->
+  <rect x="70"  y="108" width="14" height="140" fill="#000" opacity="0.16"/>
+  <rect x="172" y="108" width="14" height="140" fill="#000" opacity="0.16"/>
 
-  <!-- Cuello visible entre solapas -->
-  <polygon points="112,50 128,50 128,60" fill="#3A2010"/>
-  <polygon points="144,50 128,50 128,60" fill="#3A2010"/>
+  <!-- Solapa izquierda del abrigo -->
+  <polygon points="128,34 80,34 72,108 128,138" fill="#221408"/>
+  <!-- Solapa derecha -->
+  <polygon points="128,34 176,34 184,108 128,138" fill="#221408"/>
+  <!-- Bordes de solapas -->
+  <line x1="80"  y1="34"  x2="72"  y2="108" stroke="#14080" stroke-width="1.2"/>
+  <line x1="176" y1="34"  x2="184" y2="108" stroke="#140800" stroke-width="1.2"/>
+  <line x1="72"  y1="108" x2="128" y2="138" stroke="#0E0600" stroke-width="0.8"/>
+  <line x1="184" y1="108" x2="128" y2="138" stroke="#0E0600" stroke-width="0.8"/>
+
+  <!-- Cuello visible -->
+  <path d="M 102,34 Q 128,26 154,34 L 150,40 Q 128,32 106,40 Z" fill="#3A2010"/>
 
   <!-- Cinturón -->
-  <rect x="74" y="162" width="108" height="11" fill="#1E0E04"/>
-  <rect x="74" y="162" width="108" height="3"  fill="#4A2E14"/>
-  <!-- Hebilla -->
-  <rect x="120" y="160" width="16" height="15" rx="1" fill="#8A6840"/>
-  <rect x="122" y="162" width="12" height="11" rx="1" fill="none" stroke="#4A2E14" stroke-width="1.2"/>
+  <rect x="70"  y="166" width="116" height="12" rx="1" fill="#1A0C04"/>
+  <rect x="70"  y="166" width="116" height="3"  rx="1" fill="#42280E"/>
+  <rect x="118" y="162" width="20"  height="20" rx="2" fill="#8A6A42"/>
+  <rect x="120" y="164" width="16"  height="16" rx="1" fill="none" stroke="#3A2010" stroke-width="1.5"/>
 
-  <!-- Botones -->
-  <circle cx="98" cy="148" r="6"   fill="#1A0A04"/>
-  <circle cx="98" cy="148" r="4.2" fill="#3A2010"/>
-  <circle cx="98" cy="185" r="6"   fill="#1A0A04"/>
-  <circle cx="98" cy="185" r="4.2" fill="#3A2010"/>
-  <circle cx="98" cy="220" r="6"   fill="#1A0A04"/>
-  <circle cx="98" cy="220" r="4.2" fill="#3A2010"/>
+  <!-- Botones de cuerno -->
+  <circle cx="100" cy="148" r="6.5" fill="#180A02"/>
+  <circle cx="100" cy="148" r="4.5" fill="#3A2010"/>
+  <circle cx="100" cy="192" r="6.5" fill="#180A02"/>
+  <circle cx="100" cy="192" r="4.5" fill="#3A2010"/>
+  <circle cx="100" cy="228" r="6.5" fill="#180A02"/>
+  <circle cx="100" cy="228" r="4.5" fill="#3A2010"/>
 
   <!-- Cierre central -->
-  <line x1="128" y1="155" x2="128" y2="244" stroke="#1A0A04" stroke-width="1.5"/>
+  <line x1="128" y1="138" x2="128" y2="248" stroke="#140A00" stroke-width="1.5"/>
 
-  <!-- Costuras de las mangas -->
-  <line x1="18"  y1="130" x2="74"  y2="130" stroke="#38220E" stroke-width="1.2"/>
-  <line x1="182" y1="130" x2="238" y2="130" stroke="#38220E" stroke-width="1.2"/>
+  <!-- Ribetes de puños (bandas en las mangas) -->
+  <path d="M 10,74 L 26,118 L 38,112 L 22,72 Z"   fill="#2A1808"/>
+  <path d="M 246,74 L 230,118 L 218,112 L 234,72 Z" fill="#2A1808"/>
 
-  <!-- Ribetes de puños -->
-  <rect x="18"  y="124" width="56" height="6" fill="#2A1608"/>
-  <rect x="182" y="124" width="56" height="6" fill="#2A1608"/>
+  <!-- Pliegues verticales del cuerpo -->
+  <line x1="92"  y1="110" x2="88"  y2="246" stroke="#6A4A28" stroke-width="0.8" opacity="0.35"/>
+  <line x1="164" y1="110" x2="168" y2="246" stroke="#6A4A28" stroke-width="0.8" opacity="0.35"/>
 
   <!-- Ribete inferior -->
-  <rect x="74" y="239" width="108" height="6" fill="#2A1608"/>
+  <rect x="70" y="242" width="116" height="6" fill="#221408"/>
 
   <!-- Brillo central -->
-  <rect x="118" y="155" width="20" height="89" fill="#FFFFFF" opacity="0.05"/>
+  <rect x="118" y="138" width="20" height="110" fill="#FFF" opacity="0.05"/>
 </svg>

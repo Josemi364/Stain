@@ -1,71 +1,74 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="jg" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%"   stop-color="#0C0C18"/>
-      <stop offset="25%"  stop-color="#161622"/>
-      <stop offset="50%"  stop-color="#1C1C2A"/>
-      <stop offset="75%"  stop-color="#161622"/>
-      <stop offset="100%" stop-color="#0A0A16"/>
+      <stop offset="0%"   stop-color="#0A0A16"/>
+      <stop offset="25%"  stop-color="#141420"/>
+      <stop offset="50%"  stop-color="#1A1A28"/>
+      <stop offset="75%"  stop-color="#141420"/>
+      <stop offset="100%" stop-color="#080812"/>
     </linearGradient>
   </defs>
 
   <!-- Sombra -->
-  <path d="M 26,50 L 230,50 L 230,110 L 180,110 L 180,238 L 76,238 L 76,110 L 26,110 Z"
-        fill="#000000" opacity="0.22" transform="translate(3,4)"/>
+  <path d="M 78,34 L 16,64 L 26,94 L 74,106 L 72,240 L 184,240 L 182,106 L 230,94 L 240,64 L 178,34 L 152,34 L 128,60 L 104,34 Z"
+        fill="#000" opacity="0.28" transform="translate(3,5)"/>
 
-  <!-- Chaqueta (T-shape) -->
-  <path d="M 26,50 L 230,50 L 230,110 L 180,110 L 180,238 L 76,238 L 76,110 L 26,110 Z"
+  <!-- Chaqueta: mismo patrón de mangas diagonales -->
+  <path d="M 78,34 L 16,64 L 26,94 L 74,106 L 72,240 L 184,240 L 182,106 L 230,94 L 240,64 L 178,34 L 152,34 L 128,60 L 104,34 Z"
         fill="url(#jg)"/>
 
-  <!-- Camisa interior blanca (triángulo en el cuello) -->
-  <polygon points="128,50 102,50 112,90 128,105 144,90 154,50" fill="#D8D8E4"/>
+  <!-- Camisa blanca interior (triángulo en el cuello) -->
+  <polygon points="128,34 100,34 112,92 128,108 144,92 156,34" fill="#D6D4E0"/>
 
-  <!-- Solapa izquierda (encima de la camisa) -->
-  <polygon points="128,50 96,50 82,110 128,138" fill="#0A0A14"/>
+  <!-- Solapa izquierda -->
+  <polygon points="128,34 92,34 76,106 128,140" fill="#080812"/>
   <!-- Solapa derecha -->
-  <polygon points="128,50 160,50 174,110 128,138" fill="#0A0A14"/>
-  <!-- Bordes de solapas -->
-  <line x1="96"  y1="50"  x2="82"  y2="110" stroke="#202030" stroke-width="1"/>
-  <line x1="160" y1="50"  x2="174" y2="110" stroke="#202030" stroke-width="1"/>
-  <line x1="82"  y1="110" x2="128" y2="138" stroke="#181826" stroke-width="0.8"/>
-  <line x1="174" y1="110" x2="128" y2="138" stroke="#181826" stroke-width="0.8"/>
+  <polygon points="128,34 164,34 180,106 128,140" fill="#080812"/>
+  <!-- Bordes finos de solapa -->
+  <line x1="92"  y1="34"  x2="76"  y2="106" stroke="#1E1E2E" stroke-width="0.8"/>
+  <line x1="164" y1="34"  x2="180" y2="106" stroke="#1E1E2E" stroke-width="0.8"/>
+  <line x1="76"  y1="106" x2="128" y2="140" stroke="#141424" stroke-width="0.8"/>
+  <line x1="180" y1="106" x2="128" y2="140" stroke="#141424" stroke-width="0.8"/>
 
-  <!-- Corbata roja (encima de la camisa, debajo de solapas en el nudo) -->
-  <polygon points="122,90 134,90 138,104 133,118 138,140 132,172 124,172 118,140 123,118 118,104" fill="#780000"/>
-  <polygon points="122,90 134,90 138,104 118,104" fill="#4A0000"/>
+  <!-- Corbata roja (arranca del cuello) -->
+  <polygon points="122,92 134,92 140,108 134,122 140,148 133,178 123,178 116,148 122,122 116,108" fill="#6E0000"/>
+  <!-- Nudo de la corbata -->
+  <polygon points="122,92 134,92 140,108 116,108" fill="#420000"/>
+  <!-- Brillo de la corbata -->
+  <line x1="128" y1="94" x2="128" y2="178" stroke="#8A0000" stroke-width="0.8" opacity="0.5"/>
 
-  <!-- Sombras laterales del cuerpo -->
-  <rect x="76"  y="110" width="12" height="128" fill="#000000" opacity="0.22"/>
-  <rect x="168" y="110" width="12" height="128" fill="#000000" opacity="0.22"/>
-  <!-- Sombras inferiores de las mangas -->
-  <rect x="26"  y="96"  width="50" height="14" fill="#000000" opacity="0.2"/>
-  <rect x="180" y="96"  width="50" height="14" fill="#000000" opacity="0.2"/>
+  <!-- Sombras mangas -->
+  <path d="M 78,34 L 16,64 L 26,94 L 74,106 Z" fill="#000" opacity="0.1"/>
+  <path d="M 178,34 L 240,64 L 230,94 L 182,106 Z" fill="#000" opacity="0.1"/>
+
+  <!-- Sombra lateral cuerpo -->
+  <rect x="72"  y="106" width="12" height="134" fill="#000" opacity="0.18"/>
+  <rect x="172" y="106" width="12" height="134" fill="#000" opacity="0.18"/>
 
   <!-- Botones del traje -->
-  <circle cx="128" cy="172" r="3"   fill="#060610"/>
-  <circle cx="128" cy="172" r="1.8" fill="#0E0E1C"/>
-  <circle cx="128" cy="198" r="3"   fill="#060610"/>
-  <circle cx="128" cy="198" r="1.8" fill="#0E0E1C"/>
+  <circle cx="128" cy="172" r="3.2" fill="#04041A"/>
+  <circle cx="128" cy="172" r="1.8" fill="#0E0E22"/>
+  <circle cx="128" cy="200" r="3.2" fill="#04041A"/>
+  <circle cx="128" cy="200" r="1.8" fill="#0E0E22"/>
 
   <!-- Cierre central -->
-  <line x1="128" y1="138" x2="128" y2="236" stroke="#0C0C18" stroke-width="1.5"/>
+  <line x1="128" y1="140" x2="128" y2="238" stroke="#0C0C1A" stroke-width="1.5"/>
 
   <!-- Pañuelo blanco en el bolsillo del pecho -->
-  <polygon points="150,118 158,110 165,118" fill="#EDEDF5" opacity="0.85"/>
-  <!-- Bolsillo del pecho -->
-  <rect x="148" y="118" width="20" height="4" fill="#0A0A14"/>
+  <polygon points="152,118 162,108 168,118" fill="#E8E8F4" opacity="0.88"/>
+  <rect x="150" y="118" width="20" height="4" fill="#0A0A18"/>
 
-  <!-- Costuras de las mangas -->
-  <line x1="26"  y1="110" x2="76"  y2="110" stroke="#161622" stroke-width="1.2"/>
-  <line x1="180" y1="110" x2="230" y2="110" stroke="#161622" stroke-width="1.2"/>
+  <!-- Ribetes de puños (mangas del traje) -->
+  <path d="M 16,64 L 26,94 L 38,88 L 26,62 Z"   fill="#141420"/>
+  <path d="M 240,64 L 230,94 L 218,88 L 230,62 Z" fill="#141420"/>
 
-  <!-- Ribetes de puños -->
-  <rect x="26"  y="105" width="50" height="5" fill="#161622"/>
-  <rect x="180" y="105" width="50" height="5" fill="#161622"/>
+  <!-- Pliegues -->
+  <line x1="82"  y1="154" x2="174" y2="154" stroke="#141420" stroke-width="0.7" opacity="0.5"/>
+  <line x1="80"  y1="196" x2="176" y2="196" stroke="#141420" stroke-width="0.7" opacity="0.5"/>
 
   <!-- Ribete inferior -->
-  <rect x="76" y="233" width="104" height="5" fill="#0E0E1A"/>
+  <rect x="72" y="235" width="112" height="5" fill="#0C0C18"/>
 
-  <!-- Brillo muy sutil -->
-  <rect x="96" y="112" width="10" height="124" fill="#3A3A5A" opacity="0.08"/>
+  <!-- Brillo sutil de la chaqueta (lacado) -->
+  <rect x="90" y="108" width="10" height="130" fill="#2A2A42" opacity="0.08"/>
 </svg>
