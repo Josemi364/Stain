@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "WebSearch",
+      "WebFetch(domain:game-icons.net)",
+      "WebFetch(domain:itch.io)",
+      "WebFetch(domain:thenounproject.com)",
+      "WebFetch(domain:www.kenney.nl)",
+      "WebFetch(domain:www.flaticon.com)",
+      "WebFetch(domain:www.svgrepo.com)",
+      "WebFetch(domain:icons.getbootstrap.com)",
+      "Bash(curl *)",
+      "PowerShell([System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor [System.Net.SecurityProtocolType]::Tls12; \\(Invoke-WebRequest -Uri \"https://game-icons.net/1x1/delapouite/plain-t-shirt.svg\" -UseBasicParsing\\).Content)",
+      "WebFetch(domain:api.iconify.design)"
+    ]
+  }
+}
