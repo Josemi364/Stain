@@ -1,41 +1,83 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sj" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#0E0E1C"/>
+      <stop offset="25%"  stop-color="#181826"/>
+      <stop offset="55%"  stop-color="#1C1C2E"/>
+      <stop offset="80%"  stop-color="#181826"/>
+      <stop offset="100%" stop-color="#0C0C1A"/>
+    </linearGradient>
+    <linearGradient id="lapel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#080816"/>
+      <stop offset="100%" stop-color="#141422"/>
+    </linearGradient>
+    <linearGradient id="shirt" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#D8D8E8"/>
+      <stop offset="50%"  stop-color="#F0F0F8"/>
+      <stop offset="100%" stop-color="#D0D0E0"/>
+    </linearGradient>
+    <linearGradient id="tie" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#580000"/>
+      <stop offset="40%"  stop-color="#7A0000"/>
+      <stop offset="100%" stop-color="#420000"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sombra -->
+  <path d="M84,50 C66,50 46,62 34,76 L22,208 L48,222 L66,100 L76,100 L76,238 L180,238 L180,100 L190,100 L208,222 L234,208 L222,76 C210,62 190,50 172,50 L150,46 Q128,72 106,46 Z"
+        fill="#000" opacity="0.22" transform="translate(3,5)"/>
+
   <!-- Chaqueta principal -->
-  <path d="M 70 55 L 38 75 L 28 200 L 50 215 L 70 95 L 80 95 L 80 230 L 176 230 L 176 95 L 186 95 L 206 215 L 228 200 L 218 75 L 186 55 L 156 50 Q 128 75 100 50 Z" fill="#1A1A2A"/>
+  <path d="M84,50 C66,50 46,62 34,76 L22,208 L48,222 L66,100 L76,100 L76,238 L180,238 L180,100 L190,100 L208,222 L234,208 L222,76 C210,62 190,50 172,50 L150,46 Q128,72 106,46 Z"
+        fill="url(#sj)"/>
 
-  <!-- Sombras laterales -->
-  <path d="M 80 95 L 80 230 L 95 230 L 95 95 Z" fill="#000000" opacity="0.3"/>
-  <path d="M 176 95 L 176 230 L 161 230 L 161 95 Z" fill="#000000" opacity="0.3"/>
+  <!-- Sombras laterales profundas -->
+  <path d="M76,100 L76,238 L94,238 L94,100 Z" fill="#000" opacity="0.25"/>
+  <path d="M180,100 L180,238 L162,238 L162,100 Z" fill="#000" opacity="0.25"/>
+  <!-- Sombra de las mangas (tuxedo arms) -->
+  <path d="M34,76 L22,208 L46,218 L56,106 Z" fill="#000" opacity="0.2"/>
+  <path d="M222,76 L234,208 L210,218 L200,106 Z" fill="#000" opacity="0.2"/>
 
-  <!-- Solapas (típicas de traje) -->
-  <path d="M 100 50 L 88 95 L 128 130 L 128 60 Z" fill="#0A0A1A"/>
-  <path d="M 156 50 L 168 95 L 128 130 L 128 60 Z" fill="#0A0A1A"/>
+  <!-- Camisa blanca interior visible en el cuello -->
+  <path d="M108,50 L116,80 L128,96 L140,80 L148,50 L138,56 L128,74 L118,56 Z"
+        fill="url(#shirt)"/>
 
-  <!-- Borde de solapas -->
-  <line x1="100" y1="50" x2="88" y2="95" stroke="#2A2A3A" stroke-width="0.8"/>
-  <line x1="156" y1="50" x2="168" y2="95" stroke="#2A2A3A" stroke-width="0.8"/>
-  <line x1="88" y1="95" x2="128" y2="130" stroke="#2A2A3A" stroke-width="0.8"/>
-  <line x1="168" y1="95" x2="128" y2="130" stroke="#2A2A3A" stroke-width="0.8"/>
-
-  <!-- Camisa interior visible -->
-  <path d="M 116 80 L 140 80 L 140 130 L 128 135 L 116 130 Z" fill="#E8E8E8"/>
+  <!-- Solapa izquierda del traje -->
+  <path d="M106,46 C96,52 86,66 76,96 L128,130 L128,58 Z"
+        fill="url(#lapel)"/>
+  <!-- Solapa derecha -->
+  <path d="M150,46 C160,52 170,66 180,96 L128,130 L128,58 Z"
+        fill="url(#lapel)"/>
+  <!-- Bordes finos de solapa -->
+  <path d="M106,46 C96,52 86,66 76,96 L128,130" stroke="#2A2A3C" stroke-width="1" fill="none"/>
+  <path d="M150,46 C160,52 170,66 180,96 L128,130" stroke="#2A2A3C" stroke-width="1" fill="none"/>
 
   <!-- Corbata -->
-  <path d="M 122 80 L 134 80 L 138 90 L 132 100 L 138 130 L 132 165 L 124 165 L 118 130 L 124 100 L 118 90 Z" fill="#7A0000"/>
-  <path d="M 122 80 L 134 80 L 138 90 L 132 100 L 124 100 L 118 90 Z" fill="#5A0000"/>
-  <!-- Nudo de corbata -->
-  <path d="M 122 80 Q 128 78 134 80 L 138 90 L 118 90 Z" fill="#3A0000"/>
+  <path d="M120,82 L136,82 L140,94 L133,105 L139,132 L133,168 L123,168 L117,132 L123,105 L116,94 Z"
+        fill="url(#tie)"/>
+  <!-- Nudo de la corbata -->
+  <path d="M120,82 Q128,80 136,82 L140,94 L116,94 Z" fill="#3A0000"/>
+  <!-- Línea de brillo de la corbata -->
+  <path d="M125,96 C124,120 124,150 126,168 L128,168 C126,150 126,120 127,96 Z" fill="#FFFFFF" opacity="0.12"/>
 
-  <!-- Botones del traje -->
-  <circle cx="128" cy="170" r="2.5" fill="#0A0A0A"/>
-  <circle cx="128" cy="195" r="2.5" fill="#0A0A0A"/>
+  <!-- Botones del traje (2 botones, traje clásico) -->
+  <circle cx="128" cy="170" r="3" fill="#060614"/>
+  <circle cx="128" cy="170" r="1.8" fill="#0E0E1E"/>
+  <circle cx="128" cy="196" r="3" fill="#060614"/>
+  <circle cx="128" cy="196" r="1.8" fill="#0E0E1E"/>
 
   <!-- Cierre central -->
-  <line x1="128" y1="135" x2="128" y2="225" stroke="#0A0A1A" stroke-width="1.2"/>
+  <line x1="128" y1="130" x2="128" y2="236" stroke="#0C0C1A" stroke-width="1.5"/>
 
-  <!-- Bolsillo del pecho con pañuelo -->
-  <rect x="148" y="120" width="22" height="3" fill="#0A0A1A"/>
-  <path d="M 152 118 L 156 110 L 160 118 Z" fill="#FFFFFF" opacity="0.7"/>
+  <!-- Pañuelo del bolsillo del pecho (blanco) -->
+  <path d="M146,114 L156,108 L162,116 L154,120 Z" fill="#F0F0F8" opacity="0.85"/>
+  <line x1="146" y1="114" x2="162" y2="116" stroke="#D8D8E8" stroke-width="0.6"/>
+  <!-- Bolsillo del pecho (contorno) -->
+  <rect x="142" y="116" width="24" height="4" rx="0.5" fill="#0A0A18"/>
 
-  <!-- Brillo -->
-  <path d="M 88 100 L 88 225 Q 95 205 95 100 Z" fill="#FFFFFF" opacity="0.05"/>
+  <!-- Brillo sutil de la chaqueta -->
+  <path d="M92,104 C90,175 90,218 92,238 L98,238 C96,218 96,175 98,104 Z" fill="#FFFFFF" opacity="0.04"/>
+
+  <!-- Solapa de botón (boutonnière) -->
+  <circle cx="95" cy="130" r="1.5" fill="#1A1A2E"/>
 </svg>

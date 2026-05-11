@@ -1,28 +1,56 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-  <!-- Sombra trasera -->
-  <path d="M 70 60 L 50 80 L 60 95 L 80 90 L 80 220 L 176 220 L 176 90 L 196 95 L 206 80 L 186 60 L 156 50 Q 128 70 100 50 Z" fill="#000000" opacity="0.15" transform="translate(2,3)"/>
+  <defs>
+    <linearGradient id="cg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#BEBCB8"/>
+      <stop offset="22%"  stop-color="#E4E2DE"/>
+      <stop offset="50%"  stop-color="#F4F2EE"/>
+      <stop offset="78%"  stop-color="#E4E2DE"/>
+      <stop offset="100%" stop-color="#B8B6B2"/>
+    </linearGradient>
+    <linearGradient id="cg_v" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#D8D6D2"/>
+      <stop offset="100%" stop-color="#ECEAE6"/>
+    </linearGradient>
+  </defs>
 
-  <!-- Camiseta principal -->
-  <path d="M 70 60 L 50 80 L 60 95 L 80 90 L 80 220 L 176 220 L 176 90 L 196 95 L 206 80 L 186 60 L 156 50 Q 128 70 100 50 Z" fill="#E8E8E8"/>
+  <!-- Sombra -->
+  <path d="M104,56 C90,56 78,62 72,72 L44,76 C28,84 20,100 24,114 L50,116 C58,112 66,110 72,114 L70,236 L186,236 L184,114 C190,110 198,112 206,116 L232,114 C236,100 228,84 212,76 L184,72 C178,62 166,56 152,56 C146,60 138,66 128,70 C118,66 110,60 104,56 Z"
+        fill="#000000" opacity="0.16" transform="translate(3,5)"/>
 
-  <!-- Sombras laterales -->
-  <path d="M 80 90 L 80 220 L 95 220 L 95 95 Z" fill="#000000" opacity="0.08"/>
-  <path d="M 176 90 L 176 220 L 161 220 L 161 95 Z" fill="#000000" opacity="0.08"/>
+  <!-- Cuerpo principal -->
+  <path d="M104,56 C90,56 78,62 72,72 L44,76 C28,84 20,100 24,114 L50,116 C58,112 66,110 72,114 L70,236 L186,236 L184,114 C190,110 198,112 206,116 L232,114 C236,100 228,84 212,76 L184,72 C178,62 166,56 152,56 C146,60 138,66 128,70 C118,66 110,60 104,56 Z"
+        fill="url(#cg)"/>
 
-  <!-- Cuello -->
-  <path d="M 100 50 Q 128 70 156 50 L 150 56 Q 128 72 106 56 Z" fill="#C8C8C8"/>
+  <!-- Ribete del cuello -->
+  <path d="M104,56 C118,66 118,70 128,70 C138,70 138,66 152,56 C144,58 138,64 128,66 C118,64 112,58 104,56 Z"
+        fill="#C8C6C2"/>
+  <path d="M107,57 C118,64 118,68 128,68 C138,68 138,64 149,57" stroke="#B0AEBA" stroke-width="0.7" fill="none"/>
 
-  <!-- Línea de costura del cuello -->
-  <path d="M 100 50 Q 128 70 156 50" stroke="#A8A8A8" stroke-width="1" fill="none"/>
+  <!-- Sombra manga izquierda -->
+  <path d="M44,76 C28,84 20,100 24,114 L38,114 C34,100 38,88 50,82 Z" fill="#000" opacity="0.1"/>
+  <!-- Sombra manga derecha -->
+  <path d="M212,76 C228,84 236,100 232,114 L218,114 C222,100 218,88 206,82 Z" fill="#000" opacity="0.1"/>
+
+  <!-- Sombra costado izquierdo -->
+  <path d="M72,114 L70,236 L82,236 L84,118 Z" fill="#000" opacity="0.07"/>
+  <!-- Sombra costado derecho -->
+  <path d="M184,114 L186,236 L174,236 L172,118 Z" fill="#000" opacity="0.07"/>
+
+  <!-- Pliegues de tela (horizontales, naturales) -->
+  <path d="M84,148 C104,152 152,152 172,148" stroke="#D0CECC" stroke-width="0.9" fill="none" opacity="0.65"/>
+  <path d="M80,192 C102,196 154,196 176,192" stroke="#D0CECC" stroke-width="0.8" fill="none" opacity="0.55"/>
 
   <!-- Costuras de las mangas -->
-  <line x1="80" y1="92" x2="92" y2="92" stroke="#B8B8B8" stroke-width="0.8"/>
-  <line x1="164" y1="92" x2="176" y2="92" stroke="#B8B8B8" stroke-width="0.8"/>
+  <path d="M24,114 C36,118 50,118 50,116" stroke="#C8C6C2" stroke-width="1.2" fill="none"/>
+  <path d="M232,114 C220,118 206,118 206,116" stroke="#C8C6C2" stroke-width="1.2" fill="none"/>
 
-  <!-- Pliegues sutiles -->
-  <path d="M 110 130 Q 128 135 146 130" stroke="#D0D0D0" stroke-width="0.8" fill="none" opacity="0.6"/>
-  <path d="M 105 170 Q 128 175 151 170" stroke="#D0D0D0" stroke-width="0.8" fill="none" opacity="0.6"/>
+  <!-- Ribete del bajo -->
+  <path d="M70,232 L186,232" stroke="#D0CECC" stroke-width="1.8" fill="none"/>
+  <path d="M70,228 C100,230 156,230 186,228" stroke="#DCDAD8" stroke-width="0.6" fill="none"/>
 
-  <!-- Brillo -->
-  <path d="M 90 100 L 90 200 Q 95 180 95 100 Z" fill="#FFFFFF" opacity="0.3"/>
+  <!-- Costura central (muy sutil) -->
+  <line x1="128" y1="70" x2="128" y2="236" stroke="#DCDA D8" stroke-width="0.5" opacity="0.4"/>
+
+  <!-- Brillo central -->
+  <path d="M114,70 C112,145 112,200 114,236 L120,236 C118,200 118,145 120,70 Z" fill="#FFFFFF" opacity="0.17"/>
 </svg>

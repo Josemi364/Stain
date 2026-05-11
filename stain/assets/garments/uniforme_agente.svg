@@ -1,52 +1,104 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ug" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#0C0C0C"/>
+      <stop offset="22%"  stop-color="#181820"/>
+      <stop offset="50%"  stop-color="#1E1E28"/>
+      <stop offset="78%"  stop-color="#181820"/>
+      <stop offset="100%" stop-color="#080810"/>
+    </linearGradient>
+    <linearGradient id="lapel_u" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#0A0A12"/>
+      <stop offset="100%" stop-color="#060610"/>
+    </linearGradient>
+    <linearGradient id="red_g" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#AA0000"/>
+      <stop offset="100%" stop-color="#660000"/>
+    </linearGradient>
+    <linearGradient id="shirt_u" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#1A1A22"/>
+      <stop offset="50%"  stop-color="#282830"/>
+      <stop offset="100%" stop-color="#181820"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sombra -->
+  <path d="M84,48 C64,48 42,64 30,80 L18,210 L46,226 L64,104 L76,104 L76,242 L180,242 L180,104 L192,104 L210,226 L238,210 L226,80 C214,64 192,48 172,48 L150,42 Q128,70 106,42 Z"
+        fill="#000" opacity="0.3" transform="translate(3,5)"/>
+
   <!-- Chaqueta del uniforme -->
-  <path d="M 70 55 L 38 80 L 30 220 L 55 235 L 70 100 L 80 100 L 80 235 L 176 235 L 176 100 L 186 100 L 201 235 L 226 220 L 218 80 L 186 55 L 156 50 Q 128 75 100 50 Z" fill="#1A1A1A"/>
+  <path d="M84,48 C64,48 42,64 30,80 L18,210 L46,226 L64,104 L76,104 L76,242 L180,242 L180,104 L192,104 L210,226 L238,210 L226,80 C214,64 192,48 172,48 L150,42 Q128,70 106,42 Z"
+        fill="url(#ug)"/>
 
-  <!-- Sombras (negro muy profundo) -->
-  <path d="M 80 100 L 80 235 L 96 235 L 96 100 Z" fill="#000000" opacity="0.5"/>
-  <path d="M 176 100 L 176 235 L 160 235 L 160 100 Z" fill="#000000" opacity="0.5"/>
+  <!-- Sombras laterales profundas -->
+  <path d="M76,104 L76,242 L96,242 L96,104 Z" fill="#000" opacity="0.28"/>
+  <path d="M180,104 L180,242 L160,242 L160,104 Z" fill="#000" opacity="0.28"/>
+  <!-- Sombras mangas -->
+  <path d="M30,80 L18,210 L44,220 L58,108 Z" fill="#000" opacity="0.22"/>
+  <path d="M226,80 L238,210 L212,220 L198,108 Z" fill="#000" opacity="0.22"/>
 
-  <!-- Solapas afiladas, casi militares -->
-  <path d="M 100 50 L 86 100 L 128 130 L 128 60 Z" fill="#080808"/>
-  <path d="M 156 50 L 170 100 L 128 130 L 128 60 Z" fill="#080808"/>
+  <!-- Camisa interior oscura (visible en el cuello) -->
+  <path d="M108,46 L118,74 L128,92 L138,74 L148,46 L138,52 L128,72 L118,52 Z"
+        fill="url(#shirt_u)"/>
 
-  <!-- Borde rojo en las solapas (detalle siniestro) -->
-  <path d="M 100 50 L 86 100" stroke="#8B0000" stroke-width="1.5"/>
-  <path d="M 156 50 L 170 100" stroke="#8B0000" stroke-width="1.5"/>
-  <path d="M 86 100 L 128 130" stroke="#3A0000" stroke-width="0.8"/>
-  <path d="M 170 100 L 128 130" stroke="#3A0000" stroke-width="0.8"/>
+  <!-- Solapas militares angulosas — izquierda -->
+  <path d="M106,42 C94,52 82,72 76,100 L128,136 L128,56 Z" fill="url(#lapel_u)"/>
+  <!-- Solapa derecha -->
+  <path d="M150,42 C162,52 174,72 180,100 L128,136 L128,56 Z" fill="url(#lapel_u)"/>
+  <!-- Bordes rojos en las solapas (detalle de alto rango) -->
+  <path d="M106,42 C94,52 82,72 76,100"    stroke="#8B0000" stroke-width="1.8" fill="none"/>
+  <path d="M150,42 C162,52 174,72 180,100"  stroke="#8B0000" stroke-width="1.8" fill="none"/>
+  <path d="M76,100 L128,136"                stroke="#440000" stroke-width="0.9" fill="none"/>
+  <path d="M180,100 L128,136"               stroke="#440000" stroke-width="0.9" fill="none"/>
 
-  <!-- Camisa interior -->
-  <path d="M 116 80 L 140 80 L 140 130 L 128 135 L 116 130 Z" fill="#2A2A2A"/>
+  <!-- Corbata negra con tono rojizo -->
+  <path d="M120,82 L136,82 L140,94 L133,106 L139,134 L133,170 L123,170 L117,134 L123,106 L116,94 Z"
+        fill="#0A0008"/>
+  <path d="M120,82 Q128,80 136,82 L140,94 L116,94 Z" fill="#040006"/>
+  <!-- Ribete rojo en corbata -->
+  <line x1="128" y1="82" x2="128" y2="170" stroke="#550000" stroke-width="0.7" opacity="0.5"/>
 
-  <!-- Corbata negra (con un sutil tono rojizo siniestro) -->
-  <path d="M 122 80 L 134 80 L 138 90 L 132 100 L 138 130 L 132 165 L 124 165 L 118 130 L 124 100 L 118 90 Z" fill="#0A0A0A"/>
-  <path d="M 122 80 Q 128 78 134 80 L 138 90 L 118 90 Z" fill="#000000"/>
-
-  <!-- Insignia del agente en el pecho -->
-  <g transform="translate(150, 115)">
-    <!-- Estrella de 6 puntas con triángulo en el medio -->
-    <circle cx="0" cy="0" r="9" fill="#1A0505" stroke="#8B0000" stroke-width="0.8"/>
-    <circle cx="0" cy="0" r="6" fill="none" stroke="#CC0000" stroke-width="0.5"/>
-    <path d="M 0 -5 L 4 3 L -4 3 Z" fill="#CC0000"/>
-    <circle cx="0" cy="0" r="1.5" fill="#FFAAAA"/>
+  <!-- Insignia del Agente — estrella de rango -->
+  <g transform="translate(150,114)">
+    <circle cx="0" cy="0" r="11"  fill="#0A0010" stroke="#880000" stroke-width="1.2"/>
+    <circle cx="0" cy="0" r="8"   fill="#060008" stroke="#CC0000" stroke-width="0.7"/>
+    <!-- Estrella de 6 puntas -->
+    <path d="M0,-6 L1.5,-1.5 L6,-1.5 L2,1 L3.5,6 L0,3 L-3.5,6 L-2,1 L-6,-1.5 L-1.5,-1.5 Z"
+          fill="#CC0000" opacity="0.9"/>
+    <circle cx="0" cy="0" r="2" fill="#FF8080" opacity="0.8"/>
   </g>
 
-  <!-- Botones siniestros -->
-  <circle cx="128" cy="170" r="2.8" fill="#000000"/>
-  <circle cx="128" cy="170" r="1.5" fill="#3A0000"/>
-  <circle cx="128" cy="200" r="2.8" fill="#000000"/>
-  <circle cx="128" cy="200" r="1.5" fill="#3A0000"/>
+  <!-- Banda roja de rango (hombros) -->
+  <rect x="46"  y="90" width="30" height="5" rx="1" fill="url(#red_g)" opacity="0.8"/>
+  <rect x="180" y="90" width="30" height="5" rx="1" fill="url(#red_g)" opacity="0.8"/>
 
-  <!-- Cierre central -->
-  <line x1="128" y1="135" x2="128" y2="230" stroke="#080808" stroke-width="1.5"/>
+  <!-- Botones del uniforme (oscuros con centro rojo) -->
+  <circle cx="128" cy="160" r="3.5" fill="#060610"/>
+  <circle cx="128" cy="160" r="2"   fill="#1A000A"/>
+  <circle cx="128" cy="186" r="3.5" fill="#060610"/>
+  <circle cx="128" cy="186" r="2"   fill="#1A000A"/>
+  <circle cx="128" cy="212" r="3.5" fill="#060610"/>
+  <circle cx="128" cy="212" r="2"   fill="#1A000A"/>
 
-  <!-- Pequeño detalle en el cuello (cordón rojo) -->
-  <line x1="118" y1="78" x2="138" y2="78" stroke="#8B0000" stroke-width="0.8"/>
+  <!-- Cierre central rojo muy oscuro -->
+  <line x1="128" y1="136" x2="128" y2="240" stroke="#1A0010" stroke-width="1.5"/>
 
-  <!-- Anillo de "agente" sobre la corbata -->
-  <circle cx="128" cy="105" r="3" fill="none" stroke="#CC0000" stroke-width="0.8" opacity="0.7"/>
+  <!-- Detalle de hombrera izquierda (galón) -->
+  <rect x="42"  y="78" width="34" height="3" rx="1" fill="#3A0000"/>
+  <rect x="42"  y="82" width="34" height="2" rx="1" fill="#1A0000"/>
+  <!-- Hombrera derecha -->
+  <rect x="180" y="78" width="34" height="3" rx="1" fill="#3A0000"/>
+  <rect x="180" y="82" width="34" height="2" rx="1" fill="#1A0000"/>
 
-  <!-- Ligero brillo siniestro -->
-  <path d="M 90 105 L 90 230 Q 95 210 95 105 Z" fill="#3A0000" opacity="0.15"/>
+  <!-- Bolsillo del pecho (izquierdo) con tapa -->
+  <rect x="84"  y="118" width="28" height="30" rx="1" fill="none" stroke="#0A0018" stroke-width="1"/>
+  <rect x="84"  y="118" width="28" height="6"  rx="1" fill="#0A0018"/>
+  <!-- Botón de bolsillo -->
+  <circle cx="98" cy="121" r="1.5" fill="#1A000A"/>
+
+  <!-- Pequeño detalle en el cuello (línea roja de corbata) -->
+  <line x1="118" y1="78" x2="138" y2="78" stroke="#660000" stroke-width="1"/>
+
+  <!-- Brillo muy sutil -->
+  <path d="M90,106 C88,178 88,222 90,242 L96,242 C94,222 94,178 96,106 Z" fill="#3A0000" opacity="0.12"/>
 </svg>

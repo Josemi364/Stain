@@ -1,34 +1,76 @@
 <svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
-  <!-- Tirantes -->
-  <rect x="106" y="35" width="3" height="25" fill="#5A1A2E"/>
-  <rect x="147" y="35" width="3" height="25" fill="#5A1A2E"/>
+  <defs>
+    <linearGradient id="bodice" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#3A0A1E"/>
+      <stop offset="30%"  stop-color="#5A1830"/>
+      <stop offset="55%"  stop-color="#681E38"/>
+      <stop offset="80%"  stop-color="#5A1830"/>
+      <stop offset="100%" stop-color="#360818"/>
+    </linearGradient>
+    <linearGradient id="skirt" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#2E0614"/>
+      <stop offset="20%"  stop-color="#521428"/>
+      <stop offset="50%"  stop-color="#7A2040"/>
+      <stop offset="80%"  stop-color="#521428"/>
+      <stop offset="100%" stop-color="#280410"/>
+    </linearGradient>
+    <linearGradient id="satin" x1="0%" y1="0%" x2="60%" y2="100%">
+      <stop offset="0%"   stop-color="#8E2848" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#3A0A1E" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
 
-  <!-- Parte superior (corpiño) -->
-  <path d="M 100 55 Q 128 50 156 55 L 160 90 L 96 90 Z" fill="#5A1A2E"/>
+  <!-- Sombra -->
+  <path d="M98,42 C98,42 88,50 84,62 L84,96 C76,100 58,106 40,120 C24,136 20,220 24,236 L232,236 C236,220 232,136 216,120 C198,106 180,100 172,96 L172,62 C168,50 158,42 158,42 C148,38 140,36 128,36 C116,36 108,38 98,42 Z"
+        fill="#000" opacity="0.2" transform="translate(3,6)"/>
 
-  <!-- Falda en A — más ancha abajo -->
-  <path d="M 96 90 L 60 220 L 196 220 L 160 90 Z" fill="#7A2A4E"/>
+  <!-- Falda acampanada -->
+  <path d="M84,96 C76,100 58,106 40,120 C24,136 20,220 24,236 L232,236 C236,220 232,136 216,120 C198,106 180,100 172,96 Z"
+        fill="url(#skirt)"/>
 
-  <!-- Sombras laterales -->
-  <path d="M 96 90 L 60 220 L 80 220 L 110 90 Z" fill="#000000" opacity="0.2"/>
-  <path d="M 160 90 L 196 220 L 176 220 L 146 90 Z" fill="#000000" opacity="0.2"/>
+  <!-- Pliegues/volúmen de la falda -->
+  <path d="M84,96 C78,120 68,160 50,200 C44,215 36,228 32,236 L80,236 C72,220 78,190 92,160 Z" fill="#000" opacity="0.15"/>
+  <path d="M172,96 C178,120 188,160 206,200 C212,215 220,228 224,236 L176,236 C184,220 178,190 164,160 Z" fill="#000" opacity="0.15"/>
 
-  <!-- Pliegues de la falda -->
-  <line x1="110" y1="100" x2="92" y2="218" stroke="#5A1A2E" stroke-width="1" opacity="0.6"/>
-  <line x1="128" y1="100" x2="128" y2="218" stroke="#5A1A2E" stroke-width="1" opacity="0.6"/>
-  <line x1="146" y1="100" x2="164" y2="218" stroke="#5A1A2E" stroke-width="1" opacity="0.6"/>
-  <line x1="120" y1="105" x2="108" y2="218" stroke="#5A1A2E" stroke-width="0.5" opacity="0.4"/>
-  <line x1="136" y1="105" x2="148" y2="218" stroke="#5A1A2E" stroke-width="0.5" opacity="0.4"/>
+  <!-- Líneas de pliegue verticales en la falda -->
+  <path d="M90,100 C84,130 76,175 68,236" stroke="#6A1838" stroke-width="1.2" fill="none" opacity="0.5"/>
+  <path d="M106,98 C104,130 100,180 96,236" stroke="#6A1838" stroke-width="1"   fill="none" opacity="0.4"/>
+  <path d="M128,98 L128,236"                 stroke="#5A1430" stroke-width="1"   fill="none" opacity="0.35"/>
+  <path d="M150,98 C152,130 156,180 160,236" stroke="#6A1838" stroke-width="1"   fill="none" opacity="0.4"/>
+  <path d="M166,100 C172,130 180,175 188,236" stroke="#6A1838" stroke-width="1.2" fill="none" opacity="0.5"/>
 
-  <!-- Línea cintura -->
-  <path d="M 96 90 Q 128 92 160 90" stroke="#3A0A1E" stroke-width="1.5" fill="none"/>
+  <!-- Reflejo satinado de la falda -->
+  <path d="M84,100 C80,130 70,175 54,230 L72,236 C84,210 96,170 100,100 Z" fill="url(#satin)"/>
 
-  <!-- Brillo del corpiño -->
-  <path d="M 105 60 Q 105 80 105 88 L 110 88 Q 110 75 110 62 Z" fill="#FFFFFF" opacity="0.2"/>
+  <!-- Corpiño -->
+  <path d="M98,42 C98,42 88,50 84,62 L84,96 L172,96 L172,62 C168,50 158,42 158,42 Z"
+        fill="url(#bodice)"/>
 
-  <!-- Brillo de la falda -->
-  <path d="M 100 95 L 88 220 Q 95 200 110 95 Z" fill="#FFFFFF" opacity="0.12"/>
+  <!-- Detalle escote recto con curva sutil -->
+  <path d="M98,42 C108,40 118,38 128,36 C138,38 148,40 158,42" stroke="#3A0818" stroke-width="0.8" fill="none"/>
 
-  <!-- Detalle decorativo en el escote -->
-  <path d="M 116 65 Q 128 60 140 65 Q 128 70 116 65" fill="#3A0A1E" opacity="0.6"/>
+  <!-- Tirantes finos -->
+  <rect x="104" y="38" width="4" height="26" rx="2" fill="#3A0818"/>
+  <rect x="148" y="38" width="4" height="26" rx="2" fill="#3A0818"/>
+
+  <!-- Sombras costados del corpiño -->
+  <path d="M84,62 L84,96 L96,96 L96,66 Z" fill="#000" opacity="0.18"/>
+  <path d="M172,62 L172,96 L160,96 L160,66 Z" fill="#000" opacity="0.18"/>
+
+  <!-- Detalle decorativo en la cintura -->
+  <path d="M84,96 C104,100 152,100 172,96 L172,92 C152,96 104,96 84,92 Z" fill="#3A0818"/>
+
+  <!-- Brillo satinado del corpiño -->
+  <path d="M100,46 C98,68 98,88 100,96 L108,96 C106,88 106,68 108,46 Z" fill="#FFFFFF" opacity="0.15"/>
+
+  <!-- Brillos de la falda (satén) -->
+  <path d="M104,100 C98,140 90,190 86,236 L96,236 C100,190 108,140 114,100 Z" fill="#FFFFFF" opacity="0.06"/>
+  <path d="M148,100 C154,140 162,190 166,236 L156,236 C152,190 144,140 138,100 Z" fill="#FFFFFF" opacity="0.06"/>
+
+  <!-- Detalle de pedrería/adorno en cintura -->
+  <circle cx="128" cy="96" r="3"   fill="#E8A0B8" opacity="0.8"/>
+  <circle cx="118" cy="95" r="1.8" fill="#E8A0B8" opacity="0.6"/>
+  <circle cx="138" cy="95" r="1.8" fill="#E8A0B8" opacity="0.6"/>
+  <circle cx="110" cy="93" r="1.2" fill="#E8A0B8" opacity="0.4"/>
+  <circle cx="146" cy="93" r="1.2" fill="#E8A0B8" opacity="0.4"/>
 </svg>
