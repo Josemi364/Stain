@@ -38,6 +38,8 @@ const STAT_IDS: Array[String] = [
 	# Fase 10
 	"eventos_completados",
 	"vips_completados",
+	# Fase 13
+	"contratos_completados",
 ]
 
 
@@ -134,6 +136,14 @@ const LOGROS: Array[Dictionary] = [
 	 "tipo": "evento"},
 	{"id": "sin_entrenamiento", "nombre": "Sin entrenamiento", "descripcion": "Salta el tutorial.",
 	 "categoria": "Hitos", "icono": "🏃",
+	 "tipo": "evento"},
+
+	# Contratos (Fase 13)
+	{"id": "primer_contrato", "nombre": "Primer encargo", "descripcion": "Completa tu primer contrato.",
+	 "categoria": "Eventos", "icono": "📋",
+	 "tipo": "evento"},
+	{"id": "contratista_habitual", "nombre": "Contratista habitual", "descripcion": "Completa 10 contratos.",
+	 "categoria": "Eventos", "icono": "🗂",
 	 "tipo": "evento"},
 ]
 

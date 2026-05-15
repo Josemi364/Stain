@@ -36,6 +36,7 @@ Main.gd  ←→  SinkArea.gd               (manual cleaning gameplay)
          ←→  AudioManager.gd           (Autoload: procedural SFX, Fase 9)
          ←→  EventsManager.gd          (Autoload: eventos temporales, Fase 10)
          ←→  TutorialManager.gd        (hijo de HUD: tutorial guiado, Fase 11A)
+         ←→  ContractsManager.gd       (Autoload: contratos opcionales, Fase 13)
 ```
 
 ### Key Signal Flows
@@ -112,6 +113,61 @@ Las 8 mejoras y sus efectos:
 | `comunion` | 40✧ | 1 | 20% prob. duplicar fragmentos en limpieza manual de alien |
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
+
+### Narrativa del Altar (Fase 14)
+
+Cada upgrade del altar tiene un campo `lore: String` (multilínea) en `UPGRADES_FRAGMENTO` (`fragment_shop_panel.gd`). Al comprarlo, `Main._aplicar_efecto_fragmento` llama a `_mostrar_lore_altar(texto)` ANTES de aplicar el efecto.
+
+El popup es un `ColorRect` fullscreen semi-transparente (negro púrpura, alpha 0.7) con un Label centrado en color `#E0C0FF`, font 26. Fade in 0.5s + hold 5s + fade out 0.4s. Click en el fondo cierra antes (`gui_input` + `mouse_filter = STOP`). Usa `AudioManager.play_sfx("alien", 0.6)` para ambientación.
+
+8 fragmentos de lore (uno por upgrade del altar) cuentan progresivamente la transformación del lavandero ante las prendas alien. Diseño de horror cósmico ligero — el último (`comunion`) cierra el arco: "Has dejado de ser un lavandero. Ahora eres el Lavandero."
+
+NO se persiste qué textos se han visto — están atados a las compras (que sí se persisten en `compras_contador` del fragment shop). Si el jugador resetea solo el save (no las compras), no volverá a verlos.
+
+### Contratos / clientes (Fase 13)
+
+`ContractsManager.gd` (Autoload) ofrece contratos opcionales — el jugador acepta o rechaza, completa el objetivo en plazo, y recibe recompensa fija. **No** modifica modificadores globales (a diferencia de los eventos). Compatible con eventos activos al mismo tiempo.
+
+Estados (transiciones internas via `_process`):
+- **IDLE** → cooldown corriendo (`COOLDOWN_BASE_SEG ± COOLDOWN_VARIANZA_SEG`)
+- **DISPONIBLE** → contrato ofrecido, ventana de `TIEMPO_OFERTA_SEG` (25s) para decidir
+- **ACTIVO** → aceptado, cuenta atrás del plazo
+
+5 contratos definidos (`CONTRATOS`):
+
+| ID | Objetivo | Tipo | Plazo | Reward |
+|---|---|---|---|---|
+| `lavanderia_rapida` | 8 prendas | any | 90s | 80€ + 1✧ |
+| `lote_completo` | 20 prendas | any | 240s | 250€ + 2✧ |
+| `cazador_alien` | 3 alien | alien | 180s | 200€ + 5✧ |
+| `marathon` | 50 prendas | any | 600s | 700€ + 5✧ + 2🜁 |
+| `exprés` | 5 prendas | any | 30s | 60€ + 1✧ |
+
+Gating: igual que eventos (>= 200€ totales o >= 1 prestigio).
+
+Main conecta 5 señales (`contrato_disponible_aparece`, `contrato_aceptado`, `contrato_completado`, `contrato_actualizado`, `contrato_disponible_expirado`) y llama a `ContractsManager.notificar_prenda(prenda)` desde `_on_garment_delivered` y `_on_prenda_procesada_lavadora` (cuentan ambas vías).
+
+Banner UI programático (`_crear_contract_banner`) bajo el banner de eventos (Fase 10), centrado-arriba en y=168-268. Estado DISPONIBLE muestra botones Aceptar/Rechazar; ACTIVO muestra barra de progreso.
+
+Logros nuevos en categoría Eventos: `primer_contrato`, `contratista_habitual` (10).
+
+Stat nuevo: `contratos_completados`.
+
+**No persiste** (igual que eventos): cooldown limpio al cargar partida.
+
+### Progreso offline (Fase 12)
+
+`Main` persiste `timestamp_guardado: int` (unix epoch) en cada `guardar_partida()`. En `cargar_partida()`, tras restaurar todo, llama a `_aplicar_progreso_offline(ts)`:
+
+1. Calcula `delta = ahora - ts`. Si < `OFFLINE_MIN_SEG_PARA_POPUP` (60s), no hace nada.
+2. Limita a `OFFLINE_MAX_SEG` (8h) — evita exploit de cambiar reloj del sistema.
+3. Pregunta a `machines_panel.contar_ciclos_offline(delta)` cuántos ciclos habrían completado las lavadoras activas en ese tiempo (suma `floor(delta / ciclo_seg)` por lavadora).
+4. Recompensa = `ciclos × OFFLINE_AVG_EUROS_POR_CICLO (6.33) × multiplicador_ganancias × OFFLINE_EFICIENCIA (0.5)`.
+5. Aplica €, suma a `prendas_total_lavadora` y `euros_total_historico`, dispara popup centrado.
+
+El popup es modal (ColorRect oscurecido + PanelContainer con resumen). Se cierra con "Continuar". No persiste reward — se aplica directamente al cargar.
+
+Limitaciones aceptadas: solo simula recompensa promedio de prendas normales (no alien, no fragmentos). Los ciclos parciales (lavadora a medio ciclo en el momento del save) se ignoran por simplicidad.
 
 ### Atajos de teclado y opciones (Fase 11C)
 
@@ -234,7 +290,8 @@ Save schema (top level):
   "queue_panel":    { cola_ids: [String] },
   "sink_area":      { bonus_fuerza, bonus_radio, prenda_actual_id },
   "tutorial":       { paso_actual: int },                 # Fase 11A
-  "opciones":       { volumen_db: float }                 # Fase 11C
+  "opciones":       { volumen_db: float },                # Fase 11C
+  "timestamp_guardado": float                             # Fase 12 (unix epoch)
 }
 ```
 
@@ -270,6 +327,7 @@ Plegable en la esquina superior izquierda del HUD. Cambiar a `false` para builds
 | F5 | Limpiar prenda actual al 100% (activa el botón de entregar) |
 | F6 | Guardar partida ahora |
 | F7 | Forzar un evento aleatorio (salta cooldown + gate) |
+| F8 | Ofrecer un contrato (salta cooldown + gate) |
 
 ## Key Implementation Details
 

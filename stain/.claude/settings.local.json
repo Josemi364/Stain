@@ -26,7 +26,11 @@
       "PowerShell($godot = 'C:\\\\Users\\\\Josemi\\\\Downloads\\\\Godot_v4.6.2-stable_win64.exe\\\\Godot_v4.6.2-stable_win64_console.exe'; & $godot --headless --path . --quit-after 60 2>&1 | Select-String -Pattern \"\\(ERROR|Parse Error|Compile Error|Failed\\)\" | Select-Object -First 40)",
       "PowerShell(Select-String *)",
       "PowerShell($godot = 'C:\\\\Users\\\\Josemi\\\\Downloads\\\\Godot_v4.6.2-stable_win64.exe\\\\Godot_v4.6.2-stable_win64_console.exe'; & $godot --headless --path . --quit-after 60 2>&1 | Select-String -Pattern \"\\(ERROR|Parse|Compile|Failed\\)\" | Select-Object -First 30)",
-      "PowerShell($godot = 'C:\\\\Users\\\\Josemi\\\\Downloads\\\\Godot_v4.6.2-stable_win64.exe\\\\Godot_v4.6.2-stable_win64_console.exe'; & $godot --headless --path . --quit-after 60 2>&1 | Select-String -Pattern \"\\(ERROR|Parse|Compile|Failed|WARNING\\)\" | Select-Object -First 30)"
+      "PowerShell($godot = 'C:\\\\Users\\\\Josemi\\\\Downloads\\\\Godot_v4.6.2-stable_win64.exe\\\\Godot_v4.6.2-stable_win64_console.exe'; & $godot --headless --path . --quit-after 60 2>&1 | Select-String -Pattern \"\\(ERROR|Parse|Compile|Failed|WARNING\\)\" | Select-Object -First 30)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(gh auth *)",
+      "PowerShell($godot = 'C:\\\\Users\\\\Josemi\\\\Downloads\\\\Godot_v4.6.2-stable_win64.exe\\\\Godot_v4.6.2-stable_win64_console.exe'; & $godot --headless --path . --quit-after 60 2>&1 | Select-String -Pattern \"\\(ERROR|Parse|Compile|Failed|WARNING\\)\" | Select-Object -First 40)"
     ]
   }
 }

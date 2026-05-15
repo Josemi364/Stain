@@ -463,6 +463,21 @@ func reset_para_prestigio() -> void:
 	reset_lavadoras()
 
 
+## [Fase 12] Calcula cuántos ciclos completarían las lavadoras activas en N segundos.
+## Asume que la cola tiene siempre prendas (FIFO infinita) y que cada ciclo procesa
+## una prenda independientemente del progreso parcial guardado (aproximación).
+func contar_ciclos_offline(segundos: float) -> int:
+	if segundos <= 0.0 or lavadoras.is_empty():
+		return 0
+	var total: int = 0
+	for lav in lavadoras:
+		var ciclo: float = float(lav.get("ciclo_seg", 20.0))
+		if ciclo <= 0.0:
+			continue
+		total += int(floor(segundos / ciclo))
+	return total
+
+
 ## [Debug F4] Completa instantáneamente todos los ciclos activos y emite sus recompensas.
 func completar_todos_los_ciclos() -> void:
 	for lav in lavadoras:

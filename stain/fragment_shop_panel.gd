@@ -25,6 +25,7 @@ const UPGRADES_FRAGMENTO: Array[Dictionary] = [
 		"coste": 3,
 		"max_compras": 3,
 		"icono_color": Color("#AA40FF"),
+		"lore": "Las manchas susurran cuando el agua hierve.\nNo es vapor lo que oyes.",
 	},
 	{
 		"id": "murmullo_vacio",
@@ -33,6 +34,7 @@ const UPGRADES_FRAGMENTO: Array[Dictionary] = [
 		"coste": 5,
 		"max_compras": 4,
 		"icono_color": Color("#4060FF"),
+		"lore": "Cada prenda alien lleva un eco de su mundo.\nY a veces, ese eco te paga mejor.",
 	},
 	{
 		"id": "compas_observador",
@@ -41,6 +43,7 @@ const UPGRADES_FRAGMENTO: Array[Dictionary] = [
 		"coste": 10,
 		"max_compras": 1,
 		"icono_color": Color("#00CCFF"),
+		"lore": "Has empezado a verlas llegar antes que lleguen.\nTe observan.",
 	},
 	{
 		"id": "compresor_temporal",
@@ -49,6 +52,7 @@ const UPGRADES_FRAGMENTO: Array[Dictionary] = [
 		"coste": 12,
 		"max_compras": 1,
 		"icono_color": Color("#FFAA40"),
+		"lore": "El tiempo no fluye igual dentro del tambor cuántico.\nTu reloj retrocede medio segundo cada hora.",
 	},
 	{
 		"id": "sudario_mensajero",
@@ -57,6 +61,7 @@ const UPGRADES_FRAGMENTO: Array[Dictionary] = [
 		"coste": 15,
 		"max_compras": 1,
 		"icono_color": Color("#AA80FF"),
+		"lore": "Hoy llegó algo que no era ropa.\nEstaba doblado como una camisa, pero pulsaba.\nLo limpiaste igual.",
 	},
 	{
 		"id": "resonancia_ancestral",
@@ -65,6 +70,7 @@ const UPGRADES_FRAGMENTO: Array[Dictionary] = [
 		"coste": 20,
 		"max_compras": 1,
 		"icono_color": Color("#FF8080"),
+		"lore": "La ceniza no era ceniza.\nEra memoria de telas más antiguas que tú.\nAhora la guardas mejor.",
 	},
 	{
 		"id": "velo_inicio",
@@ -73,6 +79,7 @@ const UPGRADES_FRAGMENTO: Array[Dictionary] = [
 		"coste": 30,
 		"max_compras": 1,
 		"icono_color": Color("#FFD0FF"),
+		"lore": "La última prenda no tenía costuras.\nEra una sola pieza imposible.\nCuando la entregaste, el cliente sonrió sin boca.",
 	},
 	{
 		"id": "comunion",
@@ -81,6 +88,7 @@ const UPGRADES_FRAGMENTO: Array[Dictionary] = [
 		"coste": 40,
 		"max_compras": 1,
 		"icono_color": Color("#FF40AA"),
+		"lore": "Has dejado de ser un lavandero.\nAhora eres el Lavandero.",
 	},
 ]
 

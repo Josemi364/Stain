@@ -136,6 +136,20 @@ var _opciones_btn: Button
 var _opciones_panel: PanelContainer
 var _opciones_slider: HSlider
 
+# Fase 12 — Progreso offline
+const OFFLINE_MAX_SEG: float = 28800.0       # cap a 8h de tiempo offline contabilizado
+const OFFLINE_EFICIENCIA: float = 0.50       # 50% de la ganancia activa
+const OFFLINE_AVG_EUROS_POR_CICLO: float = 6.33  # avg de prendas normales (3..10€)
+const OFFLINE_MIN_SEG_PARA_POPUP: float = 60.0   # umbral mínimo para mostrar el popup
+
+# Fase 13 — Banner de contratos
+var _contract_banner: PanelContainer
+var _contract_titulo: Label
+var _contract_descripcion: Label
+var _contract_barra: ProgressBar
+var _contract_btn_aceptar: Button
+var _contract_btn_rechazar: Button
+
 
 # ============================================================
 # INICIALIZACIÓN
@@ -227,6 +241,14 @@ func _ready() -> void:
 
 	# Fase 11C: panel de opciones (volumen)
 	_crear_panel_opciones()
+
+	# Fase 13: contratos
+	_crear_contract_banner()
+	ContractsManager.contrato_disponible_aparece.connect(_on_contrato_disponible)
+	ContractsManager.contrato_aceptado.connect(_on_contrato_aceptado)
+	ContractsManager.contrato_completado.connect(_on_contrato_completado)
+	ContractsManager.contrato_actualizado.connect(_on_contrato_actualizado)
+	ContractsManager.contrato_disponible_expirado.connect(_on_contrato_expirado)
 
 	# Autosave periódico
 	_autosave_timer = Timer.new()
@@ -352,6 +374,9 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 	# Fase 10: gate de eventos + tracking VIP
 	EventsManager.comprobar_gate(euros_totales_ganados, num_prestigios)
 	EventsManager.notificar_prenda_entregada()
+	# Fase 13: contratos
+	ContractsManager.comprobar_gate(euros_totales_ganados, num_prestigios)
+	ContractsManager.notificar_prenda(prenda)
 
 	# Fase 8: stats
 	Stats.incrementar("prendas_total_manual")
@@ -525,6 +550,9 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 
 	# Fase 10: gate de eventos
 	EventsManager.comprobar_gate(euros_totales_ganados, num_prestigios)
+	# Fase 13: contratos (las prendas de lavadora también cuentan)
+	ContractsManager.comprobar_gate(euros_totales_ganados, num_prestigios)
+	ContractsManager.notificar_prenda(prenda)
 
 	# Fase 8: stats
 	Stats.incrementar("prendas_total_lavadora")
@@ -607,6 +635,12 @@ func _on_upgrade_fragmento_solicitado(upgrade_id: String, coste: int) -> void:
 
 
 func _aplicar_efecto_fragmento(upgrade_id: String) -> void:
+	# Fase 14: si la mejora tiene texto de lore, mostrarlo en popup narrativo
+	var datos: Dictionary = fragment_shop_panel.get_upgrade(upgrade_id)
+	var lore: String = String(datos.get("lore", ""))
+	if not lore.is_empty():
+		_mostrar_lore_altar(lore)
+
 	match upgrade_id:
 		"eco_plasma":
 			bonus_frag_alien += 1
@@ -832,6 +866,7 @@ func _input(event: InputEvent) -> void:
 		KEY_F5: _debug_limpiar_prenda()
 		KEY_F6: _debug_guardar()
 		KEY_F7: _debug_forzar_evento()
+		KEY_F8: _debug_forzar_contrato()
 
 
 # ============================================================
@@ -882,6 +917,7 @@ func _crear_panel_debug() -> void:
 		["Limpiar prenda    (F5)", _debug_limpiar_prenda],
 		["Guardar ahora     (F6)", _debug_guardar],
 		["Forzar evento     (F7)", _debug_forzar_evento],
+		["Forzar contrato   (F8)", _debug_forzar_contrato],
 	]
 	for a in acciones:
 		var btn := Button.new()
@@ -1026,6 +1062,7 @@ func _debug_ejecutar_reset() -> void:
 	sink_area.bonus_fuerza_evento = 0.0
 	Stats.reset_completo()
 	EventsManager.reset_completo()
+	ContractsManager.reset_completo()
 	if _tutorial != null:
 		_tutorial.reset_completo()
 		_tutorial.iniciar()
@@ -1086,6 +1123,17 @@ func _debug_forzar_evento() -> void:
 	EventsManager.cooldown_restante = 0.0
 	EventsManager._disparar_evento()
 	mostrar_notificacion("[DEBUG] Evento forzado", false)
+
+
+## [Debug F8] Ofrece un contrato aleatorio inmediatamente (skip gate + cooldown).
+func _debug_forzar_contrato() -> void:
+	ContractsManager.habilitado = true
+	if not ContractsManager.contrato_activo.is_empty() or not ContractsManager.contrato_disponible.is_empty():
+		mostrar_notificacion("[DEBUG] Ya hay un contrato activo/disponible", false)
+		return
+	ContractsManager.cooldown_restante = 0.0
+	ContractsManager._ofrecer_contrato()
+	mostrar_notificacion("[DEBUG] Contrato forzado", false)
 
 
 # ============================================================
@@ -1153,6 +1201,7 @@ func guardar_partida() -> bool:
 		"opciones": {
 			"volumen_db": AudioManager.get_volumen_db(),
 		},
+		"timestamp_guardado": Time.get_unix_time_from_system(),
 	}
 
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -1247,6 +1296,11 @@ func cargar_partida() -> bool:
 	# 5. Si el sink no tenía prenda en el save, arrancamos el ciclo normal
 	if not sink_tenia_prenda:
 		queue_panel.consumir_siguiente()
+
+	# 6. Fase 12: ganancias offline (si había timestamp y hay lavadoras)
+	var ts_guardado: float = float(data.get("timestamp_guardado", 0.0))
+	if ts_guardado > 0.0:
+		_aplicar_progreso_offline(ts_guardado)
 
 	return true
 
@@ -1626,6 +1680,377 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 		_event_banner_progreso.text = "%d / %d prendas · %.1fs" % [prog, obj, restante]
 	else:
 		_event_banner_progreso.text = "%s · %.1fs" % [String(ev["descripcion"]), restante]
+
+
+# ============================================================
+# FASE 14 — NARRATIVA DEL ALTAR
+# ============================================================
+## Popup fullscreen con texto narrativo. Aparece al comprar mejoras del altar.
+## Click o 5s para cerrar. No bloqueante: el juego sigue corriendo detrás.
+func _mostrar_lore_altar(texto: String) -> void:
+	var fondo := ColorRect.new()
+	fondo.color = Color(0.05, 0.0, 0.10, 0.0)
+	fondo.anchor_right = 1.0
+	fondo.anchor_bottom = 1.0
+	fondo.mouse_filter = Control.MOUSE_FILTER_STOP
+	fondo.z_index = 220
+	$HUD.add_child(fondo)
+
+	var label := Label.new()
+	label.text = texto
+	label.add_theme_color_override("font_color", Color("#E0C0FF"))
+	label.add_theme_font_size_override("font_size", 26)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.anchor_left = 0.1
+	label.anchor_top = 0.35
+	label.anchor_right = 0.9
+	label.anchor_bottom = 0.65
+	label.modulate.a = 0.0
+	fondo.add_child(label)
+
+	# Click en el fondo cierra antes
+	var cerrado: Array[bool] = [false]
+	fondo.gui_input.connect(func(ev):
+		if cerrado[0]:
+			return
+		if ev is InputEventMouseButton and (ev as InputEventMouseButton).pressed:
+			cerrado[0] = true
+			_cerrar_lore_altar(fondo)
+	)
+
+	# Sonido sutil
+	AudioManager.play_sfx("alien", 0.6)
+
+	# Animación de entrada
+	var tw_in := create_tween().set_parallel()
+	tw_in.tween_property(fondo, "color:a", 0.7, 0.5)
+	tw_in.tween_property(label, "modulate:a", 1.0, 0.5)
+	await tw_in.finished
+
+	# Hold 5 segundos o hasta click
+	var t: float = 0.0
+	while t < 5.0 and not cerrado[0]:
+		await get_tree().process_frame
+		t += get_process_delta_time()
+
+	if not cerrado[0]:
+		cerrado[0] = true
+		_cerrar_lore_altar(fondo)
+
+
+func _cerrar_lore_altar(fondo: ColorRect) -> void:
+	if fondo == null or not is_instance_valid(fondo):
+		return
+	var tw_out := create_tween().set_parallel()
+	tw_out.tween_property(fondo, "color:a", 0.0, 0.4)
+	if fondo.get_child_count() > 0:
+		var lbl: Node = fondo.get_child(0)
+		if lbl is CanvasItem:
+			tw_out.tween_property(lbl, "modulate:a", 0.0, 0.4)
+	await tw_out.finished
+	if is_instance_valid(fondo):
+		fondo.queue_free()
+
+
+# ============================================================
+# FASE 13 — CONTRATOS (UI + HANDLERS)
+# ============================================================
+func _crear_contract_banner() -> void:
+	_contract_banner = PanelContainer.new()
+	_contract_banner.visible = false
+	_contract_banner.custom_minimum_size = Vector2(420, 0)
+	# Posicionado debajo del banner de eventos (Fase 10)
+	_contract_banner.anchor_left = 0.5
+	_contract_banner.anchor_top = 0.0
+	_contract_banner.anchor_right = 0.5
+	_contract_banner.anchor_bottom = 0.0
+	_contract_banner.offset_left = -210
+	_contract_banner.offset_top = 168
+	_contract_banner.offset_right = 210
+	_contract_banner.offset_bottom = 268
+	_contract_banner.z_index = 60
+
+	var pe := StyleBoxFlat.new()
+	pe.bg_color = Color("#0F1A22")
+	pe.border_color = Color("#40D0FF")
+	pe.set_border_width_all(2)
+	pe.set_corner_radius_all(8)
+	pe.content_margin_left = 14
+	pe.content_margin_right = 14
+	pe.content_margin_top = 10
+	pe.content_margin_bottom = 10
+	_contract_banner.add_theme_stylebox_override("panel", pe)
+	$HUD.add_child(_contract_banner)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 6)
+	_contract_banner.add_child(vbox)
+
+	_contract_titulo = Label.new()
+	_contract_titulo.add_theme_color_override("font_color", Color("#40D0FF"))
+	_contract_titulo.add_theme_font_size_override("font_size", 15)
+	vbox.add_child(_contract_titulo)
+
+	_contract_descripcion = Label.new()
+	_contract_descripcion.add_theme_color_override("font_color", Color("#CCDDEE"))
+	_contract_descripcion.add_theme_font_size_override("font_size", 12)
+	_contract_descripcion.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_contract_descripcion.custom_minimum_size = Vector2(390, 0)
+	vbox.add_child(_contract_descripcion)
+
+	_contract_barra = ProgressBar.new()
+	_contract_barra.custom_minimum_size = Vector2(0, 8)
+	_contract_barra.show_percentage = false
+	var bb := StyleBoxFlat.new()
+	bb.bg_color = Color("#15263A")
+	bb.set_corner_radius_all(2)
+	var bf := StyleBoxFlat.new()
+	bf.bg_color = Color("#40D0FF")
+	bf.set_corner_radius_all(2)
+	_contract_barra.add_theme_stylebox_override("background", bb)
+	_contract_barra.add_theme_stylebox_override("fill", bf)
+	vbox.add_child(_contract_barra)
+
+	# HBox con los botones (solo visible en estado DISPONIBLE)
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_END
+	hbox.add_theme_constant_override("separation", 8)
+	vbox.add_child(hbox)
+
+	_contract_btn_rechazar = Button.new()
+	_contract_btn_rechazar.text = "Rechazar"
+	_contract_btn_rechazar.custom_minimum_size = Vector2(100, 28)
+	var br := StyleBoxFlat.new()
+	br.bg_color = Color("#2A2A3A")
+	br.set_corner_radius_all(4)
+	_contract_btn_rechazar.add_theme_stylebox_override("normal", br)
+	_contract_btn_rechazar.add_theme_stylebox_override("hover", br)
+	_contract_btn_rechazar.add_theme_stylebox_override("pressed", br)
+	_contract_btn_rechazar.add_theme_color_override("font_color", Color("#AAAACC"))
+	_contract_btn_rechazar.add_theme_font_size_override("font_size", 12)
+	_contract_btn_rechazar.pressed.connect(func(): ContractsManager.rechazar())
+	hbox.add_child(_contract_btn_rechazar)
+
+	_contract_btn_aceptar = Button.new()
+	_contract_btn_aceptar.text = "Aceptar"
+	_contract_btn_aceptar.custom_minimum_size = Vector2(100, 28)
+	var ba := StyleBoxFlat.new()
+	ba.bg_color = Color("#185A7A")
+	ba.set_corner_radius_all(4)
+	_contract_btn_aceptar.add_theme_stylebox_override("normal", ba)
+	_contract_btn_aceptar.add_theme_stylebox_override("hover", ba)
+	_contract_btn_aceptar.add_theme_stylebox_override("pressed", ba)
+	_contract_btn_aceptar.add_theme_color_override("font_color", Color("#E0F4FF"))
+	_contract_btn_aceptar.add_theme_font_size_override("font_size", 12)
+	_contract_btn_aceptar.pressed.connect(func(): ContractsManager.aceptar())
+	hbox.add_child(_contract_btn_aceptar)
+
+
+func _on_contrato_disponible(contrato: Dictionary) -> void:
+	_contract_banner.visible = true
+	_contract_banner.modulate.a = 1.0
+	_contract_titulo.text = "%s  %s" % [String(contrato.get("icono", "📋")), String(contrato.get("nombre", ""))]
+	var rec_e: int = int(contrato.get("reward_euros", 0))
+	var rec_f: int = int(contrato.get("reward_fragmentos", 0))
+	var rec_c: int = int(contrato.get("reward_ceniza", 0))
+	var rec_partes: Array[String] = []
+	if rec_e > 0: rec_partes.append("+%d€" % rec_e)
+	if rec_f > 0: rec_partes.append("+%d ✧" % rec_f)
+	if rec_c > 0: rec_partes.append("+%d 🜁" % rec_c)
+	_contract_descripcion.text = "%s  →  %s" % [String(contrato.get("descripcion", "")), ", ".join(rec_partes)]
+	_contract_barra.value = 0.0
+	_contract_btn_aceptar.visible = true
+	_contract_btn_rechazar.visible = true
+	AudioManager.play_sfx("achievement", 0.7)
+
+
+func _on_contrato_aceptado(contrato: Dictionary) -> void:
+	_contract_btn_aceptar.visible = false
+	_contract_btn_rechazar.visible = false
+	_contract_titulo.text = "%s  %s" % [String(contrato.get("icono", "📋")), String(contrato.get("nombre", ""))]
+	var obj: int = int(contrato.get("objetivo", 0))
+	_contract_descripcion.text = "Progreso: 0 / %d  ·  %.0fs" % [obj, float(contrato.get("duracion", 0.0))]
+	_contract_barra.value = 0.0
+	AudioManager.play_sfx("buy")
+
+
+func _on_contrato_actualizado(restante: float, progreso_actual: int) -> void:
+	var c: Dictionary = ContractsManager.contrato_activo
+	if c.is_empty() or _contract_banner == null:
+		return
+	var obj: int = int(c.get("objetivo", 0))
+	_contract_descripcion.text = "Progreso: %d / %d  ·  %.1fs" % [progreso_actual, obj, restante]
+	_contract_barra.value = (float(progreso_actual) / float(max(obj, 1))) * 100.0
+
+
+func _on_contrato_completado(contrato: Dictionary, exito: bool) -> void:
+	if exito:
+		var rec_e: int = int(contrato.get("reward_euros", 0))
+		var rec_f: int = int(contrato.get("reward_fragmentos", 0))
+		var rec_c: int = int(contrato.get("reward_ceniza", 0))
+		if rec_e > 0:
+			euros += float(rec_e)
+			euros_totales_ganados += float(rec_e)
+			euros_changed.emit(euros)
+		if rec_f > 0:
+			fragmentos += rec_f
+			fragmentos_changed.emit(fragmentos)
+		if rec_c > 0:
+			ceniza += rec_c
+			ceniza_changed.emit(ceniza)
+		Stats.incrementar("contratos_completados")
+		Stats.notificar_evento("primer_contrato")
+		if Stats.get_stat("contratos_completados") >= 10:
+			Stats.notificar_evento("contratista_habitual")
+		mostrar_notificacion("✓ Contrato completado: +%d€ +%d ✧" % [rec_e, rec_f], false)
+		AudioManager.play_sfx("achievement", 1.1)
+	else:
+		mostrar_notificacion("Contrato fallido", false)
+	# Fade-out del banner
+	var tw := create_tween()
+	tw.tween_property(_contract_banner, "modulate:a", 0.0, 0.4)
+	await tw.finished
+	_contract_banner.visible = false
+
+
+func _on_contrato_expirado(_c: Dictionary) -> void:
+	# Se ofrecía un contrato pero el jugador no lo aceptó a tiempo
+	var tw := create_tween()
+	tw.tween_property(_contract_banner, "modulate:a", 0.0, 0.4)
+	await tw.finished
+	_contract_banner.visible = false
+
+
+# ============================================================
+# FASE 12 — PROGRESO OFFLINE
+# ============================================================
+## Calcula y aplica las ganancias acumuladas mientras el juego estuvo cerrado.
+## Se llama al final de cargar_partida() con el timestamp del último save.
+func _aplicar_progreso_offline(ts_guardado: float) -> void:
+	var ahora: float = Time.get_unix_time_from_system()
+	var delta: float = ahora - ts_guardado
+	# Evitar valores negativos (cambio horario, viaje a otra zona) y caps
+	if delta < OFFLINE_MIN_SEG_PARA_POPUP:
+		return
+	var delta_efectivo: float = clamp(delta, 0.0, OFFLINE_MAX_SEG)
+
+	var ciclos: int = machines_panel.contar_ciclos_offline(delta_efectivo)
+	if ciclos <= 0:
+		return
+
+	var ganancia_base: float = float(ciclos) * OFFLINE_AVG_EUROS_POR_CICLO
+	var ganancia_real: float = ganancia_base * multiplicador_ganancias * OFFLINE_EFICIENCIA
+	var ganancia_int: int = int(round(ganancia_real))
+	if ganancia_int <= 0:
+		return
+
+	euros += float(ganancia_int)
+	euros_totales_ganados += float(ganancia_int)
+	euros_changed.emit(euros)
+	Stats.incrementar("euros_total_historico", float(ganancia_int))
+	Stats.incrementar("prendas_total_lavadora", float(ciclos))
+	Stats.set_max("max_euros_en_run", euros)
+	_actualizar_estado_prestige_button()
+
+	_mostrar_popup_offline(delta, ciclos, ganancia_int)
+
+
+## Formatea segundos como "Xh Ym" o "Ym" o "Zs".
+func _formatear_duracion(segundos: float) -> String:
+	var s: int = int(segundos)
+	if s >= 3600:
+		var h: int = s / 3600
+		var m: int = (s % 3600) / 60
+		return "%dh %dm" % [h, m]
+	elif s >= 60:
+		var m: int = s / 60
+		return "%dm" % m
+	else:
+		return "%ds" % s
+
+
+## Popup centrado con resumen de ganancias offline. Auto-cierre al pulsar.
+func _mostrar_popup_offline(delta: float, ciclos: int, ganancia: int) -> void:
+	var capped: bool = delta > OFFLINE_MAX_SEG
+	var texto_tiempo: String = _formatear_duracion(min(delta, OFFLINE_MAX_SEG))
+	var nota_cap: String = "  (limitado a 8h)" if capped else ""
+
+	var fondo := ColorRect.new()
+	fondo.color = Color(0, 0, 0, 0.55)
+	fondo.anchor_right = 1.0
+	fondo.anchor_bottom = 1.0
+	fondo.mouse_filter = Control.MOUSE_FILTER_STOP
+	fondo.z_index = 200
+	$HUD.add_child(fondo)
+
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(420, 0)
+	panel.anchor_left = 0.5
+	panel.anchor_top = 0.5
+	panel.anchor_right = 0.5
+	panel.anchor_bottom = 0.5
+	panel.offset_left = -210
+	panel.offset_top = -100
+	panel.offset_right = 210
+	panel.offset_bottom = 100
+	var pe := StyleBoxFlat.new()
+	pe.bg_color = Color("#1A1A2E")
+	pe.border_color = Color("#FFD060")
+	pe.set_border_width_all(2)
+	pe.set_corner_radius_all(10)
+	pe.content_margin_left = 22
+	pe.content_margin_right = 22
+	pe.content_margin_top = 18
+	pe.content_margin_bottom = 18
+	panel.add_theme_stylebox_override("panel", pe)
+	fondo.add_child(panel)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 12)
+	panel.add_child(vbox)
+
+	var titulo := Label.new()
+	titulo.text = "🌙 Has vuelto"
+	titulo.add_theme_color_override("font_color", Color("#FFD060"))
+	titulo.add_theme_font_size_override("font_size", 20)
+	titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(titulo)
+
+	var detalle := Label.new()
+	detalle.text = "Estuviste fuera %s%s.\nTus lavadoras procesaron %d prendas." % [texto_tiempo, nota_cap, ciclos]
+	detalle.add_theme_color_override("font_color", Color("#E0E0F0"))
+	detalle.add_theme_font_size_override("font_size", 13)
+	detalle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	detalle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	vbox.add_child(detalle)
+
+	var ganancia_label := Label.new()
+	ganancia_label.text = "+%d€" % ganancia
+	ganancia_label.add_theme_color_override("font_color", Color("#40FF80"))
+	ganancia_label.add_theme_font_size_override("font_size", 28)
+	ganancia_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	vbox.add_child(ganancia_label)
+
+	var btn := Button.new()
+	btn.text = "Continuar"
+	btn.custom_minimum_size = Vector2(0, 36)
+	var bs := StyleBoxFlat.new()
+	bs.bg_color = Color("#403318")
+	bs.border_color = Color("#FFD060")
+	bs.set_border_width_all(1)
+	bs.set_corner_radius_all(4)
+	btn.add_theme_stylebox_override("normal", bs)
+	btn.add_theme_stylebox_override("hover", bs)
+	btn.add_theme_stylebox_override("pressed", bs)
+	btn.add_theme_color_override("font_color", Color("#FFE898"))
+	btn.add_theme_font_size_override("font_size", 14)
+	btn.pressed.connect(func(): fondo.queue_free())
+	vbox.add_child(btn)
+
+	# Sonido de bienvenida
+	AudioManager.play_sfx("achievement", 0.9)
 
 
 # ============================================================
