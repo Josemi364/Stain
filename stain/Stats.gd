@@ -40,6 +40,8 @@ const STAT_IDS: Array[String] = [
 	"vips_completados",
 	# Fase 13
 	"contratos_completados",
+	# Fase 19
+	"custodios_limpiados",
 ]
 
 
@@ -150,7 +152,7 @@ const LOGROS: Array[Dictionary] = [
 	{"id": "bestiario_normales", "nombre": "Catálogo civil", "descripcion": "Investiga las 6 prendas normales.",
 	 "categoria": "Hitos", "icono": "📖",
 	 "tipo": "evento"},
-	{"id": "bestiario_completo", "nombre": "Bestiario completo", "descripcion": "Investiga las 12 prendas, alien incluidas.",
+	{"id": "bestiario_completo", "nombre": "Bestiario completo", "descripcion": "Investiga las 13 prendas, Custodio incluido.",
 	 "categoria": "Hitos", "icono": "📚",
 	 "tipo": "evento"},
 
@@ -175,6 +177,17 @@ const LOGROS: Array[Dictionary] = [
 	{"id": "ascendido", "nombre": "Ascendido", "descripcion": "Compra las 5 mejoras de Esencia.",
 	 "categoria": "Hitos", "icono": "👑",
 	 "tipo": "evento"},
+
+	# Custodio (Fase 19)
+	{"id": "primer_custodio", "nombre": "Primer Custodio", "descripcion": "Limpia tu primer Custodio.",
+	 "categoria": "Alien", "icono": "🛸",
+	 "tipo": "stat", "stat": "custodios_limpiados", "umbral": 1},
+	{"id": "cazador_custodios", "nombre": "Cazador de Custodios", "descripcion": "Limpia 5 Custodios.",
+	 "categoria": "Alien", "icono": "⚔",
+	 "tipo": "stat", "stat": "custodios_limpiados", "umbral": 5},
+	{"id": "dominio_custodios", "nombre": "Dominio absoluto", "descripcion": "Limpia 15 Custodios.",
+	 "categoria": "Alien", "icono": "👑",
+	 "tipo": "stat", "stat": "custodios_limpiados", "umbral": 15},
 ]
 
 

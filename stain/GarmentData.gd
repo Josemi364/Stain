@@ -192,6 +192,34 @@ const PRENDAS_ALIEN_DESBLOQUEABLES: Array[Dictionary] = [
 ]
 
 # ============================================================
+# CUSTODIO (Fase 19)
+# ============================================================
+# Prenda especial. NO aparece en el pool aleatorio. Main la inserta al frente
+# de la cola cada N alien limpiados (combinado manual + lavadora).
+# - Solo se puede limpiar manualmente (rechazada por lavadoras).
+# - Da las 3 monedas (€, ✧, 🜁): única alien que da ceniza directa.
+# - get_prenda_por_id("custodio") la devuelve (para serialización).
+const PRENDA_CUSTODIO: Dictionary = {
+	"id": "custodio",
+	"nombre": "Custodio",
+	"tipo_mancha": "Eco residual",
+	"recompensa": 200.0,
+	"color_prenda": Color("#3A1A6E"),
+	"color_mancha": Color("#FFD060"),
+	"es_alien": true,
+	"es_custodio": true,
+	"ceniza_bonus": 1,
+	"fragmentos_bonus": 5,
+	"forma": "vestido",
+	"texture_path": "res://assets/garments/tunica_dimensional.svg"
+}
+
+
+func get_prenda_custodio() -> Dictionary:
+	return PRENDA_CUSTODIO.duplicate()
+
+
+# ============================================================
 # SISTEMA DE SUERTE — separado por fuente de mejora
 # ============================================================
 const PROBABILIDAD_BASE: float = 0.015
@@ -281,6 +309,7 @@ func get_cola_inicial(cantidad: int) -> Array[Dictionary]:
 
 ## [Fase 16] Devuelve TODAS las prendas que pueden aparecer (normales + alien base + desbloqueables).
 ## Usado por el bestiario para listar el catálogo completo.
+## El Custodio (Fase 19) se incluye también — entra en el bestiario al limpiarse.
 func get_todas_prendas() -> Array[Dictionary]:
 	var lista: Array[Dictionary] = []
 	for p in PRENDAS_NORMALES:
@@ -289,10 +318,13 @@ func get_todas_prendas() -> Array[Dictionary]:
 		lista.append(p)
 	for p in PRENDAS_ALIEN_DESBLOQUEABLES:
 		lista.append(p)
+	lista.append(PRENDA_CUSTODIO)
 	return lista
 
 
 func get_prenda_por_id(id: String) -> Dictionary:
+	if id == "custodio":
+		return PRENDA_CUSTODIO.duplicate()
 	for p in PRENDAS_NORMALES:
 		if p["id"] == id:
 			return p.duplicate()

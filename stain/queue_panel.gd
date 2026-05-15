@@ -95,6 +95,17 @@ func reset_cola() -> void:
 	_refrescar_visual()
 
 
+## [Fase 19] Inserta una prenda al frente de la cola, desplazando el resto.
+## Si la cola estaba llena, descarta la última. Usado para encuentros del Custodio.
+func insertar_al_frente(prenda: Dictionary) -> void:
+	if prenda.is_empty():
+		return
+	cola.insert(0, prenda)
+	while cola.size() > MAX_COLA:
+		cola.pop_back()
+	_refrescar_visual()
+
+
 ## Compatibilidad con código anterior (delega a reset_cola).
 func reiniciar_cola() -> void:
 	reset_cola()

@@ -116,6 +116,34 @@ Las 8 mejoras y sus efectos:
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
 
+### El Custodio (Fase 19)
+
+Encuentros especiales con una prenda única (`PRENDA_CUSTODIO` en `GarmentData`). Cada `CUSTODIO_INTERVALO_ALIEN = 15` aliens limpiados (combinado manual + lavadora), Main inserta automáticamente un Custodio al frente de la cola via `queue_panel.insertar_al_frente()`.
+
+Propiedades de la prenda:
+- recompensa 200€, fragmentos_bonus 5, **`ceniza_bonus = 1`** (única alien que da ceniza directa)
+- `es_custodio: true` (flag)
+- `es_alien: true` (cuenta como alien para todos los demás sistemas)
+- color púrpura profundo con mancha dorada
+
+Restricciones:
+- **NO se puede asignar a lavadora** (rechazo en `_on_intento_seleccion_lavadora` antes del check de cuántica). Mensaje: "El Custodio exige tus manos"
+- Sí cuenta en bestiario (suma 13 entradas)
+- Sí incrementa contadores de stats normales (`aliens_total_manual`)
+
+Trigger en Main:
+- `_chequear_custodio_aparicion()` se llama tras cada alien limpiada (manual o máquina)
+- Compara `aliens_totales / 15` con `_ultimo_custodio_threshold` persistido
+- Si cruza un nuevo múltiplo, llama `_invocar_custodio()` que inserta + flash dorado fullscreen + SFX
+- `_celebrar_custodio_limpio()` se llama al entregarlo manualmente: notificación épica + SFX
+
+`_ultimo_custodio_threshold` se persiste en `save.main`. Si el save no lo trae (pre-Fase 19), se deriva de `Stats.aliens_total_*` para no disparar custodios pendientes al cargar.
+
+3 logros nuevos en categoría Alien (todos tipo "stat"):
+- `primer_custodio` (1), `cazador_custodios` (5), `dominio_custodios` (15)
+
+1 stat nuevo: `custodios_limpiados`. Logro `bestiario_completo` actualizado a 13 prendas (incluye Custodio).
+
 ### Trascendencia / Meta-prestigio (Fase 18)
 
 Sistema de "soft reset" que va por encima del prestigio. Tras `TRASCENDENCIA_UMBRAL_PRESTIGIOS = 5` prestigios, aparece el botón "TRASCENDER ✺" en la esquina superior central. Al confirmar via diálogo modal, se ejecuta `_ejecutar_trascendencia()`:
@@ -388,7 +416,8 @@ Save schema (top level):
             bendicion_activa, _bend_mult_euros, _bend_red_velocidad,    # Fase 15
             aliados_comprados, _ali_mult_euros, _ali_red_velocidad,     # Fase 17
             esencia, num_trascendencias, trascendencia_desbloqueada,
-            esencia_compras, _esc_mult_euros, cap_multiplicador },      # Fase 18
+            esencia_compras, _esc_mult_euros, cap_multiplicador,        # Fase 18
+            _ultimo_custodio_threshold },                               # Fase 19
   "garment_data":   { suerte_euros, suerte_ceniza },
   "shop_panel":     { upgrades_comprados: [String] },
   "ash_shop_panel": { compras_contador: {String → int} },

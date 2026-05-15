@@ -96,6 +96,10 @@ const ESENCIA_IDS: Array[String] = ["aliento_eterno", "eco_ascendido", "cuna_abi
 # Cap del multiplicador de ganancias (Fase 5: 3.0; Fase 18 mejora "lavandero" lo sube a 5.0)
 var cap_multiplicador: float = 3.0
 
+# Fase 19 — Custodio: aparece cada N alien limpiados (combinado manual+lavadora)
+const CUSTODIO_INTERVALO_ALIEN: int = 15
+var _ultimo_custodio_threshold: int = 0  # último múltiplo de 15 que disparó un Custodio
+
 const BENDICIONES: Array[Dictionary] = [
 	{
 		"id": "manos_rapidas",
@@ -499,6 +503,12 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 	Stats.set_max("max_euros_en_run", euros)
 	# Fase 16: bestiario
 	Stats.investigar_prenda(String(prenda.get("id", "")))
+	# Fase 19: Custodio entregado → stat + posible nuevo Custodio
+	if bool(prenda.get("es_custodio", false)):
+		Stats.incrementar("custodios_limpiados")
+		_celebrar_custodio_limpio()
+	if es_alien:
+		_chequear_custodio_aparicion()
 
 	# Fase 11A: tutorial — primera entrega + chequear umbrales
 	_notif_tutorial("entrega_completada")
@@ -518,6 +528,12 @@ func _on_intento_seleccion_lavadora(idx: int) -> void:
 
 	var prenda: Dictionary = queue_panel.peek_prenda(idx)
 	if prenda.is_empty():
+		return
+
+	# Fase 19: el Custodio NUNCA va a lavadora — ni siquiera la cuántica.
+	if bool(prenda.get("es_custodio", false)):
+		mostrar_notificacion("El Custodio exige tus manos", true)
+		AudioManager.play_sfx("denied")
 		return
 
 	var es_alien: bool = bool(prenda.get("es_alien", false))
@@ -681,6 +697,9 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 	Stats.set_max("max_euros_en_run", euros)
 	# Fase 16: bestiario también vía lavadora
 	Stats.investigar_prenda(String(prenda.get("id", "")))
+	# Fase 19: las alien procesadas por máquina también cuentan para el Custodio
+	if es_alien:
+		_chequear_custodio_aparicion()
 
 
 # ============================================================
@@ -1198,6 +1217,8 @@ func _debug_ejecutar_reset() -> void:
 	esencia_compras.clear()
 	_esc_mult_euros = 1.0
 	cap_multiplicador = 3.0
+	# Fase 19
+	_ultimo_custodio_threshold = 0
 
 	GarmentData.resetear_suerte()
 	GarmentData.bonus_prob_alien = 0.0
@@ -1364,6 +1385,8 @@ func guardar_partida() -> bool:
 			"esencia_compras": esencia_compras.duplicate(),
 			"_esc_mult_euros": _esc_mult_euros,
 			"cap_multiplicador": cap_multiplicador,
+			# Fase 19
+			"_ultimo_custodio_threshold": _ultimo_custodio_threshold,
 		},
 		"garment_data": GarmentData.serializar(),
 		"shop_panel": shop_panel.serializar(),
@@ -1455,6 +1478,14 @@ func cargar_partida() -> bool:
 			esencia_compras.append(sid)
 	_esc_mult_euros = float(m.get("_esc_mult_euros", 1.0))
 	cap_multiplicador = float(m.get("cap_multiplicador", 3.0))
+
+	# Fase 19: si el save no lo trae, derivamos del estado de aliens_totales para
+	# evitar disparar custodios pendientes al cargar una partida pre-Fase 19.
+	if m.has("_ultimo_custodio_threshold"):
+		_ultimo_custodio_threshold = int(m["_ultimo_custodio_threshold"])
+	else:
+		var total_alien_load: int = int(Stats.get_stat("aliens_total_manual") + Stats.get_stat("aliens_total_lavadora"))
+		_ultimo_custodio_threshold = (total_alien_load / CUSTODIO_INTERVALO_ALIEN) * CUSTODIO_INTERVALO_ALIEN
 
 	# 2. Subsistemas
 	GarmentData.cargar_estado(data.get("garment_data", {}))
@@ -1895,6 +1926,48 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 		_event_banner_progreso.text = "%d / %d prendas · %.1fs" % [prog, obj, restante]
 	else:
 		_event_banner_progreso.text = "%s · %.1fs" % [String(ev["descripcion"]), restante]
+
+
+# ============================================================
+# FASE 19 — EL CUSTODIO
+# ============================================================
+## Comprueba si el contador de alien combinado ha cruzado un nuevo múltiplo de
+## CUSTODIO_INTERVALO_ALIEN desde la última aparición. Si sí, encarga un Custodio.
+func _chequear_custodio_aparicion() -> void:
+	var total_alien: int = int(Stats.get_stat("aliens_total_manual") + Stats.get_stat("aliens_total_lavadora"))
+	var nuevo_threshold: int = (total_alien / CUSTODIO_INTERVALO_ALIEN) * CUSTODIO_INTERVALO_ALIEN
+	if nuevo_threshold <= _ultimo_custodio_threshold or nuevo_threshold == 0:
+		return
+	_ultimo_custodio_threshold = nuevo_threshold
+	_invocar_custodio()
+
+
+## Inserta el Custodio al frente de la cola y muestra notificación épica.
+func _invocar_custodio() -> void:
+	queue_panel.insertar_al_frente(GarmentData.get_prenda_custodio())
+	mostrar_notificacion("🛸 Un Custodio se manifiesta…", true)
+	AudioManager.play_sfx("alien", 0.5)
+	# Pequeño flash dorado en la pantalla
+	var flash := ColorRect.new()
+	flash.color = Color(1.0, 0.85, 0.3, 0.0)
+	flash.anchor_right = 1.0
+	flash.anchor_bottom = 1.0
+	flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash.z_index = 5
+	$HUD.add_child(flash)
+	var tw := create_tween()
+	tw.tween_property(flash, "color:a", 0.4, 0.18)
+	tw.tween_property(flash, "color:a", 0.0, 0.45)
+	await tw.finished
+	if is_instance_valid(flash):
+		flash.queue_free()
+
+
+## Notificación grande tras limpiar Custodio. Bonificación de € extra (×3) ya
+## está reflejada en la recompensa base 200 del propio Custodio.
+func _celebrar_custodio_limpio() -> void:
+	mostrar_notificacion("🛸 Custodio sometido. La eternidad te observa.", true)
+	AudioManager.play_sfx("achievement", 0.7)
 
 
 # ============================================================
@@ -2356,7 +2429,7 @@ func _on_prenda_investigada(_id: String, total: int) -> void:
 			normales_invest += 1
 	if normales_invest >= 6:
 		Stats.notificar_evento("bestiario_normales")
-	if todas_invest >= 12:
+	if todas_invest >= 13:
 		Stats.notificar_evento("bestiario_completo")
 	# Refrescar el overlay si está abierto (para que la nueva prenda aparezca activa)
 	if _achievements_overlay != null and _achievements_overlay.visible \
