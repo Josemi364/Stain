@@ -156,6 +156,7 @@ const PERFILES_MANCHA: Dictionary = {
 @onready var info_label: Label = $InfoLabel
 
 var sponge_sprite: Sprite2D
+var foam_particles: CPUParticles2D
 
 # === Estado interno ===
 var stain_image: Image
@@ -168,9 +169,12 @@ var frotando: bool = false
 var contador_eventos: int = 0
 var tiene_prenda: bool = false
 var ya_autocompletado: bool = false
+var _scrub_sfx_cooldown: float = 0.0
 
 var bonus_fuerza: float = 0.0
 var bonus_radio: int = 0
+# Fase 10: bonus temporal de evento (no se persiste)
+var bonus_fuerza_evento: float = 0.0
 
 signal garment_delivered(garment: Dictionary, earned: float)
 
@@ -178,7 +182,10 @@ signal garment_delivered(garment: Dictionary, earned: float)
 func _ready() -> void:
 	deliver_button.pressed.connect(_on_deliver_pressed)
 	deliver_button.disabled = true
+	deliver_button.tooltip_text = "Atajo: ESPACIO"
+	tooltip_text = "Frota con el ratón para limpiar la mancha"
 	_crear_esponja()
+	_crear_foam_particles()
 
 
 # ============================================================
@@ -226,12 +233,43 @@ func _crear_esponja() -> void:
 	add_child(sponge_sprite)
 
 
-func _process(_delta: float) -> void:
+## Burbujas blancas que suben mientras el jugador frota.
+func _crear_foam_particles() -> void:
+	foam_particles = CPUParticles2D.new()
+	foam_particles.z_index = 99
+	foam_particles.emitting = false
+	foam_particles.amount = 20
+	foam_particles.lifetime = 0.5
+	foam_particles.explosiveness = 0.0
+	foam_particles.randomness = 0.7
+	foam_particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	foam_particles.emission_sphere_radius = 12.0
+	foam_particles.direction = Vector2(0, -1)
+	foam_particles.spread = 35.0
+	foam_particles.initial_velocity_min = 30.0
+	foam_particles.initial_velocity_max = 70.0
+	foam_particles.gravity = Vector2(0, -120)
+	foam_particles.scale_amount_min = 0.5
+	foam_particles.scale_amount_max = 1.2
+	# Fade-out por curva de color (alpha)
+	var grad := Gradient.new()
+	grad.add_point(0.0, Color(1, 1, 1, 0.85))
+	grad.add_point(0.7, Color(0.85, 0.92, 1.0, 0.55))
+	grad.add_point(1.0, Color(0.85, 0.92, 1.0, 0.0))
+	foam_particles.color_ramp = grad
+	add_child(foam_particles)
+
+
+func _process(delta: float) -> void:
+	_scrub_sfx_cooldown = max(0.0, _scrub_sfx_cooldown - delta)
+
 	if sponge_sprite == null:
 		return
 	var pos_local: Vector2 = get_local_mouse_position()
 	var rect := Rect2(Vector2.ZERO, size)
-	if tiene_prenda and rect.has_point(pos_local):
+	var sobre_prenda: bool = tiene_prenda and rect.has_point(pos_local)
+
+	if sobre_prenda:
 		sponge_sprite.visible = true
 		sponge_sprite.position = pos_local
 		if frotando:
@@ -242,6 +280,11 @@ func _process(_delta: float) -> void:
 			sponge_sprite.scale = Vector2(1.0, 1.0)
 	else:
 		sponge_sprite.visible = false
+
+	# Partículas de espuma siguen al cursor y emiten al frotar
+	if foam_particles != null:
+		foam_particles.position = pos_local
+		foam_particles.emitting = frotando and sobre_prenda
 
 
 # ============================================================
@@ -408,7 +451,7 @@ func _frotar_en_posicion(pos_local: Vector2) -> void:
 	var pixeles_borrados: int = 0
 
 	var radio_efectivo: int = RADIO_FROTADO + bonus_radio
-	var fuerza_efectiva: float = FUERZA_BORRADO + bonus_fuerza
+	var fuerza_efectiva: float = FUERZA_BORRADO + bonus_fuerza + bonus_fuerza_evento
 	var radio_sq: int = radio_efectivo * radio_efectivo
 
 	for y in range(max(0, cy - radio_efectivo), min(TEX_SIZE, cy + radio_efectivo + 1)):
@@ -427,6 +470,11 @@ func _frotar_en_posicion(pos_local: Vector2) -> void:
 	pixeles_mancha_actual -= pixeles_borrados
 	pixeles_mancha_actual = max(0, pixeles_mancha_actual)
 	stain_image_texture.update(stain_image)
+
+	# SFX de frotado, con cooldown para no saturar
+	if pixeles_borrados > 0 and _scrub_sfx_cooldown <= 0.0:
+		AudioManager.play_sfx("scrub", randf_range(0.85, 1.15))
+		_scrub_sfx_cooldown = 0.08
 
 	contador_eventos += 1
 	if contador_eventos >= FRAMES_ENTRE_MEDICIONES:
@@ -457,6 +505,7 @@ func _autocompletar_limpieza() -> void:
 	clean_pct = 1.0
 	progress_bar.value = 100.0
 	deliver_button.disabled = false
+	AudioManager.play_sfx("deliver", 1.1)
 
 
 # ============================================================
@@ -495,10 +544,16 @@ func limpiar_instantaneo() -> void:
 
 
 func _on_deliver_pressed() -> void:
+	intentar_entregar()
+
+
+## API pública: entrega la prenda actual si está lista. Devuelve true si entregó.
+## Usado por _on_deliver_pressed y por el atajo SPACE en Main.
+func intentar_entregar() -> bool:
 	if not tiene_prenda:
-		return
+		return false
 	if clean_pct < UMBRAL_ENTREGA:
-		return
+		return false
 
 	var recompensa_final: float = float(prenda_actual.get("recompensa", 0.0))
 	var prenda_entregada: Dictionary = prenda_actual.duplicate()
@@ -508,3 +563,31 @@ func _on_deliver_pressed() -> void:
 	deliver_button.disabled = true
 
 	garment_delivered.emit(prenda_entregada, recompensa_final)
+	return true
+
+
+# ============================================================
+# FASE 6 — PERSISTENCIA
+# ============================================================
+func serializar() -> Dictionary:
+	return {
+		"bonus_fuerza": bonus_fuerza,
+		"bonus_radio": bonus_radio,
+		"prenda_actual_id": String(prenda_actual.get("id", "")) if tiene_prenda else "",
+	}
+
+
+## Restaura bonuses y, si había una prenda en curso, la recarga fresca.
+## El pixel state de la mancha NO se persiste: la prenda recargada arranca con manchas nuevas.
+## Devuelve true si recargó una prenda (Main sabrá que no llame consumir_siguiente).
+func cargar_estado(data: Dictionary) -> bool:
+	bonus_fuerza = float(data.get("bonus_fuerza", 0.0))
+	bonus_radio = int(data.get("bonus_radio", 0))
+	var prenda_id: String = String(data.get("prenda_actual_id", ""))
+	if prenda_id == "":
+		return false
+	var prenda: Dictionary = GarmentData.get_prenda_por_id(prenda_id)
+	if prenda.is_empty():
+		return false
+	cargar_prenda(prenda)
+	return true

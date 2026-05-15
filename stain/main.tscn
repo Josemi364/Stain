@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://bua23jsr0mlb4" path="res://machines_panel.gd" id="5_lquwl"]
 [ext_resource type="Script" uid="uid://bbiukgd5j7kmk" path="res://prestige_dialog.gd" id="6_prstdlg"]
 [ext_resource type="Script" uid="uid://cv4alghlg13se" path="res://ash_shop_panel.gd" id="7_ashspnl"]
+[ext_resource type="Script" path="res://fragment_shop_panel.gd" id="8_fragshp"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0xm2m"]
 bg_color = Color(0.2509804, 1, 0.5019608, 1)
@@ -68,18 +69,26 @@ text = "PRESTIGIO 🜁"
 [node name="TabTienda" type="Button" parent="HUD" unique_id=-1094967294]
 offset_left = 910.0
 offset_top = 62.0
-offset_right = 1080.0
+offset_right = 1028.0
 offset_bottom = 97.0
 theme_override_font_sizes/font_size = 12
-text = "€ TIENDA"
+text = "€"
 
 [node name="TabCeniza" type="Button" parent="HUD" unique_id=-1094967293]
-offset_left = 1082.0
+offset_left = 1030.0
+offset_top = 62.0
+offset_right = 1148.0
+offset_bottom = 97.0
+theme_override_font_sizes/font_size = 12
+text = "🜁"
+
+[node name="TabFragmentos" type="Button" parent="HUD" unique_id=-1094967280]
+offset_left = 1150.0
 offset_top = 62.0
 offset_right = 1268.0
 offset_bottom = 97.0
 theme_override_font_sizes/font_size = 12
-text = "🜁 CENIZA"
+text = "✧"
 
 [node name="PrestigeOverlay" type="ColorRect" parent="HUD" unique_id=-1094967292]
 visible = false
@@ -230,3 +239,12 @@ offset_top = 100.0
 offset_right = 1260.0
 offset_bottom = 600.0
 script = ExtResource("7_ashspnl")
+
+[node name="FragmentShopPanel" type="Panel" parent="." unique_id=-1094967281]
+visible = false
+custom_minimum_size = Vector2(350, 500)
+offset_left = 910.0
+offset_top = 100.0
+offset_right = 1260.0
+offset_bottom = 600.0
+script = ExtResource("8_fragshp")

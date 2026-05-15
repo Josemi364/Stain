@@ -100,6 +100,32 @@ func reiniciar_cola() -> void:
 	reset_cola()
 
 
+# ============================================================
+# FASE 6 — PERSISTENCIA
+# ============================================================
+func serializar() -> Dictionary:
+	var ids: Array = []
+	for p in cola:
+		ids.append(String(p.get("id", "")))
+	return {"cola_ids": ids}
+
+
+func cargar_estado(data: Dictionary) -> void:
+	cola.clear()
+	var ids: Array = data.get("cola_ids", [])
+	for id_v in ids:
+		var sid := String(id_v)
+		if sid == "":
+			continue
+		var p: Dictionary = GarmentData.get_prenda_por_id(sid)
+		if not p.is_empty():
+			cola.append(p)
+	# Rellena hasta MAX_COLA si el save tenía menos
+	while cola.size() < MAX_COLA:
+		cola.append(GarmentData.get_prenda_aleatoria())
+	_refrescar_visual()
+
+
 ## Útil si en el futuro queremos lavadoras con búsqueda automática.
 func extraer_prenda_compatible(acepta_alien: bool) -> Dictionary:
 	for i in cola.size():
@@ -121,6 +147,7 @@ func _crear_slot(idx: int) -> void:
 	var contenedor := PanelContainer.new()
 	contenedor.custom_minimum_size = SLOT_SIZE
 	contenedor.mouse_filter = Control.MOUSE_FILTER_STOP
+	contenedor.tooltip_text = "Clic o tecla %d → asignar a lavadora" % (idx + 1)
 
 	var estilo := StyleBoxFlat.new()
 	estilo.bg_color = Color("#12122A")

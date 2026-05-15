@@ -17,6 +17,9 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 [autoload]
 
 GarmentData="*uid://dd0kpan2d8prr"
+Stats="*res://Stats.gd"
+AudioManager="*res://AudioManager.gd"
+EventsManager="*res://EventsManager.gd"
 
 [display]
 

@@ -157,6 +157,41 @@ const PRENDAS_ALIEN: Array[Dictionary] = [
 ]
 
 # ============================================================
+# PRENDAS ALIEN DESBLOQUEABLES (Fase 7)
+# ============================================================
+# Estas no aparecen en el pool por defecto. Se añaden vía
+# desbloquear_prenda() al comprar la mejora correspondiente
+# en el Altar de Fragmentos. Persisten entre prestigios.
+const PRENDAS_ALIEN_DESBLOQUEABLES: Array[Dictionary] = [
+	{
+		"id": "sudario_mensajero",
+		"nombre": "Sudario del Mensajero",
+		"tipo_mancha": "Tinta del Mensajero",
+		"recompensa": 100.0,
+		"color_prenda": Color("#1A0A3A"),
+		"color_mancha": Color("#AA80FF"),
+		"es_alien": true,
+		"ceniza_bonus": 0,
+		"fragmentos_bonus": 4,
+		"forma": "vestido",
+		"texture_path": "res://assets/garments/manto_observador.svg"
+	},
+	{
+		"id": "velo_inicio",
+		"nombre": "Velo del Inicio",
+		"tipo_mancha": "Polvo de génesis",
+		"recompensa": 150.0,
+		"color_prenda": Color("#FFD0FF"),
+		"color_mancha": Color("#FF40AA"),
+		"es_alien": true,
+		"ceniza_bonus": 0,
+		"fragmentos_bonus": 5,
+		"forma": "vestido",
+		"texture_path": "res://assets/garments/tunica_dimensional.svg"
+	},
+]
+
+# ============================================================
 # SISTEMA DE SUERTE — separado por fuente de mejora
 # ============================================================
 const PROBABILIDAD_BASE: float = 0.015
@@ -164,6 +199,10 @@ const PROBABILIDAD_MAX: float = 0.25
 
 var suerte_euros: float = 0.0    # de upgrades con €, se resetea en prestigio
 var suerte_ceniza: float = 0.0   # de upgrades con Ceniza, nunca se resetea
+var bonus_prob_alien: float = 0.0 # de mejora "Compás del Observador" en el altar
+
+# IDs de prendas alien desbloqueables ya compradas (permanente)
+var prendas_desbloqueadas: Array[String] = []
 
 # ============================================================
 # DEBUG — forzar siguiente prenda como alien
@@ -172,7 +211,31 @@ var _forzar_siguiente_alien: bool = false
 
 
 func get_probabilidad_alien() -> float:
-	return min(PROBABILIDAD_BASE + suerte_euros + suerte_ceniza, PROBABILIDAD_MAX)
+	return min(PROBABILIDAD_BASE + suerte_euros + suerte_ceniza + bonus_prob_alien, PROBABILIDAD_MAX)
+
+
+## Devuelve el pool de prendas alien activas (base + desbloqueables compradas).
+func get_prendas_alien_activas() -> Array[Dictionary]:
+	var lista: Array[Dictionary] = []
+	for p in PRENDAS_ALIEN:
+		lista.append(p)
+	for p in PRENDAS_ALIEN_DESBLOQUEABLES:
+		if String(p["id"]) in prendas_desbloqueadas:
+			lista.append(p)
+	return lista
+
+
+## Añade una prenda alien desbloqueable al pool activo. Idempotente.
+func desbloquear_prenda(id: String) -> bool:
+	if id in prendas_desbloqueadas:
+		return false
+	# Solo IDs que existan en la lista de desbloqueables
+	for p in PRENDAS_ALIEN_DESBLOQUEABLES:
+		if p["id"] == id:
+			prendas_desbloqueadas.append(id)
+			return true
+	push_warning("desbloquear_prenda: id '%s' no es desbloqueable" % id)
+	return false
 
 
 func añadir_suerte(cantidad: float) -> void:
@@ -200,11 +263,12 @@ func forzar_siguiente_alien() -> void:
 
 
 func get_prenda_aleatoria() -> Dictionary:
+	var pool_alien: Array[Dictionary] = get_prendas_alien_activas()
 	if _forzar_siguiente_alien:
 		_forzar_siguiente_alien = false
-		return PRENDAS_ALIEN[randi() % PRENDAS_ALIEN.size()].duplicate()
+		return pool_alien[randi() % pool_alien.size()].duplicate()
 	if randf() < get_probabilidad_alien():
-		return PRENDAS_ALIEN[randi() % PRENDAS_ALIEN.size()].duplicate()
+		return pool_alien[randi() % pool_alien.size()].duplicate()
 	return PRENDAS_NORMALES[randi() % PRENDAS_NORMALES.size()].duplicate()
 
 
@@ -222,5 +286,36 @@ func get_prenda_por_id(id: String) -> Dictionary:
 	for p in PRENDAS_ALIEN:
 		if p["id"] == id:
 			return p.duplicate()
+	for p in PRENDAS_ALIEN_DESBLOQUEABLES:
+		if p["id"] == id:
+			return p.duplicate()
 	push_error("GarmentData: prenda '%s' no encontrada." % id)
 	return {}
+
+
+# ============================================================
+# FASE 6 — PERSISTENCIA (extendido en Fase 7)
+# ============================================================
+func serializar() -> Dictionary:
+	return {
+		"suerte_euros": suerte_euros,
+		"suerte_ceniza": suerte_ceniza,
+		"bonus_prob_alien": bonus_prob_alien,
+		"prendas_desbloqueadas": prendas_desbloqueadas.duplicate(),
+	}
+
+
+func cargar_estado(data: Dictionary) -> void:
+	suerte_euros = float(data.get("suerte_euros", 0.0))
+	suerte_ceniza = float(data.get("suerte_ceniza", 0.0))
+	bonus_prob_alien = float(data.get("bonus_prob_alien", 0.0))
+	prendas_desbloqueadas.clear()
+	var lista: Array = data.get("prendas_desbloqueadas", [])
+	for id_v in lista:
+		var sid := String(id_v)
+		# Solo IDs que sigan existiendo en la lista de desbloqueables
+		for p in PRENDAS_ALIEN_DESBLOQUEABLES:
+			if p["id"] == sid and sid not in prendas_desbloqueadas:
+				prendas_desbloqueadas.append(sid)
+				break
+	_forzar_siguiente_alien = false

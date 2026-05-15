@@ -178,7 +178,20 @@ func confirmar_compra(upgrade_id: String) -> void:
 	if upgrade_id in upgrades_comprados:
 		return
 	upgrades_comprados.append(upgrade_id)
+	_flash_compra(upgrade_id)
 	_refrescar_todo()
+
+
+## [Fase 9] Tween de modulate sobre la card recién comprada.
+func _flash_compra(upgrade_id: String) -> void:
+	if not cards.has(upgrade_id):
+		return
+	var card: Control = cards[upgrade_id]
+	if not is_instance_valid(card):
+		return
+	card.modulate = Color(1.6, 1.6, 1.6)
+	var tw := create_tween()
+	tw.tween_property(card, "modulate", Color.WHITE, 0.4)
 
 
 ## Devuelve los datos completos de un upgrade por su ID.
@@ -345,3 +358,22 @@ func reset_compras() -> void:
 ## Compatibilidad con señal prestige_realizado (delega a reset_compras).
 func reset_para_prestigio() -> void:
 	reset_compras()
+
+
+# ============================================================
+# FASE 6 — PERSISTENCIA
+# ============================================================
+func serializar() -> Dictionary:
+	return {
+		"upgrades_comprados": upgrades_comprados.duplicate(),
+	}
+
+
+func cargar_estado(data: Dictionary) -> void:
+	upgrades_comprados.clear()
+	var lista: Array = data.get("upgrades_comprados", [])
+	for id in lista:
+		var sid := String(id)
+		if not get_upgrade(sid).is_empty() and sid not in upgrades_comprados:
+			upgrades_comprados.append(sid)
+	_refrescar_todo()

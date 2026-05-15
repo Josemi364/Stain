@@ -17,7 +17,7 @@ const TIPOS_LAVADORA: Dictionary = {
 	"basica": {
 		"nombre": "Lavadora básica",
 		"descripcion": "Procesa prendas normales.",
-		"precio": 100,
+		"precio": 75,
 		"ceniza": 0,
 		"ciclo_seg": 20.0,
 		"acepta_alien": false,
@@ -68,6 +68,10 @@ var ceniza_actual: int = 0
 var contador_por_tipo: Dictionary = {"basica": 0, "industrial": 0, "cuantica": 0}
 # Cuando es true, todas las lavadoras aceptan prendas alien (mejora de Ceniza)
 var memoria_prendas: bool = false
+# Reducción del ciclo de la lavadora cuántica (0..0.9). Lo aplica el altar de fragmentos.
+var bonus_reduccion_ciclo_cuantica: float = 0.0
+# Fase 10: multiplicador temporal de velocidad para Pulso cuántico (no persiste)
+var mult_velocidad_evento: float = 1.0
 
 var titulo_label: Label
 var lista_compra: VBoxContainer
@@ -247,7 +251,7 @@ func _process(delta: float) -> void:
 			lav["label_estado"].text = "Esperando asignación..."
 			continue
 
-		lav["tiempo"] += delta
+		lav["tiempo"] += delta * mult_velocidad_evento
 		var pct: float = clamp(lav["tiempo"] / lav["ciclo_seg"], 0.0, 1.0)
 		lav["barra"].value = pct * 100.0
 
@@ -262,6 +266,7 @@ func _process(delta: float) -> void:
 			var recompensa: float = float(prenda.get("recompensa", 0.0))
 			var es_cuantica: bool = (lav["tipo"] == "cuantica")
 			prenda_procesada.emit(prenda, recompensa, es_cuantica)
+			_flash_card(lav["card"])
 			lav["prenda_actual"] = {}
 			lav["tiempo"] = 0.0
 			lav["barra"].value = 0.0
@@ -355,9 +360,14 @@ func _crear_lavadora_activa(tipo: String) -> void:
 
 	lista_activas.add_child(card)
 
+	# Aplica el bonus de velocidad cuántica solo a la cuántica
+	var ciclo_real: float = float(datos["ciclo_seg"])
+	if tipo == "cuantica" and bonus_reduccion_ciclo_cuantica > 0.0:
+		ciclo_real *= (1.0 - bonus_reduccion_ciclo_cuantica)
+
 	lavadoras.append({
 		"tipo": tipo,
-		"ciclo_seg": float(datos["ciclo_seg"]),
+		"ciclo_seg": ciclo_real,
 		"acepta_alien": bool(datos["acepta_alien"]),
 		"velocidad_giro": float(datos["velocidad_giro"]),
 		"tiempo": 0.0,
@@ -471,3 +481,71 @@ func completar_todos_los_ciclos() -> void:
 ## Activa que todas las lavadoras acepten prendas alien (mejora permanente de Ceniza).
 func activar_memoria_prendas() -> void:
 	memoria_prendas = true
+
+
+## [Fase 9] Flash de la card al completar un ciclo.
+func _flash_card(card: PanelContainer) -> void:
+	if card == null or not is_instance_valid(card):
+		return
+	card.modulate = Color(1.7, 1.7, 1.7)
+	var tw := create_tween()
+	tw.tween_property(card, "modulate", Color.WHITE, 0.45)
+
+
+## [Fase 7] Aplica una reducción del ciclo (0..0.9) a la lavadora cuántica.
+## También actualiza las cuánticas ya existentes para que el bonus sea retroactivo.
+func aplicar_bonus_velocidad_cuantica(reduccion: float) -> void:
+	bonus_reduccion_ciclo_cuantica = clamp(reduccion, 0.0, 0.9)
+	var base: float = float(TIPOS_LAVADORA["cuantica"]["ciclo_seg"])
+	var nuevo_ciclo: float = base * (1.0 - bonus_reduccion_ciclo_cuantica)
+	for lav in lavadoras:
+		if lav["tipo"] == "cuantica":
+			# Re-escalamos el tiempo transcurrido para no perder progreso visible
+			var pct: float = (lav["tiempo"] / lav["ciclo_seg"]) if lav["ciclo_seg"] > 0.0 else 0.0
+			lav["ciclo_seg"] = nuevo_ciclo
+			lav["tiempo"] = pct * nuevo_ciclo
+
+
+# ============================================================
+# FASE 6 — PERSISTENCIA (extendido en Fase 7)
+# ============================================================
+func serializar() -> Dictionary:
+	var lavs: Array = []
+	for lav in lavadoras:
+		var prenda: Dictionary = lav["prenda_actual"]
+		lavs.append({
+			"tipo": lav["tipo"],
+			"tiempo": float(lav["tiempo"]),
+			"prenda_id": String(prenda.get("id", "")) if not prenda.is_empty() else "",
+		})
+	return {
+		"memoria_prendas": memoria_prendas,
+		"bonus_reduccion_ciclo_cuantica": bonus_reduccion_ciclo_cuantica,
+		"lavadoras": lavs,
+	}
+
+
+func cargar_estado(data: Dictionary) -> void:
+	reset_lavadoras()
+	memoria_prendas = bool(data.get("memoria_prendas", false))
+	# Aplicar el bonus ANTES de crear las cuánticas para que se cree con el ciclo correcto
+	bonus_reduccion_ciclo_cuantica = float(data.get("bonus_reduccion_ciclo_cuantica", 0.0))
+	var lavs: Array = data.get("lavadoras", [])
+	for entry_v in lavs:
+		var entry: Dictionary = entry_v
+		var tipo: String = String(entry.get("tipo", ""))
+		if not TIPOS_LAVADORA.has(tipo):
+			continue
+		if contador_por_tipo[tipo] >= int(TIPOS_LAVADORA[tipo]["max_unidades"]):
+			continue
+		contador_por_tipo[tipo] += 1
+		_crear_lavadora_activa(tipo)
+		var lav: Dictionary = lavadoras[lavadoras.size() - 1]
+		var prenda_id: String = String(entry.get("prenda_id", ""))
+		if prenda_id != "":
+			var prenda: Dictionary = GarmentData.get_prenda_por_id(prenda_id)
+			if not prenda.is_empty():
+				lav["prenda_actual"] = prenda
+				lav["tiempo"] = clamp(float(entry.get("tiempo", 0.0)), 0.0, lav["ciclo_seg"])
+				lav["barra"].value = (lav["tiempo"] / lav["ciclo_seg"]) * 100.0
+	_refrescar_botones()

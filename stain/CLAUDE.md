@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Stain** is a laundry management incremental game built in **Godot 4.6** (GDScript). Players manually clean garments with mouse input, assign clothes to washing machines, and purchase upgrades. Currency types: `euros` (per-run), `ceniza` (permanent, from prestige), and `fragmentos` (narrative, permanent). Alien garments are rarer jackpots that give high euros + fragments but **no ceniza** — ceniza comes exclusively from prestiging.
+**Stain** is a laundry management incremental game built in **Godot 4.6** (GDScript). Players manually clean garments with mouse input, assign clothes to washing machines, and purchase upgrades. Currency types: `euros` (per-run), `ceniza` (permanent, from prestige, spent at the ash shop), and `fragmentos` ✧ (permanent, from alien garments, spent at the Altar de Fragmentos for narrative-themed permanent perks). Alien garments are rarer jackpots that give high euros + fragments but **no ceniza** — ceniza comes exclusively from prestiging.
+
+The game persists state to `user://stain_save.json` (autosave every 30 s + on close + on prestige). See "Persistence (Fase 6)" below for the schema.
 
 ## Running the Game
 
@@ -21,13 +23,19 @@ There is no build step or test suite — gameplay verification requires running 
 `Main.gd` is the single orchestrator. All subsystems communicate upward through signals; Main processes consequences and calls back down. Subsystems never reference each other directly.
 
 ```
-Main.gd  ←→  SinkArea.gd        (manual cleaning gameplay)
-         ←→  QueuePanel.gd      (FIFO garment queue, 5 slots)
-         ←→  MachinesPanel.gd   (automated washing machines)
-         ←→  ShopPanel.gd       (euro upgrades, resets on prestige)
-         ←→  AshShopPanel.gd    (ceniza upgrades, permanent)
-         ←→  PrestigeDialog.gd  (prestige confirmation modal)
-         ←→  GarmentData.gd     (Autoload: garment definitions + luck system)
+Main.gd  ←→  SinkArea.gd               (manual cleaning gameplay)
+         ←→  QueuePanel.gd             (FIFO garment queue, 5 slots)
+         ←→  MachinesPanel.gd          (automated washing machines)
+         ←→  ShopPanel.gd              (euro upgrades, resets on prestige)
+         ←→  AshShopPanel.gd           (ceniza upgrades, permanent)
+         ←→  FragmentShopPanel.gd      (fragment "altar" upgrades, permanent)
+         ←→  AchievementsOverlay.gd    (logros + stats modal, Fase 8)
+         ←→  PrestigeDialog.gd         (prestige confirmation modal)
+         ←→  GarmentData.gd            (Autoload: garments + luck + unlock pool)
+         ←→  Stats.gd                  (Autoload: stats + achievements, Fase 8)
+         ←→  AudioManager.gd           (Autoload: procedural SFX, Fase 9)
+         ←→  EventsManager.gd          (Autoload: eventos temporales, Fase 10)
+         ←→  TutorialManager.gd        (hijo de HUD: tutorial guiado, Fase 11A)
 ```
 
 ### Key Signal Flows
@@ -47,21 +55,25 @@ Player clicks queue slot → `queue_panel.intento_seleccion_lavadora` → Main v
 **Ceniza shop purchase:**
 `ash_shop_panel.upgrade_ceniza_solicitado(id, coste)` → Main debits ceniza → `_aplicar_efecto_ceniza()`.
 
+**Fragment shop purchase:**
+`fragment_shop_panel.upgrade_fragmento_solicitado(id, coste)` → Main debits fragmentos → `_aplicar_efecto_fragmento()` → may mutate `GarmentData.bonus_prob_alien`, `GarmentData.prendas_desbloqueadas`, `machines_panel.bonus_reduccion_ciclo_cuantica`, or flags on Main (`bonus_frag_alien`, `bonus_recompensa_alien`, `bonus_ceniza_prestigio`, `comunion_activa`).
+
 **Prestige flow:**
 PrestigeButton (visible after `UMBRAL_PRESTIGIO_PRIMER_USO = 3000€`) → `prestige_dialog.mostrar()` → player confirms → `_animar_prestigio()` → `_ejecutar_prestigio()` → `prestige_realizado.emit()` → all panels reset via their canonical APIs → new run starts.
 
 ### State Ownership
 
-- **Main.gd**: all player resources; permanent state (`multiplicador_ganancias`, `memoria_prendas_activa`, `num_prestigios`, `prestigio_desbloqueado`)
+- **Main.gd**: all player resources; permanent state (`multiplicador_ganancias`, `memoria_prendas_activa`, `num_prestigios`, `prestigio_desbloqueado`); Fase 7 flags (`bonus_frag_alien`, `bonus_recompensa_alien`, `bonus_ceniza_prestigio`, `comunion_activa`)
 - **SinkArea.gd**: current garment, stain image (256×256 RGBA8), `bonus_fuerza`, `bonus_radio`
 - **QueuePanel.gd**: `cola[]` array of pending garments
-- **MachinesPanel.gd**: `lavadoras[]` array, `memoria_prendas` flag
+- **MachinesPanel.gd**: `lavadoras[]` array, `memoria_prendas` flag, `bonus_reduccion_ciclo_cuantica`
 - **AshShopPanel.gd**: `compras_contador` dict — permanent, never resets
-- **GarmentData.gd** (Autoload): garment data, `suerte_euros` (resets on prestige), `suerte_ceniza` (permanent), `_forzar_siguiente_alien` debug flag
+- **FragmentShopPanel.gd**: `compras_contador` dict — permanent, never resets
+- **GarmentData.gd** (Autoload): garment data, `suerte_euros` (resets on prestige), `suerte_ceniza` (permanent), `bonus_prob_alien` (Fase 7, permanent), `prendas_desbloqueadas` (Fase 7, permanent), `_forzar_siguiente_alien` debug flag
 
 ### Prestige System
 
-- `UMBRAL_PRESTIGIO_PRIMER_USO = 3000` — euros_totales_ganados needed to reveal the button
+- `UMBRAL_PRESTIGIO_PRIMER_USO = 2000` (Fase 11B, antes 3000) — euros_totales_ganados needed to reveal the button
 - Ceniza formula: `floor(euros_totales_ganados / 1000) + 1`
 - Button disabled (dark) if calculated ceniza < 3; active (red) otherwise
 - Resets: euros, all euro upgrades, all machines, queue, sink bonuses, `suerte_euros`
@@ -78,19 +90,170 @@ Each panel exposes a public reset method. `reset_para_prestigio()` exists as a c
 | QueuePanel | `reset_cola()` | — |
 | SinkArea | `reset_sink()` | `limpiar_instantaneo()` |
 | AshShopPanel | `on_prestige_realizado()` | `reset_completo()` |
+| FragmentShopPanel | (no se resetea en prestigio) | `reset_completo()` |
+| Stats (Autoload) | (no se resetea en prestigio) | `reset_completo()` |
+| EventsManager (Autoload) | (no se resetea en prestigio) | `reset_completo()` |
+
+### Altar de Fragmentos (Fase 7)
+
+`FragmentShopPanel.gd` es la tercera tienda, pagada con ✧ (fragmentos). Estado **permanente** — nunca se resetea en prestigio. Tab dedicada (`TabFragmentos`) junto a `TabTienda` y `TabCeniza`, solo una visible a la vez.
+
+Las 8 mejoras y sus efectos:
+
+| ID | Coste | Max | Efecto |
+|---|---|---|---|
+| `eco_plasma` | 3✧ | 3 | +1 fragmento por prenda alien (limpieza manual y máquina) |
+| `murmullo_vacio` | 5✧ | 4 | +10% € en prendas alien (acumulable a +40%, antes de multiplicador) |
+| `compas_observador` | 10✧ | 1 | +2% probabilidad base de prendas alien |
+| `compresor_temporal` | 12✧ | 1 | Lavadora cuántica: -20% tiempo de ciclo (retroactivo) |
+| `sudario_mensajero` | 15✧ | 1 | Desbloquea prenda alien (100€, +4✧) |
+| `resonancia_ancestral` | 20✧ | 1 | Prestigio: +1 ceniza base adicional |
+| `velo_inicio` | 30✧ | 1 | Desbloquea prenda alien legendaria (150€, +5✧) |
+| `comunion` | 40✧ | 1 | 20% prob. duplicar fragmentos en limpieza manual de alien |
+
+**Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
+
+### Atajos de teclado y opciones (Fase 11C)
+
+`Main._input()` maneja los atajos del jugador (siempre activos, no requieren `DEBUG_MODE`):
+
+| Tecla | Acción |
+|---|---|
+| ESPACIO | Entrega la prenda actual si está limpia (`sink_area.intentar_entregar()`) |
+| 1–5 | Asigna el slot N de la cola a una lavadora libre (equivalente a clic en el slot) |
+
+`AudioManager` expone `set_volumen_db(db)` y `get_volumen_db()` (rango -80..6 dB). El panel de opciones (botón ⚙ en la esquina inferior derecha, encima del 📊) tiene un slider de volumen y muestra los atajos disponibles. El volumen se persiste en `save.opciones.volumen_db`.
+
+Logros nuevos en categoría Hitos: `aprendiz_aplicado` (completar tutorial) y `sin_entrenamiento` (saltarlo). Se notifican via `tutorial.tutorial_completado` y `tutorial.tutorial_saltado`.
+
+El botón de prestigio muestra ahora su preview de ceniza dinámicamente: `"PRESTIGIO  +N 🜁"` donde N incluye `bonus_ceniza_prestigio` (mejora del Altar).
+
+### Tutorial guiado (Fase 11A)
+
+`tutorial_manager.gd` se instancia desde `Main._crear_tutorial()` como hijo del HUD (no es Autoload — necesita acceso a las refs de Main). Sistema de 6 pasos secuenciales con dos eventos por paso: **desbloqueo** (lo abre) + **cierre** (lo avanza).
+
+| # | Paso | Desbloqueo | Cierre | Target |
+|---|---|---|---|---|
+| 0 | bienvenida | (inmediato) | botón Entendido | SinkArea |
+| 1 | primera_entrega | (inmediato) | `entrega_completada` | SinkArea |
+| 2 | cola | (inmediato) | botón Entendido | QueuePanel |
+| 3 | tienda | `tienda_disponible` (euros≥12) | `compra_realizada` | ShopPanel |
+| 4 | lavadora | `lavadora_disponible` (euros≥75) | `lavadora_comprada` | MachinesPanel |
+| 5 | prestigio | `prestigio_visible` | `prestigio_hecho` | PrestigeButton |
+
+Main llama a `_notif_tutorial(evento)` desde los handlers (`_on_garment_delivered`, `_on_upgrade_solicitado`, `_on_lavadora_compra_solicitada`, `_actualizar_estado_prestige_button`, `_ejecutar_prestigio`). `_chequear_desbloqueos_tutorial()` se llama en `_on_euros_changed` para los gates económicos.
+
+Estado persistido (`tutorial.paso_actual: int`, -1 = completado/saltado). Saves anteriores a Fase 11 (sin sección `tutorial`) se interpretan como completados — el tutorial no molesta a partidas existentes. Para verlo de nuevo, F2 (debug reset) borra el save y lo reactiva.
+
+UI: anillo amarillo pulsante (`_draw_ring()`) alrededor del target + panel auto-posicionado en el espacio libre (derecha/izquierda/arriba/abajo del target según `max_espacio`). Botón "Saltar tutorial" en la esquina inferior izquierda.
+
+Constantes en Main para el gating de los pasos 3 y 4: `TUTORIAL_UMBRAL_TIENDA = 12`, `TUTORIAL_UMBRAL_LAVADORA = 75`. Si cambias precios en balance, ajusta también estos.
+
+### Eventos aleatorios (Fase 10)
+
+`EventsManager.gd` (Autoload) dispara eventos temporales que modifican el juego durante una duración fija. Un único evento activo a la vez; cooldown variable entre eventos (90 ± 30 s tras primer evento; 60 s antes del primero).
+
+**Gating**: el sistema permanece dormido hasta que `euros_total_ganado >= 500` o `num_prestigios >= 1` (lo que ocurra antes). Main llama `EventsManager.comprobar_gate(...)` en cada income event y tras prestigio.
+
+Los **6 eventos** definidos:
+
+| ID | Duración | Efecto |
+|---|---|---|
+| `lluvia_alien` | 30 s | `GarmentData.bonus_prob_alien += 0.10` |
+| `hora_dorada` | 20 s | `_ev_mult_recompensa = 2.0` (× sobre todo el resto) |
+| `pedido_vip` | 45 s | Limpia 6 prendas manualmente → +500€ + 2 ✧ |
+| `susurro_altar` | 25 s | `_ev_bonus_frag_alien = 1` (suma en cada alien) |
+| `frenesi_frotador` | 20 s | `sink_area.bonus_fuerza_evento = 0.12` |
+| `pulso_cuantico` | 40 s | `machines_panel.mult_velocidad_evento = 1.5` |
+
+Señales:
+- `evento_iniciado(id)` → Main aplica modificador y muestra banner
+- `evento_finalizado(id, exito)` → revierte y oculta banner; si VIP con `exito=true`, da reward
+- `evento_actualizado(id, restante, datos)` → tick para refrescar barra de tiempo + contador VIP
+
+**Banner UI**: `PanelContainer` programático anclado al centro-superior del HUD, con icono, nombre, descripción/progreso y barra de tiempo. Color del borde según el evento.
+
+**No persiste**: los modificadores y cooldowns son volátiles. Si el jugador cierra durante un evento, al recargar empieza con cooldown limpio. Las variables temporales en Main (`_ev_*`) y los flags en SinkArea/MachinesPanel se reinician naturalmente al instanciar (defaults).
+
+4 logros nuevos en categoría "Eventos": `primera_ronda`, `cliente_fiel`, `habitual` (10 eventos), `vip_frecuente` (5 VIPs).
+
+### Pulido visual + audio (Fase 9)
+
+**Audio**: `AudioManager.gd` (Autoload) sintetiza todos los SFX procedualmente al arranque — sin assets externos. Genera `AudioStreamWAV` 16-bit mono a 22050 Hz para 8 sonidos (`scrub`, `deliver`, `buy`, `alien`, `machine_done`, `achievement`, `prestige`, `denied`) mediante helpers: `_generar_tono`, `_generar_tono_vibrato`, `_generar_arpegio`, `_generar_acorde`, `_generar_ruido`. Reproducción via pool circular de 8 `AudioStreamPlayer` para permitir solapamiento.
+
+API: `AudioManager.play_sfx(id: String, pitch: float = 1.0)`. Para reemplazar por audio real más adelante, basta sustituir el dict `_streams` por `load("res://assets/audio/...ogg")`.
+
+**Feedback visual**:
+- `SinkArea` — `CPUParticles2D` de burbujas blancas que ascienden mientras `frotando == true`. SFX `scrub` con cooldown 80 ms y pitch aleatorizado.
+- `Main._spawn_floating_number(texto, color, pos, size)` — Label que sube 70 px y se desvanece en 0.9 s. Llamado en `_on_garment_delivered` (sobre sink) y `_on_prenda_procesada_lavadora` (sobre machines_panel con jitter).
+- `MachinesPanel._flash_card(card)` — tween de `modulate` de 1.7× → blanco en 0.45 s al completar ciclo.
+- `ShopPanel/AshShopPanel/FragmentShopPanel._flash_compra(upgrade_id)` — mismo efecto al confirmar compra.
+- `Main._mostrar_achievement_popup(logro_id)` — popup deslizante (PanelContainer 300×64) que entra por la derecha con `TRANS_BACK`, hold 2.4 s, sale por la derecha. Cola gestionada por `_logro_popup_queue` + `_logro_popup_activo` para múltiples logros simultáneos.
+
+### Logros y estadísticas (Fase 8)
+
+`Stats.gd` (Autoload) centraliza contadores permanentes y logros. Cualquier subsistema puede llamar a `Stats.incrementar(stat_id, n)`, `Stats.set_max(stat_id, valor)` o `Stats.notificar_evento(logro_id)`. Stats emite `logro_desbloqueado(id)`; Main escucha y muestra una notificación destacada en dorado.
+
+Los logros son de dos tipos:
+- **tipo "stat"**: se desbloquea automáticamente cuando `contadores[stat] >= umbral`
+- **tipo "evento"**: lo dispara Main vía `Stats.notificar_evento(id)` (combinaciones, hitos complejos)
+
+Stats vivos (todos `float` para evitar overflow en contadores grandes):
+- Limpieza: `prendas_total_manual`, `prendas_total_lavadora`, `aliens_total_manual`, `aliens_total_lavadora`
+- Economía: `euros_total_historico`, `ceniza_total_historico`, `fragmentos_total_historico`, `max_euros_en_run`
+- Progresión: `prestigios_total`, `lavadoras_basicas/industriales/cuanticas_compradas`, `upgrades_euros/ceniza/fragmentos_comprados`
+- Tiempo: `tiempo_jugado_seg` (auto-incrementa en `_process(delta)` de Stats)
+
+`AchievementsOverlay.gd` se construye 100% por código y se instancia desde `Main._crear_achievements_overlay()`. Tiene dos pestañas (Logros / Estadísticas). Se abre con el botón 📊 en la esquina inferior derecha del HUD.
+
+Los logros con condición compuesta están en `Main`:
+- `_check_logros_aliens_combinados()` — `aliens_total_manual + aliens_total_lavadora >= {10, 50}`
+- `_check_logro_polifacetico()` — al menos 1 upgrade de cada tienda
+- Susurrador — disparado tras compra del altar si `prendas_desbloqueadas.size() >= 2`
+
+### Persistence (Fase 6)
+
+`Main.gd` orchestrates save/load. Path: `user://stain_save.json` (JSON, debuggable). Version: `SAVE_VERSION = 1`. Autosave interval: 30 s. Saves also fire on `NOTIFICATION_WM_CLOSE_REQUEST` (window close) and after `_ejecutar_prestigio()`.
+
+Each panel exposes `serializar() -> Dictionary` and `cargar_estado(data: Dictionary)`. SinkArea's `cargar_estado` returns `bool` to tell Main whether to call `queue_panel.consumir_siguiente()` (false = sink was empty, needs a new garment).
+
+**Garments are serialized by ID, not by Dictionary** — `Color` is not JSON-serializable, and `GarmentData.get_prenda_por_id()` rebuilds the full dict deterministically. **Stain pixel state is NOT persisted**: any garment in progress is recharged with fresh stains on load. This is a deliberate trade-off: ~256 KB of pixel data vs. one re-clean of the current garment.
+
+Save schema (top level):
+```
+{
+  "version": 1,
+  "main": { euros, euros_totales_ganados, ceniza, fragmentos, favores,
+            num_prestigios, prestigio_desbloqueado, multiplicador_ganancias,
+            memoria_prendas_activa, velocidad_cola_activa,
+            multi_compras_contador, alien_boost_contador },
+  "garment_data":   { suerte_euros, suerte_ceniza },
+  "shop_panel":     { upgrades_comprados: [String] },
+  "ash_shop_panel": { compras_contador: {String → int} },
+  "machines_panel": { memoria_prendas, lavadoras: [{tipo, tiempo, prenda_id}] },
+  "queue_panel":    { cola_ids: [String] },
+  "sink_area":      { bonus_fuerza, bonus_radio, prenda_actual_id },
+  "tutorial":       { paso_actual: int },                 # Fase 11A
+  "opciones":       { volumen_db: float }                 # Fase 11C
+}
+```
+
+API in Main: `guardar_partida() -> bool`, `cargar_partida() -> bool`, `borrar_save()`. F2 (reset total) also calls `borrar_save()`.
 
 ### GarmentData (Autoload)
 
 - `PRENDAS_NORMALES` (6 types, 3–10€ avg 6.33€)
 - `PRENDAS_ALIEN` (4 types, 30–80€, `ceniza_bonus=0`, `fragmentos_bonus=2–3`)
-- Luck split: `suerte_euros` (from € shop, resets on prestige) + `suerte_ceniza` (from ash shop, permanent)
+- `PRENDAS_ALIEN_DESBLOQUEABLES` (Fase 7, 2 types: 100€/+4✧ y 150€/+5✧). Solo entran al pool tras comprar la mejora correspondiente en el Altar.
+- Luck split: `suerte_euros` (from € shop, resets on prestige) + `suerte_ceniza` (from ash shop, permanent) + `bonus_prob_alien` (Fase 7, from altar, permanent)
+- `get_prendas_alien_activas()` devuelve el pool actual (base + desbloqueadas). `get_prenda_aleatoria()` lo usa para el sampleo.
 - Debug: `forzar_siguiente_alien()` forces the next generated garment to be alien (one-shot)
 
 ### MachinesPanel Machine Types
 
 | Type | Price | Ceniza | Cycle | Accepts Alien | Max |
 |------|-------|--------|-------|---------------|-----|
-| Basic | 100€ | 0 | 20s | No (unless memoria_prendas) | 3 |
+| Basic | 75€ (Fase 11B, antes 100€) | 0 | 20s | No (unless memoria_prendas) | 3 |
 | Industrial | 350€ | 3🜁 | 15s | No (unless memoria_prendas) | 2 |
 | Quantum | 1200€ | 12🜁 | 12s | Yes | 1 |
 
@@ -101,10 +264,12 @@ Plegable en la esquina superior izquierda del HUD. Cambiar a `false` para builds
 | Atajo | Acción |
 |---|---|
 | F1 | +10.000€, +5🜁, +3 fragmentos |
-| F2 | Reset total (con confirmación modal) |
+| F2 | Reset total (con confirmación modal). También borra el save. |
 | F3 | Forzar siguiente prenda como alien |
 | F4 | Completar ciclos de todas las lavadoras activas |
 | F5 | Limpiar prenda actual al 100% (activa el botón de entregar) |
+| F6 | Guardar partida ahora |
+| F7 | Forzar un evento aleatorio (salta cooldown + gate) |
 
 ## Key Implementation Details
 
