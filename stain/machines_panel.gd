@@ -74,6 +74,8 @@ var bonus_reduccion_ciclo_cuantica: float = 0.0
 var bonus_reduccion_global: float = 0.0
 # Fase 17: reducción del aliado relojero (apila multiplicativo con global).
 var bonus_reduccion_aliados: float = 0.0
+# Fase 18: bonus de capacidad para la lavadora básica (mejora "cuna_abierta")
+var bonus_max_basica: int = 0
 # Fase 10: multiplicador temporal de velocidad para Pulso cuántico (no persiste)
 var mult_velocidad_evento: float = 1.0
 
@@ -398,6 +400,9 @@ func _refrescar_botones() -> void:
 		var boton: Button = botones_compra[tipo]
 		var contador: int = contador_por_tipo[tipo]
 		var max_unidades: int = int(datos["max_unidades"])
+		# Fase 18: bonus de capacidad por mejora "cuna_abierta"
+		if tipo == "basica":
+			max_unidades += bonus_max_basica
 		var precio: int = int(datos["precio"])
 		var ceniza_req: int = int(datos["ceniza"])
 
@@ -579,6 +584,7 @@ func serializar() -> Dictionary:
 		"bonus_reduccion_ciclo_cuantica": bonus_reduccion_ciclo_cuantica,
 		"bonus_reduccion_global": bonus_reduccion_global,
 		"bonus_reduccion_aliados": bonus_reduccion_aliados,
+		"bonus_max_basica": bonus_max_basica,
 		"lavadoras": lavs,
 	}
 
@@ -590,13 +596,17 @@ func cargar_estado(data: Dictionary) -> void:
 	bonus_reduccion_ciclo_cuantica = float(data.get("bonus_reduccion_ciclo_cuantica", 0.0))
 	bonus_reduccion_global = float(data.get("bonus_reduccion_global", 0.0))
 	bonus_reduccion_aliados = float(data.get("bonus_reduccion_aliados", 0.0))
+	bonus_max_basica = int(data.get("bonus_max_basica", 0))
 	var lavs: Array = data.get("lavadoras", [])
 	for entry_v in lavs:
 		var entry: Dictionary = entry_v
 		var tipo: String = String(entry.get("tipo", ""))
 		if not TIPOS_LAVADORA.has(tipo):
 			continue
-		if contador_por_tipo[tipo] >= int(TIPOS_LAVADORA[tipo]["max_unidades"]):
+		var cap: int = int(TIPOS_LAVADORA[tipo]["max_unidades"])
+		if tipo == "basica":
+			cap += bonus_max_basica
+		if contador_por_tipo[tipo] >= cap:
 			continue
 		contador_por_tipo[tipo] += 1
 		_crear_lavadora_activa(tipo)

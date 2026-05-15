@@ -161,6 +161,20 @@ const LOGROS: Array[Dictionary] = [
 	{"id": "circulo_completo", "nombre": "Círculo completo", "descripcion": "Contrata a los 5 aliados.",
 	 "categoria": "Hitos", "icono": "🌟",
 	 "tipo": "evento"},
+
+	# Trascendencia (Fase 18)
+	{"id": "primera_trascendencia", "nombre": "Más allá", "descripcion": "Trasciende por primera vez.",
+	 "categoria": "Prestigio", "icono": "✺",
+	 "tipo": "evento"},
+	{"id": "trascendido_5", "nombre": "Más allá del más allá", "descripcion": "Acumula 5 trascendencias.",
+	 "categoria": "Prestigio", "icono": "♾",
+	 "tipo": "evento"},
+	{"id": "primera_esencia", "nombre": "Esencia inicial", "descripcion": "Compra tu primera mejora de Esencia.",
+	 "categoria": "Hitos", "icono": "✺",
+	 "tipo": "evento"},
+	{"id": "ascendido", "nombre": "Ascendido", "descripcion": "Compra las 5 mejoras de Esencia.",
+	 "categoria": "Hitos", "icono": "👑",
+	 "tipo": "evento"},
 ]
 
 

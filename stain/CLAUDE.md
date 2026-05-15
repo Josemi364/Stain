@@ -38,6 +38,7 @@ Main.gd  ←→  SinkArea.gd               (manual cleaning gameplay)
          ←→  TutorialManager.gd        (hijo de HUD: tutorial guiado, Fase 11A)
          ←→  ContractsManager.gd       (Autoload: contratos opcionales, Fase 13)
          ←→  AlliesOverlay.gd          (hijo de HUD: cantina aliados, Fase 17)
+         ←→  TranscendOverlay.gd       (hijo de HUD: sala de esencia, Fase 18)
 ```
 
 ### Key Signal Flows
@@ -114,6 +115,35 @@ Las 8 mejoras y sus efectos:
 | `comunion` | 40✧ | 1 | 20% prob. duplicar fragmentos en limpieza manual de alien |
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
+
+### Trascendencia / Meta-prestigio (Fase 18)
+
+Sistema de "soft reset" que va por encima del prestigio. Tras `TRASCENDENCIA_UMBRAL_PRESTIGIOS = 5` prestigios, aparece el botón "TRASCENDER ✺" en la esquina superior central. Al confirmar via diálogo modal, se ejecuta `_ejecutar_trascendencia()`:
+
+- Resetea: euros, ceniza (a menos que esté `memoria_eterna`), num_prestigios, todo el ash shop, todo el altar, máquinas, sink, queue, suerte, bendiciones, aliados, GarmentData.prendas_desbloqueadas
+- Conserva: `esencia`, `num_trascendencias`, `fragmentos`, `Stats` completo (contadores históricos, logros, bestiario), `tutorial`, `opciones`, `cap_multiplicador`, `_esc_mult_euros`, `esencia_compras`
+- Recompensa: `esencia += max(1, floor(num_prestigios / 2))`
+- Reaplica al final las mejoras de Esencia que afectan estado fresco (`aliento_eterno`, `cuna_abierta`)
+
+Modal `transcend_overlay.gd` (botón ✺ en HUD inferior derecha, encima de 🤝) muestra 5 mejoras pagables con Esencia:
+
+| ID | Coste ✺ | Efecto |
+|---|---|---|
+| `aliento_eterno` | 2 | `euros = 100` al iniciar cada run (post-prestigio y post-trascendencia) |
+| `eco_ascendido` | 4 | `_esc_mult_euros = 1.05` apila con todos los demás multiplicadores de € |
+| `cuna_abierta` | 7 | `machines_panel.bonus_max_basica = 1` (cap básica 3 → 4) |
+| `memoria_eterna` | 12 | Conserva ceniza al trascender (consultado en `_ejecutar_trascendencia`) |
+| `lavandero` | 20 | `cap_multiplicador = 5.0` (sube el techo del multi de 3.0 a 5.0) |
+
+`machines_panel` extendido con `bonus_max_basica` (Fase 18) — verificación en `_refrescar_botones` y en `cargar_estado`. Persistido en `save.machines_panel`.
+
+UI nueva en HUD:
+- Label `✺ N` en CoinsPanel (visible solo si `esencia > 0` o `num_trascendencias > 0`)
+- Botón "TRASCENDER  +N ✺" arriba-centro (offset_left 905), oculto hasta cumplir gate
+- Botón ✺ inferior derecha (encima de 🤝)
+- Diálogo de confirmación modal antes de trascender
+
+4 logros nuevos: `primera_trascendencia` (Prestigio), `trascendido_5` (Prestigio, 5 trascendencias), `primera_esencia` (Hitos), `ascendido` (Hitos, las 5 mejoras).
 
 ### Sistema de Aliados / Favores (Fase 17)
 
@@ -356,7 +386,9 @@ Save schema (top level):
             bonus_frag_alien, bonus_recompensa_alien, bonus_ceniza_prestigio,
             comunion_activa,
             bendicion_activa, _bend_mult_euros, _bend_red_velocidad,    # Fase 15
-            aliados_comprados, _ali_mult_euros, _ali_red_velocidad },   # Fase 17
+            aliados_comprados, _ali_mult_euros, _ali_red_velocidad,     # Fase 17
+            esencia, num_trascendencias, trascendencia_desbloqueada,
+            esencia_compras, _esc_mult_euros, cap_multiplicador },      # Fase 18
   "garment_data":   { suerte_euros, suerte_ceniza },
   "shop_panel":     { upgrades_comprados: [String] },
   "ash_shop_panel": { compras_contador: {String → int} },

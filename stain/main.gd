@@ -85,6 +85,17 @@ var _ali_mult_euros: float = 1.0      # tendero: 1.05
 var _ali_red_velocidad: float = 0.0   # relojero: 0.05 (reducción extra a las lavadoras)
 const ALIADO_IDS: Array[String] = ["aprendiz_veloz", "tendero", "mensajero", "relojero", "custodio"]
 
+# Fase 18 — Trascendencia (meta-prestigio)
+var esencia: int = 0
+var num_trascendencias: int = 0
+var trascendencia_desbloqueada: bool = false
+var esencia_compras: Array[String] = []
+var _esc_mult_euros: float = 1.0   # eco_ascendido: 1.05 derivado de la mejora
+const TRASCENDENCIA_UMBRAL_PRESTIGIOS: int = 5
+const ESENCIA_IDS: Array[String] = ["aliento_eterno", "eco_ascendido", "cuna_abierta", "memoria_eterna", "lavandero"]
+# Cap del multiplicador de ganancias (Fase 5: 3.0; Fase 18 mejora "lavandero" lo sube a 5.0)
+var cap_multiplicador: float = 3.0
+
 const BENDICIONES: Array[Dictionary] = [
 	{
 		"id": "manos_rapidas",
@@ -203,6 +214,13 @@ var _opciones_slider: HSlider
 var _allies_overlay: Control
 var _btn_aliados: Button
 var _favores_label: Label  # label del HUD para favores
+
+# Fase 18 — Trascendencia
+var _btn_trascender: Button
+var _btn_esencia: Button
+var _esencia_label: Label
+var _transcend_overlay: Control
+var _trasc_dialog: ColorRect  # diálogo de confirmación
 
 # Fase 12 — Progreso offline
 const OFFLINE_MAX_SEG: float = 28800.0       # cap a 8h de tiempo offline contabilizado
@@ -326,6 +344,15 @@ func _ready() -> void:
 	_crear_allies_overlay()
 	_actualizar_favores_label()
 
+	# Fase 18: trascendencia — label esencia + botón ✺ + modal + botón "Trascender"
+	_crear_esencia_label()
+	_crear_btn_esencia()
+	_crear_transcend_overlay()
+	_crear_btn_trascender()
+	_crear_trasc_dialog()
+	_actualizar_esencia_label()
+	_actualizar_trascendencia_btn()
+
 	# Autosave periódico
 	_autosave_timer = Timer.new()
 	_autosave_timer.wait_time = AUTOSAVE_INTERVAL
@@ -408,7 +435,7 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada) se aplica como factor extra
 	# Fase 15: _bend_mult_euros (bolsillos_profundos) factor adicional
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros * _esc_mult_euros
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -592,7 +619,7 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada)
 	# Fase 15: _bend_mult_euros (bolsillos_profundos)
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros * _esc_mult_euros
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -683,7 +710,7 @@ func _aplicar_efecto_ceniza(upgrade_id: String) -> void:
 	match upgrade_id:
 		"multi_ganancias":
 			multi_compras_contador += 1
-			multiplicador_ganancias = min(1.0 + multi_compras_contador * 0.05, 3.0)
+			multiplicador_ganancias = min(1.0 + multi_compras_contador * 0.05, cap_multiplicador)
 		"alien_boost":
 			alien_boost_contador += 1
 			GarmentData.añadir_suerte_ceniza(0.05)
@@ -878,6 +905,14 @@ func _ejecutar_prestigio() -> void:
 	_bend_mult_euros = 1.0
 	_bend_red_velocidad = 0.0
 	machines_panel.bonus_reduccion_global = 0.0
+
+	# Fase 18: si el aliento_eterno está comprado, dar el bonus de inicio
+	if "aliento_eterno" in esencia_compras:
+		euros = 100.0
+		euros_changed.emit(euros)
+
+	# Fase 18: revelar botón de trascendencia si toca
+	_actualizar_trascendencia_btn()
 
 	# Snapshot intermedio: si el jugador cierra durante la selección, no perdemos el prestigio.
 	# guardar_partida() se vuelve a llamar tras la elección en _on_prestige_confirmado.
@@ -1156,6 +1191,13 @@ func _debug_ejecutar_reset() -> void:
 	aliados_comprados.clear()
 	_ali_mult_euros = 1.0
 	_ali_red_velocidad = 0.0
+	# Fase 18
+	esencia = 0
+	num_trascendencias = 0
+	trascendencia_desbloqueada = false
+	esencia_compras.clear()
+	_esc_mult_euros = 1.0
+	cap_multiplicador = 3.0
 
 	GarmentData.resetear_suerte()
 	GarmentData.bonus_prob_alien = 0.0
@@ -1166,6 +1208,7 @@ func _debug_ejecutar_reset() -> void:
 	machines_panel.bonus_reduccion_ciclo_cuantica = 0.0
 	machines_panel.bonus_reduccion_global = 0.0
 	machines_panel.bonus_reduccion_aliados = 0.0
+	machines_panel.bonus_max_basica = 0
 	machines_panel.mult_velocidad_evento = 1.0
 	machines_panel.reset_lavadoras()
 	queue_panel.reset_cola()
@@ -1180,6 +1223,10 @@ func _debug_ejecutar_reset() -> void:
 		_tutorial.iniciar()
 	# Fase 17: refrescar HUD de favores tras reset
 	_actualizar_favores_label()
+	# Fase 18: refrescar UI de esencia + ocultar trascender
+	_actualizar_esencia_label()
+	if _btn_trascender != null:
+		_btn_trascender.visible = false
 	# Fase 10 — limpiar variables temporales
 	_ev_mult_recompensa = 1.0
 	_ev_bonus_prob_alien = 0.0
@@ -1310,6 +1357,13 @@ func guardar_partida() -> bool:
 			"aliados_comprados": aliados_comprados.duplicate(),
 			"_ali_mult_euros": _ali_mult_euros,
 			"_ali_red_velocidad": _ali_red_velocidad,
+			# Fase 18
+			"esencia": esencia,
+			"num_trascendencias": num_trascendencias,
+			"trascendencia_desbloqueada": trascendencia_desbloqueada,
+			"esencia_compras": esencia_compras.duplicate(),
+			"_esc_mult_euros": _esc_mult_euros,
+			"cap_multiplicador": cap_multiplicador,
 		},
 		"garment_data": GarmentData.serializar(),
 		"shop_panel": shop_panel.serializar(),
@@ -1389,6 +1443,19 @@ func cargar_partida() -> bool:
 	_ali_mult_euros = float(m.get("_ali_mult_euros", 1.0))
 	_ali_red_velocidad = float(m.get("_ali_red_velocidad", 0.0))
 
+	# Fase 18
+	esencia = int(m.get("esencia", 0))
+	num_trascendencias = int(m.get("num_trascendencias", 0))
+	trascendencia_desbloqueada = bool(m.get("trascendencia_desbloqueada", false))
+	esencia_compras.clear()
+	var lst_esc: Array = m.get("esencia_compras", [])
+	for v in lst_esc:
+		var sid := String(v)
+		if sid in ESENCIA_IDS and sid not in esencia_compras:
+			esencia_compras.append(sid)
+	_esc_mult_euros = float(m.get("_esc_mult_euros", 1.0))
+	cap_multiplicador = float(m.get("cap_multiplicador", 3.0))
+
 	# 2. Subsistemas
 	GarmentData.cargar_estado(data.get("garment_data", {}))
 	shop_panel.cargar_estado(data.get("shop_panel", {}))
@@ -1406,6 +1473,10 @@ func cargar_partida() -> bool:
 
 	# Fase 17: refrescar el HUD de favores
 	_actualizar_favores_label()
+
+	# Fase 18: refrescar HUD de esencia + botón trascender
+	_actualizar_esencia_label()
+	_actualizar_trascendencia_btn()
 
 	# Fase 11C: opciones
 	var opciones: Dictionary = data.get("opciones", {})
@@ -1824,6 +1895,346 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 		_event_banner_progreso.text = "%d / %d prendas · %.1fs" % [prog, obj, restante]
 	else:
 		_event_banner_progreso.text = "%s · %.1fs" % [String(ev["descripcion"]), restante]
+
+
+# ============================================================
+# FASE 18 — TRASCENDENCIA (META-PRESTIGIO)
+# ============================================================
+func _crear_esencia_label() -> void:
+	var coins_panel: HBoxContainer = $HUD/CoinsPanel
+	if coins_panel == null:
+		return
+	_esencia_label = Label.new()
+	_esencia_label.text = "✺ 0"
+	_esencia_label.add_theme_font_size_override("font_size", 14)
+	_esencia_label.add_theme_color_override("font_color", Color("#FFD060"))
+	_esencia_label.visible = false  # solo visible si tienes esencia o has trascendido
+	coins_panel.add_child(_esencia_label)
+
+
+func _actualizar_esencia_label() -> void:
+	if _esencia_label == null:
+		return
+	_esencia_label.visible = (esencia > 0 or num_trascendencias > 0)
+	_esencia_label.text = "✺ %d" % esencia
+	if _transcend_overlay != null and _transcend_overlay.has_method("refrescar"):
+		_transcend_overlay.refrescar(esencia, esencia_compras)
+
+
+func _crear_btn_esencia() -> void:
+	_btn_esencia = Button.new()
+	_btn_esencia.text = "✺"
+	_btn_esencia.tooltip_text = "Sala de Esencia"
+	_btn_esencia.anchor_left = 1.0
+	_btn_esencia.anchor_top = 1.0
+	_btn_esencia.anchor_right = 1.0
+	_btn_esencia.anchor_bottom = 1.0
+	# Encima del botón de aliados (-146 a -108)
+	_btn_esencia.offset_left = -64
+	_btn_esencia.offset_top = -192
+	_btn_esencia.offset_right = -16
+	_btn_esencia.offset_bottom = -154
+	_btn_esencia.visible = false
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color("#3A3018")
+	s.border_color = Color("#FFD060")
+	s.set_border_width_all(1)
+	s.set_corner_radius_all(4)
+	_btn_esencia.add_theme_stylebox_override("normal", s)
+	_btn_esencia.add_theme_stylebox_override("hover", s)
+	_btn_esencia.add_theme_stylebox_override("pressed", s)
+	_btn_esencia.add_theme_font_size_override("font_size", 18)
+	_btn_esencia.add_theme_color_override("font_color", Color("#FFD060"))
+	_btn_esencia.pressed.connect(_on_btn_esencia_pressed)
+	$HUD.add_child(_btn_esencia)
+
+
+func _crear_transcend_overlay() -> void:
+	var script: GDScript = load("res://transcend_overlay.gd")
+	_transcend_overlay = script.new()
+	$HUD.add_child(_transcend_overlay)
+	_transcend_overlay.esencia_solicitada.connect(_on_esencia_solicitada)
+
+
+func _on_btn_esencia_pressed() -> void:
+	if _transcend_overlay != null:
+		_transcend_overlay.mostrar(esencia, esencia_compras)
+
+
+func _on_esencia_solicitada(mejora_id: String, coste: int) -> void:
+	if esencia < coste:
+		mostrar_notificacion("Te falta Esencia", false)
+		AudioManager.play_sfx("denied")
+		return
+	if mejora_id in esencia_compras:
+		return
+	esencia -= coste
+	esencia_compras.append(mejora_id)
+	_aplicar_efecto_esencia(mejora_id)
+	_actualizar_esencia_label()
+	mostrar_notificacion("✺ Mejora de Esencia desbloqueada", false)
+	AudioManager.play_sfx("achievement", 0.8)
+	Stats.notificar_evento("primera_esencia")
+	if esencia_compras.size() >= 5:
+		Stats.notificar_evento("ascendido")
+
+
+func _aplicar_efecto_esencia(id: String) -> void:
+	match id:
+		"aliento_eterno":
+			# Si ya estás en una run nueva (post-reset), te lo damos al instante.
+			euros += 100.0
+			euros_changed.emit(euros)
+		"eco_ascendido":
+			_esc_mult_euros = 1.05
+		"cuna_abierta":
+			machines_panel.bonus_max_basica = 1
+			machines_panel._refrescar_botones()
+		"memoria_eterna":
+			pass  # consultado durante _ejecutar_trascendencia
+		"lavandero":
+			cap_multiplicador = 5.0
+		_:
+			push_warning("Esencia desconocida: " + id)
+
+
+# ----------------------------------------------------------
+# Botón "Trascender" + diálogo confirmación + ejecución
+# ----------------------------------------------------------
+func _crear_btn_trascender() -> void:
+	_btn_trascender = Button.new()
+	_btn_trascender.text = "TRASCENDER ✺"
+	_btn_trascender.visible = false
+	# Justo a la izquierda del PrestigeButton (este está en 1095..1268, top 15..57)
+	_btn_trascender.anchor_left = 0.0
+	_btn_trascender.anchor_top = 0.0
+	_btn_trascender.offset_left = 905
+	_btn_trascender.offset_top = 15
+	_btn_trascender.offset_right = 1080
+	_btn_trascender.offset_bottom = 57
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color("#A0801A")
+	s.set_corner_radius_all(6)
+	_btn_trascender.add_theme_stylebox_override("normal", s)
+	_btn_trascender.add_theme_stylebox_override("hover", s)
+	_btn_trascender.add_theme_stylebox_override("pressed", s)
+	_btn_trascender.add_theme_font_size_override("font_size", 13)
+	_btn_trascender.add_theme_color_override("font_color", Color("#FFFFFF"))
+	_btn_trascender.pressed.connect(_on_btn_trascender_pressed)
+	$HUD.add_child(_btn_trascender)
+
+
+func _actualizar_trascendencia_btn() -> void:
+	if _btn_trascender == null:
+		return
+	if not trascendencia_desbloqueada and num_prestigios >= TRASCENDENCIA_UMBRAL_PRESTIGIOS:
+		trascendencia_desbloqueada = true
+		mostrar_notificacion("✺ El velo se rompe. Puedes Trascender.", true)
+	if trascendencia_desbloqueada:
+		var preview: int = max(1, int(floor(num_prestigios / 2.0)))
+		_btn_trascender.text = "TRASCENDER  +%d ✺" % preview
+		_btn_trascender.visible = true
+
+
+func _on_btn_trascender_pressed() -> void:
+	if _trasc_dialog != null:
+		var preview: int = max(1, int(floor(num_prestigios / 2.0)))
+		_actualizar_trasc_dialog_texto(preview)
+		_trasc_dialog.visible = true
+
+
+func _crear_trasc_dialog() -> void:
+	_trasc_dialog = ColorRect.new()
+	_trasc_dialog.visible = false
+	_trasc_dialog.color = Color(0, 0, 0, 0.7)
+	_trasc_dialog.anchor_right = 1.0
+	_trasc_dialog.anchor_bottom = 1.0
+	_trasc_dialog.mouse_filter = Control.MOUSE_FILTER_STOP
+	_trasc_dialog.z_index = 210
+	$HUD.add_child(_trasc_dialog)
+
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(480, 0)
+	panel.anchor_left = 0.5
+	panel.anchor_top = 0.5
+	panel.anchor_right = 0.5
+	panel.anchor_bottom = 0.5
+	panel.offset_left = -240
+	panel.offset_top = -130
+	panel.offset_right = 240
+	panel.offset_bottom = 130
+	var pe := StyleBoxFlat.new()
+	pe.bg_color = Color("#0E0E1E")
+	pe.border_color = Color("#FFD060")
+	pe.set_border_width_all(2)
+	pe.set_corner_radius_all(10)
+	pe.content_margin_left = 22
+	pe.content_margin_right = 22
+	pe.content_margin_top = 18
+	pe.content_margin_bottom = 18
+	panel.add_theme_stylebox_override("panel", pe)
+	_trasc_dialog.add_child(panel)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 14)
+	panel.add_child(v)
+
+	var titulo := Label.new()
+	titulo.text = "✺  Trascender"
+	titulo.add_theme_color_override("font_color", Color("#FFD060"))
+	titulo.add_theme_font_size_override("font_size", 22)
+	titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	titulo.name = "Titulo"
+	v.add_child(titulo)
+
+	var desc := Label.new()
+	desc.text = ""  # rellenado por _actualizar_trasc_dialog_texto
+	desc.add_theme_color_override("font_color", Color("#CCCCDD"))
+	desc.add_theme_font_size_override("font_size", 12)
+	desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc.name = "Desc"
+	v.add_child(desc)
+
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 14)
+	v.add_child(hbox)
+
+	var btn_cancelar := Button.new()
+	btn_cancelar.text = "Cancelar"
+	btn_cancelar.custom_minimum_size = Vector2(120, 36)
+	var bc := StyleBoxFlat.new()
+	bc.bg_color = Color("#2A2A4A")
+	bc.set_corner_radius_all(4)
+	btn_cancelar.add_theme_stylebox_override("normal", bc)
+	btn_cancelar.add_theme_stylebox_override("hover", bc)
+	btn_cancelar.add_theme_stylebox_override("pressed", bc)
+	btn_cancelar.add_theme_color_override("font_color", Color("#AAAACC"))
+	btn_cancelar.add_theme_font_size_override("font_size", 13)
+	btn_cancelar.pressed.connect(func(): _trasc_dialog.visible = false)
+	hbox.add_child(btn_cancelar)
+
+	var btn_confirmar := Button.new()
+	btn_confirmar.text = "Trascender"
+	btn_confirmar.custom_minimum_size = Vector2(140, 36)
+	var bf := StyleBoxFlat.new()
+	bf.bg_color = Color("#A0801A")
+	bf.set_corner_radius_all(4)
+	btn_confirmar.add_theme_stylebox_override("normal", bf)
+	btn_confirmar.add_theme_stylebox_override("hover", bf)
+	btn_confirmar.add_theme_stylebox_override("pressed", bf)
+	btn_confirmar.add_theme_color_override("font_color", Color("#FFFFFF"))
+	btn_confirmar.add_theme_font_size_override("font_size", 13)
+	btn_confirmar.pressed.connect(_on_trasc_confirmado)
+	hbox.add_child(btn_confirmar)
+
+
+func _actualizar_trasc_dialog_texto(preview: int) -> void:
+	if _trasc_dialog == null:
+		return
+	var desc: Label = _trasc_dialog.find_child("Desc", true, false) as Label
+	if desc == null:
+		return
+	var conserva := "Esencia, Fragmentos, Logros, Bestiario, Tutorial"
+	if "memoria_eterna" in esencia_compras:
+		conserva += ", Ceniza"
+	desc.text = "Vas a perder TODO el progreso de la era actual:\n€, prestigios, ash shop, altar, máquinas, bendiciones, aliados.\n\nGanarás +%d ✺ Esencia.\n\nSe conserva: %s." % [preview, conserva]
+
+
+func _on_trasc_confirmado() -> void:
+	if _trasc_dialog != null:
+		_trasc_dialog.visible = false
+	_ejecutar_trascendencia()
+	guardar_partida()
+
+
+## Reseta TODA la era. Solo persisten los meta-recursos (esencia, frags,
+## logros, bestiario, tutorial, opciones). La ceniza se conserva si está
+## comprada la mejora "memoria_eterna".
+func _ejecutar_trascendencia() -> void:
+	var ganada: int = max(1, int(floor(num_prestigios / 2.0)))
+	esencia += ganada
+	num_trascendencias += 1
+	var conservar_ceniza: bool = "memoria_eterna" in esencia_compras
+	var ceniza_anterior: int = ceniza
+
+	# Reset profundo (similar a debug F2 pero conservando lo meta)
+	euros = 0.0
+	euros_totales_ganados = 0.0
+	if not conservar_ceniza:
+		ceniza = 0
+	num_prestigios = 0
+	prestigio_desbloqueado = false
+	multiplicador_ganancias = 1.0
+	multi_compras_contador = 0
+	alien_boost_contador = 0
+	memoria_prendas_activa = false
+	velocidad_cola_activa = false
+	bonus_frag_alien = 0
+	bonus_recompensa_alien = 0.0
+	bonus_ceniza_prestigio = 0
+	comunion_activa = false
+	bendicion_activa = ""
+	_bend_mult_euros = 1.0
+	_bend_red_velocidad = 0.0
+	aliados_comprados.clear()
+	_ali_mult_euros = 1.0
+	_ali_red_velocidad = 0.0
+
+	GarmentData.resetear_suerte()
+	GarmentData.bonus_prob_alien = 0.0
+	GarmentData.prendas_desbloqueadas.clear()
+	ash_shop_panel.reset_completo()
+	fragment_shop_panel.reset_completo()
+	shop_panel.reset_compras()
+	machines_panel.bonus_reduccion_ciclo_cuantica = 0.0
+	machines_panel.bonus_reduccion_global = 0.0
+	machines_panel.bonus_reduccion_aliados = 0.0
+	machines_panel.bonus_max_basica = 0
+	machines_panel.mult_velocidad_evento = 1.0
+	machines_panel.reset_lavadoras()
+	queue_panel.reset_cola()
+	sink_area.reset_sink()
+	sink_area.bonus_fuerza_evento = 0.0
+	# NOTE: Stats NO se resetea (los contadores históricos sobreviven)
+	EventsManager.reset_completo()
+	ContractsManager.reset_completo()
+
+	# Re-aplicar efectos de mejoras esencia que afectan estado fresco
+	if "aliento_eterno" in esencia_compras:
+		euros = 100.0
+	if "cuna_abierta" in esencia_compras:
+		machines_panel.bonus_max_basica = 1
+	# eco_ascendido y lavandero ya están aplicados por el cambio de variable
+
+	prestige_button.visible = false
+	trascendencia_desbloqueada = false  # debe re-cumplir 5 prestigios
+	_actualizar_trascendencia_btn()
+
+	euros_changed.emit(euros)
+	ceniza_changed.emit(ceniza)
+	fragmentos_changed.emit(fragmentos)
+	_update_hud()
+	_actualizar_favores_label()
+	_actualizar_esencia_label()
+	shop_panel.actualizar_euros(euros)
+	machines_panel.actualizar_recursos(euros, ceniza)
+	ash_shop_panel.actualizar_ceniza(ceniza)
+	fragment_shop_panel.actualizar_fragmentos(fragmentos)
+
+	await get_tree().process_frame
+	queue_panel.consumir_siguiente()
+
+	mostrar_notificacion("✺ Trascendencia #%d completada. +%d ✺ Esencia." % [num_trascendencias, ganada], true)
+	AudioManager.play_sfx("prestige")
+	Stats.notificar_evento("primera_trascendencia")
+	if num_trascendencias >= 5:
+		Stats.notificar_evento("trascendido_5")
+
+	if conservar_ceniza:
+		ceniza = ceniza_anterior
+		ceniza_changed.emit(ceniza)
 
 
 # ============================================================
