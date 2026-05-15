@@ -37,6 +37,7 @@ Main.gd  ←→  SinkArea.gd               (manual cleaning gameplay)
          ←→  EventsManager.gd          (Autoload: eventos temporales, Fase 10)
          ←→  TutorialManager.gd        (hijo de HUD: tutorial guiado, Fase 11A)
          ←→  ContractsManager.gd       (Autoload: contratos opcionales, Fase 13)
+         ←→  AlliesOverlay.gd          (hijo de HUD: cantina aliados, Fase 17)
 ```
 
 ### Key Signal Flows
@@ -113,6 +114,34 @@ Las 8 mejoras y sus efectos:
 | `comunion` | 40✧ | 1 | 20% prob. duplicar fragmentos en limpieza manual de alien |
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
+
+### Sistema de Aliados / Favores (Fase 17)
+
+Aprovecha la variable `favores` (ya declarada en Main desde fase 6 pero sin uso). +1 favor automático al completar:
+- Un contrato (`_on_contrato_completado(true)`)
+- Un evento VIP exitoso (`_on_evento_finalizado` rama `vip_objetivo` cumplido)
+
+Label de favores añadido al `CoinsPanel` (HBoxContainer) en `_crear_favores_label()`. Botón 🤝 en esquina inferior derecha (encima de ⚙) abre el modal `allies_overlay.gd`.
+
+5 aliados (compras únicas, permanentes, no resetean en prestigio):
+
+| ID | Coste | Efecto |
+|---|---|---|
+| `aprendiz_veloz` | 3 ✦ | `sink_area.bonus_fuerza += 0.10` |
+| `tendero` | 5 ✦ | `_ali_mult_euros = 1.05` (factor en handlers de €) |
+| `mensajero` | 8 ✦ | `GarmentData.añadir_suerte_ceniza(0.02)` |
+| `relojero` | 10 ✦ | `machines_panel.aplicar_bonus_velocidad_aliados(0.05)` |
+| `custodio` | 15 ✦ | `bonus_ceniza_prestigio += 2` |
+
+`machines_panel.bonus_reduccion_aliados` apila multiplicativo con `bonus_reduccion_global` (Fase 15) y `bonus_reduccion_ciclo_cuantica` (Fase 7). Refactor: `_recalcular_ciclos_lavadoras()` helper común para ambos setters de velocidad.
+
+`_ali_mult_euros` se aplica como factor en ambos handlers de € apilando con `multiplicador_ganancias × _ev_mult_recompensa × _bend_mult_euros × _bestiario_mult`.
+
+Persistencia en `save.main.aliados_comprados`, `_ali_mult_euros`, `_ali_red_velocidad`. `machines_panel` persiste `bonus_reduccion_aliados`. Al cargar, no se re-aplican efectos (los que están en estado, ya están guardados). `aliados_comprados` se filtra contra `ALIADO_IDS` para descartar IDs obsoletos.
+
+2 logros nuevos en Hitos: `primer_aliado`, `circulo_completo` (los 5).
+
+`_debug_dar_recursos` (F1) ahora también da +5 favores.
 
 ### Bestiario de prendas (Fase 16)
 
@@ -326,7 +355,8 @@ Save schema (top level):
             multi_compras_contador, alien_boost_contador,
             bonus_frag_alien, bonus_recompensa_alien, bonus_ceniza_prestigio,
             comunion_activa,
-            bendicion_activa, _bend_mult_euros, _bend_red_velocidad },  # Fase 15
+            bendicion_activa, _bend_mult_euros, _bend_red_velocidad,    # Fase 15
+            aliados_comprados, _ali_mult_euros, _ali_red_velocidad },   # Fase 17
   "garment_data":   { suerte_euros, suerte_ceniza },
   "shop_panel":     { upgrades_comprados: [String] },
   "ash_shop_panel": { compras_contador: {String → int} },

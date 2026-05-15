@@ -79,6 +79,12 @@ var _bend_red_velocidad: float = 0.0 # tiempo_lento: 0.10 (reducción a aplicar 
 var _bestiario_mult: float = 1.0
 const BESTIARIO_BONUS_POR_PRENDA: float = 0.01
 
+# Fase 17 — Aliados (compras permanentes con favores)
+var aliados_comprados: Array[String] = []
+var _ali_mult_euros: float = 1.0      # tendero: 1.05
+var _ali_red_velocidad: float = 0.0   # relojero: 0.05 (reducción extra a las lavadoras)
+const ALIADO_IDS: Array[String] = ["aprendiz_veloz", "tendero", "mensajero", "relojero", "custodio"]
+
 const BENDICIONES: Array[Dictionary] = [
 	{
 		"id": "manos_rapidas",
@@ -192,6 +198,11 @@ const TUTORIAL_UMBRAL_LAVADORA: int = 75
 var _opciones_btn: Button
 var _opciones_panel: PanelContainer
 var _opciones_slider: HSlider
+
+# Fase 17 — Modal de aliados
+var _allies_overlay: Control
+var _btn_aliados: Button
+var _favores_label: Label  # label del HUD para favores
 
 # Fase 12 — Progreso offline
 const OFFLINE_MAX_SEG: float = 28800.0       # cap a 8h de tiempo offline contabilizado
@@ -309,6 +320,12 @@ func _ready() -> void:
 	ContractsManager.contrato_actualizado.connect(_on_contrato_actualizado)
 	ContractsManager.contrato_disponible_expirado.connect(_on_contrato_expirado)
 
+	# Fase 17: aliados (favores) — label + botón + modal
+	_crear_favores_label()
+	_crear_btn_aliados()
+	_crear_allies_overlay()
+	_actualizar_favores_label()
+
 	# Autosave periódico
 	_autosave_timer = Timer.new()
 	_autosave_timer.wait_time = AUTOSAVE_INTERVAL
@@ -391,7 +408,7 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada) se aplica como factor extra
 	# Fase 15: _bend_mult_euros (bolsillos_profundos) factor adicional
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -575,7 +592,7 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada)
 	# Fase 15: _bend_mult_euros (bolsillos_profundos)
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -1093,13 +1110,15 @@ func _debug_dar_recursos() -> void:
 	euros_totales_ganados += 10000.0
 	ceniza += 5
 	fragmentos += 3
+	favores += 5
 	euros_changed.emit(euros)
 	ceniza_changed.emit(ceniza)
 	fragmentos_changed.emit(fragmentos)
 	_update_hud()
+	_actualizar_favores_label()
 	_actualizar_estado_prestige_button()
 	EventsManager.comprobar_gate(euros_totales_ganados, num_prestigios)
-	mostrar_notificacion("[DEBUG] +10k€  +5🜁  +3frag", false)
+	mostrar_notificacion("[DEBUG] +10k€  +5🜁  +3frag  +5✦", false)
 
 
 func _debug_reset_confirmar() -> void:
@@ -1133,6 +1152,10 @@ func _debug_ejecutar_reset() -> void:
 	bendicion_activa = ""
 	_bend_mult_euros = 1.0
 	_bend_red_velocidad = 0.0
+	# Fase 17
+	aliados_comprados.clear()
+	_ali_mult_euros = 1.0
+	_ali_red_velocidad = 0.0
 
 	GarmentData.resetear_suerte()
 	GarmentData.bonus_prob_alien = 0.0
@@ -1142,6 +1165,7 @@ func _debug_ejecutar_reset() -> void:
 	shop_panel.reset_compras()
 	machines_panel.bonus_reduccion_ciclo_cuantica = 0.0
 	machines_panel.bonus_reduccion_global = 0.0
+	machines_panel.bonus_reduccion_aliados = 0.0
 	machines_panel.mult_velocidad_evento = 1.0
 	machines_panel.reset_lavadoras()
 	queue_panel.reset_cola()
@@ -1154,6 +1178,8 @@ func _debug_ejecutar_reset() -> void:
 	if _tutorial != null:
 		_tutorial.reset_completo()
 		_tutorial.iniciar()
+	# Fase 17: refrescar HUD de favores tras reset
+	_actualizar_favores_label()
 	# Fase 10 — limpiar variables temporales
 	_ev_mult_recompensa = 1.0
 	_ev_bonus_prob_alien = 0.0
@@ -1280,6 +1306,10 @@ func guardar_partida() -> bool:
 			"bendicion_activa": bendicion_activa,
 			"_bend_mult_euros": _bend_mult_euros,
 			"_bend_red_velocidad": _bend_red_velocidad,
+			# Fase 17
+			"aliados_comprados": aliados_comprados.duplicate(),
+			"_ali_mult_euros": _ali_mult_euros,
+			"_ali_red_velocidad": _ali_red_velocidad,
 		},
 		"garment_data": GarmentData.serializar(),
 		"shop_panel": shop_panel.serializar(),
@@ -1349,6 +1379,15 @@ func cargar_partida() -> bool:
 	bendicion_activa = String(m.get("bendicion_activa", ""))
 	_bend_mult_euros = float(m.get("_bend_mult_euros", 1.0))
 	_bend_red_velocidad = float(m.get("_bend_red_velocidad", 0.0))
+	# Fase 17
+	aliados_comprados.clear()
+	var lst_ali: Array = m.get("aliados_comprados", [])
+	for v in lst_ali:
+		var sid := String(v)
+		if sid in ALIADO_IDS and sid not in aliados_comprados:
+			aliados_comprados.append(sid)
+	_ali_mult_euros = float(m.get("_ali_mult_euros", 1.0))
+	_ali_red_velocidad = float(m.get("_ali_red_velocidad", 0.0))
 
 	# 2. Subsistemas
 	GarmentData.cargar_estado(data.get("garment_data", {}))
@@ -1364,6 +1403,9 @@ func cargar_partida() -> bool:
 
 	# Fase 16: recalcular bonus pasivo del bestiario tras cargar Stats
 	_recalcular_bestiario_mult()
+
+	# Fase 17: refrescar el HUD de favores
+	_actualizar_favores_label()
 
 	# Fase 11C: opciones
 	var opciones: Dictionary = data.get("opciones", {})
@@ -1745,7 +1787,10 @@ func _on_evento_finalizado(id: String, exito: bool) -> void:
 				if rec_fr > 0:
 					fragmentos += rec_fr
 					fragmentos_changed.emit(fragmentos)
-				mostrar_notificacion("🎩 VIP satisfecho: +%d€  +%d ✧" % [rec_eu, rec_fr], false)
+				# Fase 17: +1 favor por VIP exitoso
+				favores += 1
+				_actualizar_favores_label()
+				mostrar_notificacion("🎩 VIP satisfecho: +%d€  +%d ✧  +1 ✦" % [rec_eu, rec_fr], false)
 				Stats.incrementar("vips_completados")
 				Stats.notificar_evento("cliente_fiel")
 				if Stats.get_stat("vips_completados") >= 5:
@@ -1779,6 +1824,101 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 		_event_banner_progreso.text = "%d / %d prendas · %.1fs" % [prog, obj, restante]
 	else:
 		_event_banner_progreso.text = "%s · %.1fs" % [String(ev["descripcion"]), restante]
+
+
+# ============================================================
+# FASE 17 — ALIADOS (FAVORES)
+# ============================================================
+func _crear_favores_label() -> void:
+	# Añadir un Label en CoinsPanel (HBoxContainer) para mostrar favores
+	var coins_panel: HBoxContainer = $HUD/CoinsPanel
+	if coins_panel == null:
+		return
+	_favores_label = Label.new()
+	_favores_label.text = "✦ 0"
+	_favores_label.add_theme_font_size_override("font_size", 14)
+	_favores_label.add_theme_color_override("font_color", Color("#E0C0FF"))
+	coins_panel.add_child(_favores_label)
+
+
+func _actualizar_favores_label() -> void:
+	if _favores_label != null:
+		_favores_label.text = "✦ %d" % favores
+	if _allies_overlay != null and _allies_overlay.has_method("refrescar"):
+		_allies_overlay.refrescar(favores, aliados_comprados)
+
+
+func _crear_btn_aliados() -> void:
+	_btn_aliados = Button.new()
+	_btn_aliados.text = "🤝"
+	_btn_aliados.tooltip_text = "Cantina de Aliados"
+	_btn_aliados.anchor_left = 1.0
+	_btn_aliados.anchor_top = 1.0
+	_btn_aliados.anchor_right = 1.0
+	_btn_aliados.anchor_bottom = 1.0
+	# Encima del botón de opciones (⚙ está en -100..-62)
+	_btn_aliados.offset_left = -64
+	_btn_aliados.offset_top = -146
+	_btn_aliados.offset_right = -16
+	_btn_aliados.offset_bottom = -108
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color("#3A2A4A")
+	s.set_corner_radius_all(4)
+	_btn_aliados.add_theme_stylebox_override("normal", s)
+	_btn_aliados.add_theme_stylebox_override("hover", s)
+	_btn_aliados.add_theme_stylebox_override("pressed", s)
+	_btn_aliados.add_theme_font_size_override("font_size", 16)
+	_btn_aliados.add_theme_color_override("font_color", Color("#E0C0FF"))
+	_btn_aliados.pressed.connect(_on_btn_aliados_pressed)
+	$HUD.add_child(_btn_aliados)
+
+
+func _crear_allies_overlay() -> void:
+	var script: GDScript = load("res://allies_overlay.gd")
+	_allies_overlay = script.new()
+	$HUD.add_child(_allies_overlay)
+	_allies_overlay.aliado_solicitado.connect(_on_aliado_solicitado)
+
+
+func _on_btn_aliados_pressed() -> void:
+	if _allies_overlay != null:
+		_allies_overlay.mostrar(favores, aliados_comprados)
+
+
+func _on_aliado_solicitado(aliado_id: String, coste: int) -> void:
+	if favores < coste:
+		mostrar_notificacion("Te faltan favores", false)
+		AudioManager.play_sfx("denied")
+		return
+	if aliado_id in aliados_comprados:
+		return
+	favores -= coste
+	aliados_comprados.append(aliado_id)
+	_aplicar_efecto_aliado(aliado_id)
+	_actualizar_favores_label()
+	mostrar_notificacion("✦ Aliado contratado", false)
+	AudioManager.play_sfx("buy", 0.9)
+	# Logro: primer aliado
+	Stats.notificar_evento("primer_aliado")
+	if aliados_comprados.size() >= 5:
+		Stats.notificar_evento("circulo_completo")
+
+
+func _aplicar_efecto_aliado(id: String) -> void:
+	match id:
+		"aprendiz_veloz":
+			sink_area.bonus_fuerza += 0.10
+		"tendero":
+			_ali_mult_euros = 1.05
+		"mensajero":
+			GarmentData.añadir_suerte_ceniza(0.02)
+		"relojero":
+			_ali_red_velocidad = 0.05
+			machines_panel.aplicar_bonus_velocidad_aliados(0.05)
+		"custodio":
+			bonus_ceniza_prestigio += 2
+		_:
+			push_warning("Aliado desconocido: " + id)
 
 
 # ============================================================
@@ -2191,7 +2331,10 @@ func _on_contrato_completado(contrato: Dictionary, exito: bool) -> void:
 		Stats.notificar_evento("primer_contrato")
 		if Stats.get_stat("contratos_completados") >= 10:
 			Stats.notificar_evento("contratista_habitual")
-		mostrar_notificacion("✓ Contrato completado: +%d€ +%d ✧" % [rec_e, rec_f], false)
+		# Fase 17: +1 favor por contrato exitoso
+		favores += 1
+		_actualizar_favores_label()
+		mostrar_notificacion("✓ Contrato completado: +%d€ +%d ✧  +1 ✦" % [rec_e, rec_f], false)
 		AudioManager.play_sfx("achievement", 1.1)
 	else:
 		mostrar_notificacion("Contrato fallido", false)

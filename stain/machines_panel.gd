@@ -72,6 +72,8 @@ var memoria_prendas: bool = false
 var bonus_reduccion_ciclo_cuantica: float = 0.0
 # Fase 15: reducción global aplicada a TODAS las lavadoras (bendición tiempo_lento).
 var bonus_reduccion_global: float = 0.0
+# Fase 17: reducción del aliado relojero (apila multiplicativo con global).
+var bonus_reduccion_aliados: float = 0.0
 # Fase 10: multiplicador temporal de velocidad para Pulso cuántico (no persiste)
 var mult_velocidad_evento: float = 1.0
 
@@ -369,6 +371,9 @@ func _crear_lavadora_activa(tipo: String) -> void:
 	# Fase 15: reducción global de la bendición tiempo_lento (apila multiplicativo)
 	if bonus_reduccion_global > 0.0:
 		ciclo_real *= (1.0 - bonus_reduccion_global)
+	# Fase 17: reducción del aliado relojero (apila también)
+	if bonus_reduccion_aliados > 0.0:
+		ciclo_real *= (1.0 - bonus_reduccion_aliados)
 
 	lavadoras.append({
 		"tipo": tipo,
@@ -468,22 +473,35 @@ func reset_para_prestigio() -> void:
 	reset_lavadoras()
 
 
-## [Fase 15] Aplica una reducción global de ciclo a TODAS las lavadoras existentes y futuras.
-## Llamado al elegir la bendición tiempo_lento. Ajusta el ciclo manteniendo el progreso parcial.
-func aplicar_bonus_velocidad_global(reduccion: float) -> void:
-	bonus_reduccion_global = clamp(reduccion, 0.0, 0.9)
+## [Fase 15/17] Recalcula el ciclo de TODAS las lavadoras existentes aplicando los
+## bonus actuales (cuántica + global de bendición + aliado relojero). Mantiene el
+## progreso parcial.
+func _recalcular_ciclos_lavadoras() -> void:
 	for lav in lavadoras:
 		var tipo: String = String(lav["tipo"])
 		var datos: Dictionary = TIPOS_LAVADORA[tipo]
-		var ciclo_base: float = float(datos["ciclo_seg"])
-		# Recalcular ciclo aplicando ambos bonus (cuántica + global)
-		var nuevo_ciclo: float = ciclo_base
+		var nuevo_ciclo: float = float(datos["ciclo_seg"])
 		if tipo == "cuantica" and bonus_reduccion_ciclo_cuantica > 0.0:
 			nuevo_ciclo *= (1.0 - bonus_reduccion_ciclo_cuantica)
-		nuevo_ciclo *= (1.0 - bonus_reduccion_global)
+		if bonus_reduccion_global > 0.0:
+			nuevo_ciclo *= (1.0 - bonus_reduccion_global)
+		if bonus_reduccion_aliados > 0.0:
+			nuevo_ciclo *= (1.0 - bonus_reduccion_aliados)
 		var pct: float = (lav["tiempo"] / lav["ciclo_seg"]) if lav["ciclo_seg"] > 0.0 else 0.0
 		lav["ciclo_seg"] = nuevo_ciclo
 		lav["tiempo"] = pct * nuevo_ciclo
+
+
+## [Fase 15] Setter para bonus_reduccion_global con reaplicación inmediata.
+func aplicar_bonus_velocidad_global(reduccion: float) -> void:
+	bonus_reduccion_global = clamp(reduccion, 0.0, 0.9)
+	_recalcular_ciclos_lavadoras()
+
+
+## [Fase 17] Setter para bonus_reduccion_aliados con reaplicación inmediata.
+func aplicar_bonus_velocidad_aliados(reduccion: float) -> void:
+	bonus_reduccion_aliados = clamp(reduccion, 0.0, 0.9)
+	_recalcular_ciclos_lavadoras()
 
 
 ## [Fase 12] Calcula cuántos ciclos completarían las lavadoras activas en N segundos.
@@ -560,6 +578,7 @@ func serializar() -> Dictionary:
 		"memoria_prendas": memoria_prendas,
 		"bonus_reduccion_ciclo_cuantica": bonus_reduccion_ciclo_cuantica,
 		"bonus_reduccion_global": bonus_reduccion_global,
+		"bonus_reduccion_aliados": bonus_reduccion_aliados,
 		"lavadoras": lavs,
 	}
 
@@ -570,6 +589,7 @@ func cargar_estado(data: Dictionary) -> void:
 	# Aplicar los bonus ANTES de crear las lavadoras para que se creen con el ciclo correcto
 	bonus_reduccion_ciclo_cuantica = float(data.get("bonus_reduccion_ciclo_cuantica", 0.0))
 	bonus_reduccion_global = float(data.get("bonus_reduccion_global", 0.0))
+	bonus_reduccion_aliados = float(data.get("bonus_reduccion_aliados", 0.0))
 	var lavs: Array = data.get("lavadoras", [])
 	for entry_v in lavs:
 		var entry: Dictionary = entry_v

@@ -153,6 +153,14 @@ const LOGROS: Array[Dictionary] = [
 	{"id": "bestiario_completo", "nombre": "Bestiario completo", "descripcion": "Investiga las 12 prendas, alien incluidas.",
 	 "categoria": "Hitos", "icono": "📚",
 	 "tipo": "evento"},
+
+	# Aliados (Fase 17)
+	{"id": "primer_aliado", "nombre": "Primer aliado", "descripcion": "Contrata a tu primer aliado.",
+	 "categoria": "Hitos", "icono": "🤝",
+	 "tipo": "evento"},
+	{"id": "circulo_completo", "nombre": "Círculo completo", "descripcion": "Contrata a los 5 aliados.",
+	 "categoria": "Hitos", "icono": "🌟",
+	 "tipo": "evento"},
 ]
 
 
