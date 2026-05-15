@@ -279,6 +279,19 @@ func get_cola_inicial(cantidad: int) -> Array[Dictionary]:
 	return cola
 
 
+## [Fase 16] Devuelve TODAS las prendas que pueden aparecer (normales + alien base + desbloqueables).
+## Usado por el bestiario para listar el catálogo completo.
+func get_todas_prendas() -> Array[Dictionary]:
+	var lista: Array[Dictionary] = []
+	for p in PRENDAS_NORMALES:
+		lista.append(p)
+	for p in PRENDAS_ALIEN:
+		lista.append(p)
+	for p in PRENDAS_ALIEN_DESBLOQUEABLES:
+		lista.append(p)
+	return lista
+
+
 func get_prenda_por_id(id: String) -> Dictionary:
 	for p in PRENDAS_NORMALES:
 		if p["id"] == id:

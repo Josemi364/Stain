@@ -75,6 +75,10 @@ var bendicion_activa: String = ""
 var _bend_mult_euros: float = 1.0    # bolsillos_profundos: 1.08
 var _bend_red_velocidad: float = 0.0 # tiempo_lento: 0.10 (reducción a aplicar a TODAS las lavadoras)
 
+# Fase 16 — Bonus pasivo del bestiario: +1% € por cada prenda investigada (max +12%)
+var _bestiario_mult: float = 1.0
+const BESTIARIO_BONUS_POR_PRENDA: float = 0.01
+
 const BENDICIONES: Array[Dictionary] = [
 	{
 		"id": "manos_rapidas",
@@ -282,6 +286,8 @@ func _ready() -> void:
 	_crear_achievements_overlay()
 	_crear_btn_logros()
 	Stats.logro_desbloqueado.connect(_on_logro_desbloqueado)
+	# Fase 16: bonus pasivo del bestiario
+	Stats.prenda_investigada.connect(_on_prenda_investigada)
 
 	# Fase 10: eventos
 	_crear_event_banner()
@@ -385,7 +391,7 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada) se aplica como factor extra
 	# Fase 15: _bend_mult_euros (bolsillos_profundos) factor adicional
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -447,6 +453,8 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 		Stats.incrementar("aliens_total_manual")
 		_check_logros_aliens_combinados()
 	Stats.set_max("max_euros_en_run", euros)
+	# Fase 16: bestiario
+	Stats.investigar_prenda(String(prenda.get("id", "")))
 
 	# Fase 11A: tutorial — primera entrega + chequear umbrales
 	_notif_tutorial("entrega_completada")
@@ -567,7 +575,7 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada)
 	# Fase 15: _bend_mult_euros (bolsillos_profundos)
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -627,6 +635,8 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 		Stats.incrementar("aliens_total_lavadora")
 		_check_logros_aliens_combinados()
 	Stats.set_max("max_euros_en_run", euros)
+	# Fase 16: bestiario también vía lavadora
+	Stats.investigar_prenda(String(prenda.get("id", "")))
 
 
 # ============================================================
@@ -1138,6 +1148,7 @@ func _debug_ejecutar_reset() -> void:
 	sink_area.reset_sink()
 	sink_area.bonus_fuerza_evento = 0.0
 	Stats.reset_completo()
+	_recalcular_bestiario_mult()  # Fase 16: vuelve a 1.0 al limpiar Stats
 	EventsManager.reset_completo()
 	ContractsManager.reset_completo()
 	if _tutorial != null:
@@ -1350,6 +1361,9 @@ func cargar_partida() -> bool:
 	Stats.cargar_estado(data.get("stats", {}))
 	if _tutorial != null:
 		_tutorial.cargar_estado(data.get("tutorial", {}))
+
+	# Fase 16: recalcular bonus pasivo del bestiario tras cargar Stats
+	_recalcular_bestiario_mult()
 
 	# Fase 11C: opciones
 	var opciones: Dictionary = data.get("opciones", {})
@@ -1765,6 +1779,38 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 		_event_banner_progreso.text = "%d / %d prendas · %.1fs" % [prog, obj, restante]
 	else:
 		_event_banner_progreso.text = "%s · %.1fs" % [String(ev["descripcion"]), restante]
+
+
+# ============================================================
+# FASE 16 — BESTIARIO
+# ============================================================
+## Recalcula el multiplicador del bestiario desde el estado actual de Stats.
+## Llamado tras cargar partida y tras reset.
+func _recalcular_bestiario_mult() -> void:
+	_bestiario_mult = 1.0 + float(Stats.prendas_investigadas.size()) * BESTIARIO_BONUS_POR_PRENDA
+
+
+## Llamado por Stats.prenda_investigada cuando una prenda se investiga por primera vez.
+## Actualiza el multiplicador pasivo y comprueba los logros del bestiario.
+func _on_prenda_investigada(_id: String, total: int) -> void:
+	_bestiario_mult = 1.0 + float(total) * BESTIARIO_BONUS_POR_PRENDA
+	# Notificar al jugador
+	mostrar_notificacion("📖 Nueva prenda investigada (%d)" % total, false)
+	# Logros: 6 normales o 12 totales
+	var normales_invest: int = 0
+	var todas_invest: int = Stats.prendas_investigadas.size()
+	for sid in Stats.prendas_investigadas:
+		var p: Dictionary = GarmentData.get_prenda_por_id(sid)
+		if not p.is_empty() and not bool(p.get("es_alien", false)):
+			normales_invest += 1
+	if normales_invest >= 6:
+		Stats.notificar_evento("bestiario_normales")
+	if todas_invest >= 12:
+		Stats.notificar_evento("bestiario_completo")
+	# Refrescar el overlay si está abierto (para que la nueva prenda aparezca activa)
+	if _achievements_overlay != null and _achievements_overlay.visible \
+			and _achievements_overlay.has_method("refrescar_bestiario"):
+		_achievements_overlay.refrescar_bestiario()
 
 
 # ============================================================

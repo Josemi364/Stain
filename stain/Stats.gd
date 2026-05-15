@@ -145,6 +145,14 @@ const LOGROS: Array[Dictionary] = [
 	{"id": "contratista_habitual", "nombre": "Contratista habitual", "descripcion": "Completa 10 contratos.",
 	 "categoria": "Eventos", "icono": "🗂",
 	 "tipo": "evento"},
+
+	# Bestiario (Fase 16)
+	{"id": "bestiario_normales", "nombre": "Catálogo civil", "descripcion": "Investiga las 6 prendas normales.",
+	 "categoria": "Hitos", "icono": "📖",
+	 "tipo": "evento"},
+	{"id": "bestiario_completo", "nombre": "Bestiario completo", "descripcion": "Investiga las 12 prendas, alien incluidas.",
+	 "categoria": "Hitos", "icono": "📚",
+	 "tipo": "evento"},
 ]
 
 
@@ -153,12 +161,15 @@ const LOGROS: Array[Dictionary] = [
 # ============================================================
 var contadores: Dictionary = {}
 var desbloqueados: Array[String] = []
+# Fase 16: set de prendas investigadas (limpiadas al menos una vez, por id)
+var prendas_investigadas: Array[String] = []
 
 # Para "evento" se nota el desbloqueo desde fuera; lo guardamos aquí.
 # Para "stat", el chequeo se hace en _check_stat_logros.
 
 signal logro_desbloqueado(id: String)
 signal stat_changed(stat_id: String, new_value: float)
+signal prenda_investigada(id: String, total: int)
 
 
 # ============================================================
@@ -198,6 +209,17 @@ func set_max(stat_id: String, valor: float) -> void:
 
 func get_stat(stat_id: String) -> float:
 	return float(contadores.get(stat_id, 0.0))
+
+
+## [Fase 16] Marca una prenda como investigada (vista al menos una vez).
+## Devuelve true si era nueva. Emite señal `prenda_investigada` para que Main
+## actualice el bonus pasivo.
+func investigar_prenda(prenda_id: String) -> bool:
+	if prenda_id.is_empty() or prenda_id in prendas_investigadas:
+		return false
+	prendas_investigadas.append(prenda_id)
+	prenda_investigada.emit(prenda_id, prendas_investigadas.size())
+	return true
 
 
 ## Llamada para desbloquear logros tipo "evento" desde Main.
@@ -281,6 +303,7 @@ func serializar() -> Dictionary:
 	return {
 		"contadores": contadores.duplicate(),
 		"desbloqueados": desbloqueados.duplicate(),
+		"prendas_investigadas": prendas_investigadas.duplicate(),
 	}
 
 
@@ -289,6 +312,7 @@ func cargar_estado(data: Dictionary) -> void:
 	for sid in STAT_IDS:
 		contadores[sid] = 0.0
 	desbloqueados.clear()
+	prendas_investigadas.clear()
 
 	# Cargar contadores conocidos
 	var c: Dictionary = data.get("contadores", {})
@@ -305,8 +329,17 @@ func cargar_estado(data: Dictionary) -> void:
 		if not get_logro(sid).is_empty() and sid not in desbloqueados:
 			desbloqueados.append(sid)
 
+	# Fase 16: prendas investigadas (sin validación contra GarmentData
+	# para evitar dependencias circulares al cargar)
+	var lstp: Array = data.get("prendas_investigadas", [])
+	for id_v in lstp:
+		var sid := String(id_v)
+		if not sid.is_empty() and sid not in prendas_investigadas:
+			prendas_investigadas.append(sid)
+
 
 func reset_completo() -> void:
 	for sid in STAT_IDS:
 		contadores[sid] = 0.0
 	desbloqueados.clear()
+	prendas_investigadas.clear()

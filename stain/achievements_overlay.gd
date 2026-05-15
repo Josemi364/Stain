@@ -26,11 +26,18 @@ var _fondo: ColorRect
 var _panel: PanelContainer
 var _tab_logros_btn: Button
 var _tab_stats_btn: Button
+var _tab_bestiario_btn: Button
 var _contenido: Control
 var _vista_logros: ScrollContainer
 var _vista_stats: ScrollContainer
+var _vista_bestiario: ScrollContainer
 var _logros_vbox: VBoxContainer
 var _stats_vbox: VBoxContainer
+var _bestiario_grid: GridContainer
+var _bestiario_progreso_lbl: Label
+
+# Estado de la pestaña actual: 0=logros, 1=stats, 2=bestiario
+var _tab_actual: int = 0
 
 
 func _ready() -> void:
@@ -121,6 +128,12 @@ func _construir_panel() -> void:
 	_tab_stats_btn.pressed.connect(_on_tab_stats)
 	tabs_row.add_child(_tab_stats_btn)
 
+	_tab_bestiario_btn = Button.new()
+	_tab_bestiario_btn.text = "Bestiario"
+	_tab_bestiario_btn.custom_minimum_size = Vector2(140, 32)
+	_tab_bestiario_btn.pressed.connect(_on_tab_bestiario)
+	tabs_row.add_child(_tab_bestiario_btn)
+
 	# === Contenido (vistas alternables) ===
 	_contenido = Control.new()
 	_contenido.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -130,8 +143,9 @@ func _construir_panel() -> void:
 
 	_construir_vista_logros()
 	_construir_vista_stats()
+	_construir_vista_bestiario()
 
-	_seleccionar_tab(true)
+	_seleccionar_tab_idx(0)
 
 
 func _construir_vista_logros() -> void:
@@ -163,6 +177,125 @@ func _construir_vista_stats() -> void:
 	_stats_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_stats_vbox.add_theme_constant_override("separation", 4)
 	_vista_stats.add_child(_stats_vbox)
+
+
+func _construir_vista_bestiario() -> void:
+	_vista_bestiario = ScrollContainer.new()
+	_vista_bestiario.anchor_right = 1.0
+	_vista_bestiario.anchor_bottom = 1.0
+	_vista_bestiario.offset_right = 0.0
+	_vista_bestiario.offset_bottom = 0.0
+	_vista_bestiario.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_vista_bestiario.visible = false
+	_contenido.add_child(_vista_bestiario)
+
+	var vbox := VBoxContainer.new()
+	vbox.add_theme_constant_override("separation", 10)
+	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_vista_bestiario.add_child(vbox)
+
+	_bestiario_progreso_lbl = Label.new()
+	_bestiario_progreso_lbl.add_theme_color_override("font_color", Color("#A0A0FF"))
+	_bestiario_progreso_lbl.add_theme_font_size_override("font_size", 13)
+	vbox.add_child(_bestiario_progreso_lbl)
+
+	_bestiario_grid = GridContainer.new()
+	_bestiario_grid.columns = 4
+	_bestiario_grid.add_theme_constant_override("h_separation", 10)
+	_bestiario_grid.add_theme_constant_override("v_separation", 10)
+	vbox.add_child(_bestiario_grid)
+
+
+## API pública: refresca la vista del bestiario sin re-abrir el overlay.
+## Útil cuando se investiga una nueva prenda con el overlay ya abierto.
+func refrescar_bestiario() -> void:
+	if _vista_bestiario != null and _vista_bestiario.visible:
+		_rellenar_bestiario()
+
+
+func _rellenar_bestiario() -> void:
+	for c in _bestiario_grid.get_children():
+		c.queue_free()
+
+	var todas: Array[Dictionary] = GarmentData.get_todas_prendas()
+	var investigadas: int = Stats.prendas_investigadas.size()
+	var bonus_pct: int = investigadas  # +1% por prenda
+	_bestiario_progreso_lbl.text = "Investigadas: %d / %d  ·  Bonus pasivo +%d%% €" % [investigadas, todas.size(), bonus_pct]
+
+	for prenda in todas:
+		_crear_card_bestiario(prenda)
+
+
+func _crear_card_bestiario(prenda: Dictionary) -> void:
+	var pid: String = String(prenda.get("id", ""))
+	var investigada: bool = pid in Stats.prendas_investigadas
+	var es_alien: bool = bool(prenda.get("es_alien", false))
+
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(180, 100)
+	var estilo := StyleBoxFlat.new()
+	if investigada:
+		estilo.bg_color = Color("#1A1A2E")
+		estilo.border_color = Color("#AA40FF") if es_alien else Color("#5A5AAA")
+	else:
+		estilo.bg_color = Color("#0D0D1A")
+		estilo.border_color = Color("#2A2A4A")
+	estilo.set_border_width_all(1)
+	estilo.set_corner_radius_all(6)
+	estilo.content_margin_left = 8
+	estilo.content_margin_right = 8
+	estilo.content_margin_top = 6
+	estilo.content_margin_bottom = 6
+	card.add_theme_stylebox_override("panel", estilo)
+
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 4)
+	card.add_child(v)
+
+	# Cabecera: color-chip + nombre
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 6)
+	v.add_child(header)
+
+	var chip := ColorRect.new()
+	chip.custom_minimum_size = Vector2(20, 20)
+	if investigada:
+		chip.color = prenda.get("color_prenda", Color.WHITE)
+	else:
+		chip.color = Color("#3A3A4A")
+	header.add_child(chip)
+
+	var nombre := Label.new()
+	if investigada:
+		nombre.text = String(prenda.get("nombre", "?"))
+		nombre.add_theme_color_override("font_color",
+			Color("#E0C0FF") if es_alien else Color("#D0D0F0"))
+	else:
+		nombre.text = "???"
+		nombre.add_theme_color_override("font_color", Color("#555577"))
+	nombre.add_theme_font_size_override("font_size", 12)
+	nombre.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(nombre)
+
+	# Info: mancha + recompensa
+	var info := Label.new()
+	if investigada:
+		info.text = "Mancha: %s\n+%d€" % [
+			String(prenda.get("tipo_mancha", "?")),
+			int(prenda.get("recompensa", 0)),
+		]
+		var frags: int = int(prenda.get("fragmentos_bonus", 0))
+		if frags > 0:
+			info.text += "  +%d ✧" % frags
+		info.add_theme_color_override("font_color", Color("#A0A0CC"))
+	else:
+		info.text = "Sin investigar"
+		info.add_theme_color_override("font_color", Color("#444466"))
+	info.add_theme_font_size_override("font_size", 10)
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(info)
+
+	_bestiario_grid.add_child(card)
 
 
 # ============================================================
@@ -340,22 +473,29 @@ func _crear_fila_stat(label_texto: String, stat_id: String) -> void:
 # TABS
 # ============================================================
 func _on_tab_logros() -> void:
-	_seleccionar_tab(true)
+	_seleccionar_tab_idx(0)
 
 
 func _on_tab_stats() -> void:
-	_seleccionar_tab(false)
+	_seleccionar_tab_idx(1)
 
 
-func _seleccionar_tab(en_logros: bool) -> void:
-	_vista_logros.visible = en_logros
-	_vista_stats.visible = not en_logros
-	_estilizar_tab(_tab_logros_btn, en_logros)
-	_estilizar_tab(_tab_stats_btn, not en_logros)
-	if en_logros:
-		_rellenar_logros()
-	else:
-		_rellenar_stats()
+func _on_tab_bestiario() -> void:
+	_seleccionar_tab_idx(2)
+
+
+func _seleccionar_tab_idx(idx: int) -> void:
+	_tab_actual = idx
+	_vista_logros.visible = (idx == 0)
+	_vista_stats.visible = (idx == 1)
+	_vista_bestiario.visible = (idx == 2)
+	_estilizar_tab(_tab_logros_btn, idx == 0)
+	_estilizar_tab(_tab_stats_btn, idx == 1)
+	_estilizar_tab(_tab_bestiario_btn, idx == 2)
+	match idx:
+		0: _rellenar_logros()
+		1: _rellenar_stats()
+		2: _rellenar_bestiario()
 
 
 # ============================================================
@@ -363,7 +503,7 @@ func _seleccionar_tab(en_logros: bool) -> void:
 # ============================================================
 func mostrar() -> void:
 	visible = true
-	_seleccionar_tab(true)
+	_seleccionar_tab_idx(0)
 	modulate.a = 0.0
 	var tw := create_tween()
 	tw.tween_property(self, "modulate:a", 1.0, 0.2)

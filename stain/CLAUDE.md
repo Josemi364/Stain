@@ -114,6 +114,22 @@ Las 8 mejoras y sus efectos:
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
 
+### Bestiario de prendas (Fase 16)
+
+Cada vez que el jugador limpia una prenda (manual o lavadora), `Stats.investigar_prenda(id)` la añade al set `prendas_investigadas` si era nueva y emite `prenda_investigada(id, total)`. Main escucha y:
+- Actualiza `_bestiario_mult = 1.0 + total × BESTIARIO_BONUS_POR_PRENDA` (1% por prenda, max 12% con las 12 conocidas)
+- Muestra notificación "📖 Nueva prenda investigada (N)"
+- Comprueba logros `bestiario_normales` (6 normales) y `bestiario_completo` (12)
+- Refresca la pestaña del bestiario si está abierta (`refrescar_bestiario()`)
+
+`_bestiario_mult` se aplica como factor en ambos handlers de € (manual y lavadora), apilando con `multiplicador_ganancias`, `_ev_mult_recompensa` y `_bend_mult_euros`.
+
+UI: nueva pestaña en `achievements_overlay` (`refrescar_bestiario()` API pública), grid de 4 columnas con 12 cards. Prendas no investigadas se muestran como "???" con bordes apagados. Las alien tienen borde púrpura, normales azul.
+
+`GarmentData.get_todas_prendas()` devuelve las 12 (6 normales + 4 alien base + 2 alien desbloqueables del altar). Los logros `bestiario_completo` exige desbloquear y limpiar las 2 del altar.
+
+Persistencia en `save.stats.prendas_investigadas`. Al cargar y al F2 reset se llama `_recalcular_bestiario_mult()` para sincronizar el multiplicador con el nuevo estado de Stats.
+
 ### Bendiciones del Lavado (Fase 15)
 
 Tras cada prestigio, el jugador elige 1 de 3 bendiciones aleatorias del pool `BENDICIONES` (6 totales). Cada bendición es un modificador pequeño activo durante toda la run; al siguiente prestigio se reemplaza por una nueva elección.
