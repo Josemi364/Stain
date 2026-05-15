@@ -114,6 +114,31 @@ Las 8 mejoras y sus efectos:
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
 
+### Bendiciones del Lavado (Fase 15)
+
+Tras cada prestigio, el jugador elige 1 de 3 bendiciones aleatorias del pool `BENDICIONES` (6 totales). Cada bendición es un modificador pequeño activo durante toda la run; al siguiente prestigio se reemplaza por una nueva elección.
+
+| ID | Icono | Efecto |
+|---|---|---|
+| `manos_rapidas` | ✋ | +0.10 fuerza de borrado base (sumada a `sink_area.bonus_fuerza`) |
+| `bolsillos_profundos` | 💰 | `_bend_mult_euros = 1.08` (factor en handlers de €) |
+| `ojos_alienados` | 👁 | +0.015 a `GarmentData.bonus_prob_alien` |
+| `tiempo_lento` | ⏳ | `machines_panel.bonus_reduccion_global = 0.10` (apila multiplicativo con cuántica) |
+| `salto_inicial` | 🚀 | `euros = 75.0` al elegir (one-shot) |
+| `eco_compasivo` | ✧ | +1 fragmento por alien (chequeado en handlers via `bendicion_activa`) |
+
+Flujo en `_on_prestige_confirmado`:
+1. `_animar_prestigio(texto)` (3-4s)
+2. `_ejecutar_prestigio()` — reset incluye limpiar bendición previa y guardado intermedio (por si cierran durante la elección)
+3. `_mostrar_seleccion_bendicion()` — modal awaitable con 3 cards; bloquea hasta que el jugador elige
+4. `_aplicar_bendicion(id)` aplica el efecto sobre el estado fresco
+5. `guardar_partida()` final con la bendición activa
+6. Continuar consumiendo cola
+
+Persistido en `save.main.bendicion_activa`, `_bend_mult_euros`, `_bend_red_velocidad`. `machines_panel` persiste también `bonus_reduccion_global`. Todos se restauran al cargar sin re-aplicar la bendición (los efectos ya están reflejados en el estado).
+
+El botón ⚙ de opciones muestra como tooltip la bendición activa: "Bendición: ✋ Manos rápidas".
+
 ### Narrativa del Altar (Fase 14)
 
 Cada upgrade del altar tiene un campo `lore: String` (multilínea) en `UPGRADES_FRAGMENTO` (`fragment_shop_panel.gd`). Al comprarlo, `Main._aplicar_efecto_fragmento` llama a `_mostrar_lore_altar(texto)` ANTES de aplicar el efecto.
@@ -282,7 +307,10 @@ Save schema (top level):
   "main": { euros, euros_totales_ganados, ceniza, fragmentos, favores,
             num_prestigios, prestigio_desbloqueado, multiplicador_ganancias,
             memoria_prendas_activa, velocidad_cola_activa,
-            multi_compras_contador, alien_boost_contador },
+            multi_compras_contador, alien_boost_contador,
+            bonus_frag_alien, bonus_recompensa_alien, bonus_ceniza_prestigio,
+            comunion_activa,
+            bendicion_activa, _bend_mult_euros, _bend_red_velocidad },  # Fase 15
   "garment_data":   { suerte_euros, suerte_ceniza },
   "shop_panel":     { upgrades_comprados: [String] },
   "ash_shop_panel": { compras_contador: {String → int} },

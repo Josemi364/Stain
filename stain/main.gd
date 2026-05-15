@@ -67,6 +67,59 @@ var bonus_recompensa_alien: float = 0.0  # +10% € por alien × n (0..0.4)
 var bonus_ceniza_prestigio: int = 0      # +1 ceniza base en prestigio
 var comunion_activa: bool = false        # 20% prob. duplicar fragmentos en limpieza manual de alien
 
+# === Fase 15 — Bendiciones del Lavado ===
+# bendicion_activa: id de la bendición elegida tras el último prestigio ("" = ninguna).
+# Las variables _bend_* se derivan de bendicion_activa al elegir y se persisten
+# en el save para que sus efectos sobrevivan al cierre del juego dentro de la run.
+var bendicion_activa: String = ""
+var _bend_mult_euros: float = 1.0    # bolsillos_profundos: 1.08
+var _bend_red_velocidad: float = 0.0 # tiempo_lento: 0.10 (reducción a aplicar a TODAS las lavadoras)
+
+const BENDICIONES: Array[Dictionary] = [
+	{
+		"id": "manos_rapidas",
+		"nombre": "Manos rápidas",
+		"descripcion": "+0.10 fuerza de borrado base.",
+		"icono": "✋",
+		"color": "#FFAA40",
+	},
+	{
+		"id": "bolsillos_profundos",
+		"nombre": "Bolsillos profundos",
+		"descripcion": "+8% € en todas las recompensas.",
+		"icono": "💰",
+		"color": "#FFD060",
+	},
+	{
+		"id": "ojos_alienados",
+		"nombre": "Ojos alienados",
+		"descripcion": "+1.5% probabilidad base de prendas alien.",
+		"icono": "👁",
+		"color": "#AA40FF",
+	},
+	{
+		"id": "tiempo_lento",
+		"nombre": "Tiempo lento",
+		"descripcion": "Lavadoras: −10% tiempo de ciclo.",
+		"icono": "⏳",
+		"color": "#40A0FF",
+	},
+	{
+		"id": "salto_inicial",
+		"nombre": "Salto inicial",
+		"descripcion": "Empiezas la run con 75 €.",
+		"icono": "🚀",
+		"color": "#80FFAA",
+	},
+	{
+		"id": "eco_compasivo",
+		"nombre": "Eco compasivo",
+		"descripcion": "+1 fragmento por cada prenda alien.",
+		"icono": "✧",
+		"color": "#FF40AA",
+	},
+]
+
 # ============================================================
 # SEÑALES GLOBALES
 # ============================================================
@@ -331,7 +384,8 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 	if es_alien and bonus_recompensa_alien > 0.0:
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada) se aplica como factor extra
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa
+	# Fase 15: _bend_mult_euros (bolsillos_profundos) factor adicional
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -344,9 +398,12 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 
 	# Fase 7: bonus_frag_alien y comunion solo en alien limpiadas manualmente
 	# Fase 10: _ev_bonus_frag_alien (Susurro del altar) suma adicional
+	# Fase 15: bendición eco_compasivo añade +1 fragmento más
 	var fragmentos_ganados: int = prenda.get("fragmentos_bonus", 0)
 	if es_alien:
 		fragmentos_ganados += bonus_frag_alien + _ev_bonus_frag_alien
+		if bendicion_activa == "eco_compasivo":
+			fragmentos_ganados += 1
 		if comunion_activa and randf() < 0.20:
 			fragmentos_ganados *= 2
 	if fragmentos_ganados > 0:
@@ -509,7 +566,8 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 	if es_alien and bonus_recompensa_alien > 0.0:
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada)
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa
+	# Fase 15: _bend_mult_euros (bolsillos_profundos)
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -520,8 +578,11 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 
 	# eco_plasma aplica también a alien procesadas en lavadora (cualquier ruta)
 	# Fase 10: Susurro del altar suma +1 frag adicional
+	# Fase 15: bendición eco_compasivo +1 más
 	if es_alien:
 		fragmentos_ganados += bonus_frag_alien + _ev_bonus_frag_alien
+		if bendicion_activa == "eco_compasivo":
+			fragmentos_ganados += 1
 	# Comunión NO aplica aquí: solo limpieza manual
 
 	if era_cuantica and fragmentos_ganados > 0:
@@ -721,6 +782,10 @@ func _on_prestige_confirmado() -> void:
 	prestige_dialog.visible = false
 	await _animar_prestigio(texto)
 	_ejecutar_prestigio()
+	# Fase 15: ofrecer bendición tras el reset (bloquea hasta que el jugador elija)
+	await _mostrar_seleccion_bendicion()
+	# Persistir el estado final con la bendición ya aplicada
+	guardar_partida()
 	await get_tree().process_frame
 	queue_panel.consumir_siguiente()
 
@@ -781,7 +846,14 @@ func _ejecutar_prestigio() -> void:
 	# Fase 11A: tutorial — cierra el paso "prestigio"
 	_notif_tutorial("prestigio_hecho")
 
-	# Snapshot inmediato del estado post-prestigio
+	# Fase 15: limpiar bendición previa antes de que el jugador elija una nueva
+	bendicion_activa = ""
+	_bend_mult_euros = 1.0
+	_bend_red_velocidad = 0.0
+	machines_panel.bonus_reduccion_global = 0.0
+
+	# Snapshot intermedio: si el jugador cierra durante la selección, no perdemos el prestigio.
+	# guardar_partida() se vuelve a llamar tras la elección en _on_prestige_confirmado.
 	guardar_partida()
 
 
@@ -1047,6 +1119,10 @@ func _debug_ejecutar_reset() -> void:
 	bonus_recompensa_alien = 0.0
 	bonus_ceniza_prestigio = 0
 	comunion_activa = false
+	# Fase 15
+	bendicion_activa = ""
+	_bend_mult_euros = 1.0
+	_bend_red_velocidad = 0.0
 
 	GarmentData.resetear_suerte()
 	GarmentData.bonus_prob_alien = 0.0
@@ -1055,6 +1131,7 @@ func _debug_ejecutar_reset() -> void:
 	fragment_shop_panel.reset_completo()
 	shop_panel.reset_compras()
 	machines_panel.bonus_reduccion_ciclo_cuantica = 0.0
+	machines_panel.bonus_reduccion_global = 0.0
 	machines_panel.mult_velocidad_evento = 1.0
 	machines_panel.reset_lavadoras()
 	queue_panel.reset_cola()
@@ -1188,6 +1265,10 @@ func guardar_partida() -> bool:
 			"bonus_recompensa_alien": bonus_recompensa_alien,
 			"bonus_ceniza_prestigio": bonus_ceniza_prestigio,
 			"comunion_activa": comunion_activa,
+			# Fase 15
+			"bendicion_activa": bendicion_activa,
+			"_bend_mult_euros": _bend_mult_euros,
+			"_bend_red_velocidad": _bend_red_velocidad,
 		},
 		"garment_data": GarmentData.serializar(),
 		"shop_panel": shop_panel.serializar(),
@@ -1253,6 +1334,10 @@ func cargar_partida() -> bool:
 	bonus_recompensa_alien = float(m.get("bonus_recompensa_alien", 0.0))
 	bonus_ceniza_prestigio = int(m.get("bonus_ceniza_prestigio", 0))
 	comunion_activa = bool(m.get("comunion_activa", false))
+	# Fase 15
+	bendicion_activa = String(m.get("bendicion_activa", ""))
+	_bend_mult_euros = float(m.get("_bend_mult_euros", 1.0))
+	_bend_red_velocidad = float(m.get("_bend_red_velocidad", 0.0))
 
 	# 2. Subsistemas
 	GarmentData.cargar_estado(data.get("garment_data", {}))
@@ -1680,6 +1765,162 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 		_event_banner_progreso.text = "%d / %d prendas · %.1fs" % [prog, obj, restante]
 	else:
 		_event_banner_progreso.text = "%s · %.1fs" % [String(ev["descripcion"]), restante]
+
+
+# ============================================================
+# FASE 15 — BENDICIONES DEL LAVADO
+# ============================================================
+## Aplica los efectos de una bendición sobre el estado fresco post-prestigio.
+## Llamado desde _on_prestige_confirmado tras _ejecutar_prestigio (que ya ha reseteado).
+func _aplicar_bendicion(id: String) -> void:
+	bendicion_activa = id
+	# Resetear primero los modificadores que persisten en variables auxiliares,
+	# para que cambiar de bendición entre prestigios no acumule
+	_bend_mult_euros = 1.0
+	_bend_red_velocidad = 0.0
+
+	match id:
+		"manos_rapidas":
+			sink_area.bonus_fuerza += 0.10
+		"bolsillos_profundos":
+			_bend_mult_euros = 1.08
+		"ojos_alienados":
+			GarmentData.bonus_prob_alien += 0.015
+		"tiempo_lento":
+			_bend_red_velocidad = 0.10
+			machines_panel.aplicar_bonus_velocidad_global(0.10)
+		"salto_inicial":
+			euros = 75.0
+			euros_changed.emit(euros)
+		"eco_compasivo":
+			pass  # se aplica directo en los handlers vía bendicion_activa
+		"":
+			pass  # ninguna bendición elegida
+		_:
+			push_warning("Bendición desconocida: " + id)
+
+
+## Devuelve 3 bendiciones aleatorias del pool, sin repetir.
+func _elegir_bendiciones_aleatorias(n: int = 3) -> Array[Dictionary]:
+	var pool: Array = BENDICIONES.duplicate()
+	pool.shuffle()
+	var resultado: Array[Dictionary] = []
+	for i in min(n, pool.size()):
+		resultado.append(pool[i])
+	return resultado
+
+
+## Modal con 3 bendiciones a elegir. Awaitable: resuelve cuando el jugador elige.
+func _mostrar_seleccion_bendicion() -> void:
+	var ofertas: Array[Dictionary] = _elegir_bendiciones_aleatorias(3)
+
+	var fondo := ColorRect.new()
+	fondo.color = Color(0.05, 0.0, 0.10, 0.0)
+	fondo.anchor_right = 1.0
+	fondo.anchor_bottom = 1.0
+	fondo.mouse_filter = Control.MOUSE_FILTER_STOP
+	fondo.z_index = 230
+	$HUD.add_child(fondo)
+
+	var contenedor := VBoxContainer.new()
+	contenedor.alignment = BoxContainer.ALIGNMENT_CENTER
+	contenedor.anchor_left = 0.0
+	contenedor.anchor_top = 0.0
+	contenedor.anchor_right = 1.0
+	contenedor.anchor_bottom = 1.0
+	contenedor.add_theme_constant_override("separation", 16)
+	fondo.add_child(contenedor)
+
+	var titulo := Label.new()
+	titulo.text = "✦ Elige una bendición ✦"
+	titulo.add_theme_color_override("font_color", Color("#FFD060"))
+	titulo.add_theme_font_size_override("font_size", 24)
+	titulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	contenedor.add_child(titulo)
+
+	var hbox := HBoxContainer.new()
+	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox.add_theme_constant_override("separation", 18)
+	contenedor.add_child(hbox)
+
+	# Estado compartido para la elección
+	var elegido: Array[String] = [""]
+
+	for bend in ofertas:
+		var card := PanelContainer.new()
+		card.custom_minimum_size = Vector2(220, 180)
+		var ce := StyleBoxFlat.new()
+		ce.bg_color = Color("#1A1A2E")
+		ce.border_color = Color(String(bend["color"]))
+		ce.set_border_width_all(2)
+		ce.set_corner_radius_all(8)
+		ce.content_margin_left = 14
+		ce.content_margin_right = 14
+		ce.content_margin_top = 12
+		ce.content_margin_bottom = 12
+		card.add_theme_stylebox_override("panel", ce)
+		hbox.add_child(card)
+
+		var v := VBoxContainer.new()
+		v.add_theme_constant_override("separation", 8)
+		card.add_child(v)
+
+		var icono := Label.new()
+		icono.text = String(bend["icono"])
+		icono.add_theme_font_size_override("font_size", 36)
+		icono.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		v.add_child(icono)
+
+		var nombre := Label.new()
+		nombre.text = String(bend["nombre"])
+		nombre.add_theme_color_override("font_color", Color(String(bend["color"])))
+		nombre.add_theme_font_size_override("font_size", 16)
+		nombre.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		v.add_child(nombre)
+
+		var desc := Label.new()
+		desc.text = String(bend["descripcion"])
+		desc.add_theme_color_override("font_color", Color("#CCCCDD"))
+		desc.add_theme_font_size_override("font_size", 12)
+		desc.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		desc.custom_minimum_size = Vector2(192, 0)
+		v.add_child(desc)
+
+		var btn := Button.new()
+		btn.text = "Elegir"
+		btn.custom_minimum_size = Vector2(0, 30)
+		var bs := StyleBoxFlat.new()
+		bs.bg_color = Color(String(bend["color"])).darkened(0.5)
+		bs.border_color = Color(String(bend["color"]))
+		bs.set_border_width_all(1)
+		bs.set_corner_radius_all(4)
+		btn.add_theme_stylebox_override("normal", bs)
+		btn.add_theme_stylebox_override("hover", bs)
+		btn.add_theme_stylebox_override("pressed", bs)
+		btn.add_theme_color_override("font_color", Color("#FFFFFF"))
+		btn.add_theme_font_size_override("font_size", 13)
+		var bend_id: String = String(bend["id"])
+		btn.pressed.connect(func(): elegido[0] = bend_id)
+		v.add_child(btn)
+
+	# Fade in
+	var tw_in := create_tween()
+	tw_in.tween_property(fondo, "color:a", 0.75, 0.4)
+	await tw_in.finished
+
+	# Esperar elección del jugador
+	while elegido[0].is_empty():
+		await get_tree().process_frame
+
+	# Aplicar y cerrar
+	_aplicar_bendicion(elegido[0])
+	AudioManager.play_sfx("achievement", 1.0)
+	var tw_out := create_tween()
+	tw_out.tween_property(fondo, "color:a", 0.0, 0.3)
+	await tw_out.finished
+	if is_instance_valid(fondo):
+		fondo.queue_free()
 
 
 # ============================================================
@@ -2176,6 +2417,27 @@ func _on_btn_reiniciar_tutorial() -> void:
 
 func _on_opciones_btn_pressed() -> void:
 	_opciones_panel.visible = not _opciones_panel.visible
+	if _opciones_panel.visible:
+		_refrescar_label_bendicion()
+
+
+## Actualiza el tooltip del botón ⚙ y el texto del panel con la bendición activa.
+func _refrescar_label_bendicion() -> void:
+	if _opciones_btn == null:
+		return
+	if bendicion_activa.is_empty():
+		_opciones_btn.tooltip_text = "Opciones"
+	else:
+		var bend: Dictionary = _get_bendicion(bendicion_activa)
+		if not bend.is_empty():
+			_opciones_btn.tooltip_text = "Bendición: %s %s" % [String(bend["icono"]), String(bend["nombre"])]
+
+
+func _get_bendicion(id: String) -> Dictionary:
+	for b in BENDICIONES:
+		if b["id"] == id:
+			return b
+	return {}
 
 
 func _on_opciones_volumen_cambiado(valor: float) -> void:

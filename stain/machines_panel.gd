@@ -70,6 +70,8 @@ var contador_por_tipo: Dictionary = {"basica": 0, "industrial": 0, "cuantica": 0
 var memoria_prendas: bool = false
 # Reducción del ciclo de la lavadora cuántica (0..0.9). Lo aplica el altar de fragmentos.
 var bonus_reduccion_ciclo_cuantica: float = 0.0
+# Fase 15: reducción global aplicada a TODAS las lavadoras (bendición tiempo_lento).
+var bonus_reduccion_global: float = 0.0
 # Fase 10: multiplicador temporal de velocidad para Pulso cuántico (no persiste)
 var mult_velocidad_evento: float = 1.0
 
@@ -364,6 +366,9 @@ func _crear_lavadora_activa(tipo: String) -> void:
 	var ciclo_real: float = float(datos["ciclo_seg"])
 	if tipo == "cuantica" and bonus_reduccion_ciclo_cuantica > 0.0:
 		ciclo_real *= (1.0 - bonus_reduccion_ciclo_cuantica)
+	# Fase 15: reducción global de la bendición tiempo_lento (apila multiplicativo)
+	if bonus_reduccion_global > 0.0:
+		ciclo_real *= (1.0 - bonus_reduccion_global)
 
 	lavadoras.append({
 		"tipo": tipo,
@@ -463,6 +468,24 @@ func reset_para_prestigio() -> void:
 	reset_lavadoras()
 
 
+## [Fase 15] Aplica una reducción global de ciclo a TODAS las lavadoras existentes y futuras.
+## Llamado al elegir la bendición tiempo_lento. Ajusta el ciclo manteniendo el progreso parcial.
+func aplicar_bonus_velocidad_global(reduccion: float) -> void:
+	bonus_reduccion_global = clamp(reduccion, 0.0, 0.9)
+	for lav in lavadoras:
+		var tipo: String = String(lav["tipo"])
+		var datos: Dictionary = TIPOS_LAVADORA[tipo]
+		var ciclo_base: float = float(datos["ciclo_seg"])
+		# Recalcular ciclo aplicando ambos bonus (cuántica + global)
+		var nuevo_ciclo: float = ciclo_base
+		if tipo == "cuantica" and bonus_reduccion_ciclo_cuantica > 0.0:
+			nuevo_ciclo *= (1.0 - bonus_reduccion_ciclo_cuantica)
+		nuevo_ciclo *= (1.0 - bonus_reduccion_global)
+		var pct: float = (lav["tiempo"] / lav["ciclo_seg"]) if lav["ciclo_seg"] > 0.0 else 0.0
+		lav["ciclo_seg"] = nuevo_ciclo
+		lav["tiempo"] = pct * nuevo_ciclo
+
+
 ## [Fase 12] Calcula cuántos ciclos completarían las lavadoras activas en N segundos.
 ## Asume que la cola tiene siempre prendas (FIFO infinita) y que cada ciclo procesa
 ## una prenda independientemente del progreso parcial guardado (aproximación).
@@ -536,6 +559,7 @@ func serializar() -> Dictionary:
 	return {
 		"memoria_prendas": memoria_prendas,
 		"bonus_reduccion_ciclo_cuantica": bonus_reduccion_ciclo_cuantica,
+		"bonus_reduccion_global": bonus_reduccion_global,
 		"lavadoras": lavs,
 	}
 
@@ -543,8 +567,9 @@ func serializar() -> Dictionary:
 func cargar_estado(data: Dictionary) -> void:
 	reset_lavadoras()
 	memoria_prendas = bool(data.get("memoria_prendas", false))
-	# Aplicar el bonus ANTES de crear las cuánticas para que se cree con el ciclo correcto
+	# Aplicar los bonus ANTES de crear las lavadoras para que se creen con el ciclo correcto
 	bonus_reduccion_ciclo_cuantica = float(data.get("bonus_reduccion_ciclo_cuantica", 0.0))
+	bonus_reduccion_global = float(data.get("bonus_reduccion_global", 0.0))
 	var lavs: Array = data.get("lavadoras", [])
 	for entry_v in lavs:
 		var entry: Dictionary = entry_v
