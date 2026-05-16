@@ -42,6 +42,8 @@ const STAT_IDS: Array[String] = [
 	"contratos_completados",
 	# Fase 19
 	"custodios_limpiados",
+	# Fase 20
+	"habilidades_usadas",
 ]
 
 
@@ -188,6 +190,14 @@ const LOGROS: Array[Dictionary] = [
 	{"id": "dominio_custodios", "nombre": "Dominio absoluto", "descripcion": "Limpia 15 Custodios.",
 	 "categoria": "Alien", "icono": "👑",
 	 "tipo": "stat", "stat": "custodios_limpiados", "umbral": 15},
+
+	# Habilidades activas (Fase 20)
+	{"id": "primer_pulso", "nombre": "Manos eléctricas", "descripcion": "Activa Pulso de Esponja por primera vez.",
+	 "categoria": "Hitos", "icono": "🧽",
+	 "tipo": "evento"},
+	{"id": "maestro_habilidades", "nombre": "Maestro de habilidades", "descripcion": "Activa 3 habilidades (acumulado).",
+	 "categoria": "Hitos", "icono": "✨",
+	 "tipo": "evento"},
 ]
 
 

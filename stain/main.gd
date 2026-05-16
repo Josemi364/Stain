@@ -100,6 +100,46 @@ var cap_multiplicador: float = 3.0
 const CUSTODIO_INTERVALO_ALIEN: int = 15
 var _ultimo_custodio_threshold: int = 0  # último múltiplo de 15 que disparó un Custodio
 
+# Fase 20 — Habilidades activas con cooldowns
+const HABILIDADES: Array[Dictionary] = [
+	{
+		"id": "pulso_esponja",
+		"nombre": "Pulso de Esponja",
+		"descripcion": "Limpia 50% de la prenda actual al instante.",
+		"icono": "🧽",
+		"color": "#40A0FF",
+		"cooldown": 60.0,
+		"atajo": "Q",
+		"desbloqueo": {"tipo": "prestigios", "umbral": 1},
+	},
+	{
+		"id": "hora_tendero",
+		"nombre": "Hora del Tendero",
+		"descripcion": "+100% € durante 15 s.",
+		"icono": "💰",
+		"color": "#FFD060",
+		"cooldown": 120.0,
+		"atajo": "W",
+		"desbloqueo": {"tipo": "prestigios", "umbral": 3},
+	},
+	{
+		"id": "ojo_abierto",
+		"nombre": "Ojo Abierto",
+		"descripcion": "La siguiente prenda generada será alien.",
+		"icono": "👁",
+		"color": "#AA40FF",
+		"cooldown": 90.0,
+		"atajo": "E",
+		"desbloqueo": {"tipo": "trascendencias", "umbral": 1},
+	},
+]
+var habilidades_desbloqueadas: Array[String] = []
+var _hab_cooldowns: Dictionary = {}  # id → segundos restantes (no se persiste)
+# "Hora del Tendero" — multiplicador temporal (15s) durante el efecto
+var _hab_hora_tendero_seg: float = 0.0
+const HORA_TENDERO_DURACION: float = 15.0
+const HORA_TENDERO_MULT: float = 2.0
+
 const BENDICIONES: Array[Dictionary] = [
 	{
 		"id": "manos_rapidas",
@@ -225,6 +265,10 @@ var _btn_esencia: Button
 var _esencia_label: Label
 var _transcend_overlay: Control
 var _trasc_dialog: ColorRect  # diálogo de confirmación
+
+# Fase 20 — Barra de habilidades activas
+var _hab_bar: HBoxContainer
+var _hab_cards: Dictionary = {}  # id → Control con icono + cooldown
 
 # Fase 12 — Progreso offline
 const OFFLINE_MAX_SEG: float = 28800.0       # cap a 8h de tiempo offline contabilizado
@@ -357,6 +401,10 @@ func _ready() -> void:
 	_actualizar_esencia_label()
 	_actualizar_trascendencia_btn()
 
+	# Fase 20: barra de habilidades activas
+	_crear_hab_bar()
+	_refrescar_hab_bar()
+
 	# Autosave periódico
 	_autosave_timer = Timer.new()
 	_autosave_timer.wait_time = AUTOSAVE_INTERVAL
@@ -439,7 +487,8 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada) se aplica como factor extra
 	# Fase 15: _bend_mult_euros (bolsillos_profundos) factor adicional
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros * _esc_mult_euros
+	var hab_mult: float = HORA_TENDERO_MULT if _hab_hora_tendero_seg > 0.0 else 1.0
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros * _esc_mult_euros * hab_mult
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -635,7 +684,8 @@ func _on_prenda_procesada_lavadora(prenda: Dictionary, earned: float, era_cuanti
 		earned_pre_mult *= (1.0 + bonus_recompensa_alien)
 	# Fase 10: _ev_mult_recompensa (Hora dorada)
 	# Fase 15: _bend_mult_euros (bolsillos_profundos)
-	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros * _esc_mult_euros
+	var hab_mult: float = HORA_TENDERO_MULT if _hab_hora_tendero_seg > 0.0 else 1.0
+	var earned_real: float = earned_pre_mult * multiplicador_ganancias * _ev_mult_recompensa * _bend_mult_euros * _bestiario_mult * _ali_mult_euros * _esc_mult_euros * hab_mult
 
 	euros += earned_real
 	euros_totales_ganados += earned_real
@@ -933,6 +983,9 @@ func _ejecutar_prestigio() -> void:
 	# Fase 18: revelar botón de trascendencia si toca
 	_actualizar_trascendencia_btn()
 
+	# Fase 20: desbloquear habilidades que dependan del nuevo num_prestigios
+	_chequear_desbloqueo_habilidades()
+
 	# Snapshot intermedio: si el jugador cierra durante la selección, no perdemos el prestigio.
 	# guardar_partida() se vuelve a llamar tras la elección en _on_prestige_confirmado.
 	guardar_partida()
@@ -993,6 +1046,11 @@ func _on_notif_timer_timeout() -> void:
 # ============================================================
 # DEBUG — ATAJOS DE TECLADO (solo activos si DEBUG_MODE == true)
 # ============================================================
+func _process(delta: float) -> void:
+	# Fase 20: tick de cooldowns de habilidades
+	_tick_habilidades(delta)
+
+
 func _input(event: InputEvent) -> void:
 	if not (event is InputEventKey) or not (event as InputEventKey).pressed:
 		return
@@ -1006,6 +1064,18 @@ func _input(event: InputEvent) -> void:
 		KEY_1, KEY_2, KEY_3, KEY_4, KEY_5:
 			var slot: int = key_event.keycode - KEY_1
 			_on_intento_seleccion_lavadora(slot)
+			get_viewport().set_input_as_handled()
+			return
+		KEY_Q:
+			_activar_habilidad("pulso_esponja")
+			get_viewport().set_input_as_handled()
+			return
+		KEY_W:
+			_activar_habilidad("hora_tendero")
+			get_viewport().set_input_as_handled()
+			return
+		KEY_E:
+			_activar_habilidad("ojo_abierto")
 			get_viewport().set_input_as_handled()
 			return
 	# Atajos de debug (solo en DEBUG_MODE)
@@ -1219,6 +1289,10 @@ func _debug_ejecutar_reset() -> void:
 	cap_multiplicador = 3.0
 	# Fase 19
 	_ultimo_custodio_threshold = 0
+	# Fase 20
+	habilidades_desbloqueadas.clear()
+	_hab_cooldowns.clear()
+	_hab_hora_tendero_seg = 0.0
 
 	GarmentData.resetear_suerte()
 	GarmentData.bonus_prob_alien = 0.0
@@ -1248,6 +1322,8 @@ func _debug_ejecutar_reset() -> void:
 	_actualizar_esencia_label()
 	if _btn_trascender != null:
 		_btn_trascender.visible = false
+	# Fase 20: refrescar barra de habilidades (ocultar todas tras reset)
+	_refrescar_hab_bar()
 	# Fase 10 — limpiar variables temporales
 	_ev_mult_recompensa = 1.0
 	_ev_bonus_prob_alien = 0.0
@@ -1387,6 +1463,8 @@ func guardar_partida() -> bool:
 			"cap_multiplicador": cap_multiplicador,
 			# Fase 19
 			"_ultimo_custodio_threshold": _ultimo_custodio_threshold,
+			# Fase 20
+			"habilidades_desbloqueadas": habilidades_desbloqueadas.duplicate(),
 		},
 		"garment_data": GarmentData.serializar(),
 		"shop_panel": shop_panel.serializar(),
@@ -1486,6 +1564,21 @@ func cargar_partida() -> bool:
 	else:
 		var total_alien_load: int = int(Stats.get_stat("aliens_total_manual") + Stats.get_stat("aliens_total_lavadora"))
 		_ultimo_custodio_threshold = (total_alien_load / CUSTODIO_INTERVALO_ALIEN) * CUSTODIO_INTERVALO_ALIEN
+
+	# Fase 20: habilidades desbloqueadas (cooldowns NO se persisten — empiezan a 0 tras carga)
+	habilidades_desbloqueadas.clear()
+	var lst_hab: Array = m.get("habilidades_desbloqueadas", [])
+	for v in lst_hab:
+		var sid := String(v)
+		if not _get_habilidad(sid).is_empty() and sid not in habilidades_desbloqueadas:
+			habilidades_desbloqueadas.append(sid)
+	_hab_cooldowns.clear()
+	_hab_hora_tendero_seg = 0.0
+	# Si el save no traía la sección (pre-Fase 20), derivar del estado de prestigios/trascendencias
+	if not m.has("habilidades_desbloqueadas"):
+		_chequear_desbloqueo_habilidades()
+	else:
+		_refrescar_hab_bar()
 
 	# 2. Subsistemas
 	GarmentData.cargar_estado(data.get("garment_data", {}))
@@ -1929,6 +2022,217 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 
 
 # ============================================================
+# FASE 20 — HABILIDADES ACTIVAS (CON COOLDOWNS)
+# ============================================================
+func _crear_hab_bar() -> void:
+	_hab_bar = HBoxContainer.new()
+	_hab_bar.add_theme_constant_override("separation", 8)
+	# Esquina inferior centro, encima del QueuePanel (que está en y=620-720)
+	_hab_bar.anchor_left = 0.5
+	_hab_bar.anchor_top = 1.0
+	_hab_bar.anchor_right = 0.5
+	_hab_bar.anchor_bottom = 1.0
+	_hab_bar.offset_left = -118
+	_hab_bar.offset_top = -180
+	_hab_bar.offset_right = 118
+	_hab_bar.offset_bottom = -110
+	_hab_bar.z_index = 50
+	$HUD.add_child(_hab_bar)
+
+	for hab in HABILIDADES:
+		_crear_hab_card(hab)
+
+
+func _crear_hab_card(hab: Dictionary) -> void:
+	var hid: String = String(hab["id"])
+
+	# Wrapper PanelContainer
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(64, 64)
+	card.mouse_filter = Control.MOUSE_FILTER_STOP
+	card.gui_input.connect(_on_hab_card_input.bind(hid))
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color("#0D0D1A")
+	estilo.border_color = Color(String(hab["color"]))
+	estilo.set_border_width_all(2)
+	estilo.set_corner_radius_all(6)
+	card.add_theme_stylebox_override("panel", estilo)
+	_hab_bar.add_child(card)
+
+	# Icono + cooldown label superpuestos
+	var icono := Label.new()
+	icono.text = String(hab["icono"])
+	icono.add_theme_font_size_override("font_size", 28)
+	icono.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	icono.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	icono.anchor_right = 1.0
+	icono.anchor_bottom = 1.0
+	icono.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(icono)
+
+	# Label con segundos restantes (visible solo si en cooldown)
+	var cd_label := Label.new()
+	cd_label.name = "CdLabel"
+	cd_label.text = ""
+	cd_label.add_theme_font_size_override("font_size", 18)
+	cd_label.add_theme_color_override("font_color", Color("#FFFFFF"))
+	cd_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cd_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	cd_label.anchor_right = 1.0
+	cd_label.anchor_bottom = 1.0
+	cd_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cd_label.visible = false
+	card.add_child(cd_label)
+
+	# Tag pequeño con atajo (Q/W/E)
+	var atajo := Label.new()
+	atajo.text = String(hab["atajo"])
+	atajo.add_theme_font_size_override("font_size", 10)
+	atajo.add_theme_color_override("font_color", Color("#AAAACC"))
+	atajo.anchor_right = 1.0
+	atajo.anchor_bottom = 0.0
+	atajo.offset_left = -14
+	atajo.offset_right = -4
+	atajo.offset_top = 2
+	atajo.offset_bottom = 14
+	atajo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(atajo)
+
+	# Tooltip con info completa
+	card.tooltip_text = "%s (%s)\n%s\nCooldown: %ds" % [
+		String(hab["nombre"]), String(hab["atajo"]),
+		String(hab["descripcion"]), int(hab["cooldown"]),
+	]
+
+	_hab_cards[hid] = card
+
+
+## Muestra/oculta cards según habilidades_desbloqueadas + actualiza apariencia.
+func _refrescar_hab_bar() -> void:
+	if _hab_bar == null:
+		return
+	# Ocultar la barra entera si no hay habilidades desbloqueadas
+	_hab_bar.visible = habilidades_desbloqueadas.size() > 0
+	for hab in HABILIDADES:
+		var hid: String = String(hab["id"])
+		var card: Control = _hab_cards.get(hid)
+		if card == null:
+			continue
+		card.visible = hid in habilidades_desbloqueadas
+
+
+## Llamado desde _process para actualizar el label de cooldown de cada card.
+func _refrescar_hab_cooldowns() -> void:
+	if _hab_bar == null or not _hab_bar.visible:
+		return
+	for hid in _hab_cards.keys():
+		var card: Control = _hab_cards[hid]
+		if card == null or not card.visible:
+			continue
+		var lbl: Label = card.find_child("CdLabel", true, false) as Label
+		if lbl == null:
+			continue
+		var cd: float = float(_hab_cooldowns.get(hid, 0.0))
+		if cd > 0.0:
+			lbl.visible = true
+			lbl.text = "%ds" % int(ceil(cd))
+			card.modulate = Color(0.55, 0.55, 0.65)
+		else:
+			lbl.visible = false
+			card.modulate = Color.WHITE
+
+
+## Activa una habilidad por id. Valida desbloqueo + cooldown.
+func _activar_habilidad(hid: String) -> void:
+	if hid not in habilidades_desbloqueadas:
+		mostrar_notificacion("Habilidad no desbloqueada", false)
+		AudioManager.play_sfx("denied")
+		return
+	var cd: float = float(_hab_cooldowns.get(hid, 0.0))
+	if cd > 0.0:
+		mostrar_notificacion("Espera %ds" % int(ceil(cd)), false)
+		AudioManager.play_sfx("denied")
+		return
+	var hab: Dictionary = _get_habilidad(hid)
+	if hab.is_empty():
+		return
+
+	# Aplicar efecto
+	match hid:
+		"pulso_esponja":
+			sink_area.limpiar_porcentaje(0.5)
+		"hora_tendero":
+			_hab_hora_tendero_seg = HORA_TENDERO_DURACION
+		"ojo_abierto":
+			GarmentData.forzar_siguiente_alien()
+
+	# Set cooldown + notif + stats
+	_hab_cooldowns[hid] = float(hab["cooldown"])
+	mostrar_notificacion("%s %s activada" % [String(hab["icono"]), String(hab["nombre"])], true)
+	AudioManager.play_sfx("buy", 1.2)
+	Stats.incrementar("habilidades_usadas")
+	if hid == "pulso_esponja":
+		Stats.notificar_evento("primer_pulso")
+	# Comprobar maestro: contar habilidades distintas usadas vía stat acumulado
+	# (no podemos saber cuántas DISTINTAS sin tracking aparte; lo notificamos sólo si
+	# la última usada lleva el conteo total a >= 3 — proxy razonable)
+	if Stats.get_stat("habilidades_usadas") >= 3:
+		Stats.notificar_evento("maestro_habilidades")
+
+
+func _get_habilidad(hid: String) -> Dictionary:
+	for h in HABILIDADES:
+		if h["id"] == hid:
+			return h
+	return {}
+
+
+## Comprueba si nuevas habilidades deben desbloquearse según el estado actual.
+## Llamada tras prestigio y trascendencia.
+func _chequear_desbloqueo_habilidades() -> void:
+	for hab in HABILIDADES:
+		var hid: String = String(hab["id"])
+		if hid in habilidades_desbloqueadas:
+			continue
+		var d: Dictionary = hab["desbloqueo"]
+		var tipo: String = String(d.get("tipo", ""))
+		var umbral: int = int(d.get("umbral", 0))
+		var cumple: bool = false
+		match tipo:
+			"prestigios":
+				cumple = num_prestigios >= umbral
+			"trascendencias":
+				cumple = num_trascendencias >= umbral
+		if cumple:
+			habilidades_desbloqueadas.append(hid)
+			mostrar_notificacion("%s Nueva habilidad: %s (%s)" % [
+				String(hab["icono"]), String(hab["nombre"]), String(hab["atajo"])
+			], true)
+			AudioManager.play_sfx("achievement", 1.1)
+	_refrescar_hab_bar()
+
+
+func _on_hab_card_input(event: InputEvent, hid: String) -> void:
+	if event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		if mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT:
+			_activar_habilidad(hid)
+
+
+## Tick de cooldowns + Hora del Tendero (ejecutado por _process).
+func _tick_habilidades(delta: float) -> void:
+	var changed: bool = false
+	for hid in _hab_cooldowns.keys():
+		if float(_hab_cooldowns[hid]) > 0.0:
+			_hab_cooldowns[hid] = max(0.0, float(_hab_cooldowns[hid]) - delta)
+			changed = true
+	if _hab_hora_tendero_seg > 0.0:
+		_hab_hora_tendero_seg = max(0.0, _hab_hora_tendero_seg - delta)
+	if changed:
+		_refrescar_hab_cooldowns()
+
+
+# ============================================================
 # FASE 19 — EL CUSTODIO
 # ============================================================
 ## Comprueba si el contador de alien combinado ha cruzado un nuevo múltiplo de
@@ -2304,6 +2608,9 @@ func _ejecutar_trascendencia() -> void:
 	Stats.notificar_evento("primera_trascendencia")
 	if num_trascendencias >= 5:
 		Stats.notificar_evento("trascendido_5")
+
+	# Fase 20: desbloquear habilidades que dependan de num_trascendencias
+	_chequear_desbloqueo_habilidades()
 
 	if conservar_ceniza:
 		ceniza = ceniza_anterior

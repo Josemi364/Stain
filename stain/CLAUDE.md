@@ -116,6 +116,35 @@ Las 8 mejoras y sus efectos:
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
 
+### Habilidades activas (Fase 20)
+
+3 habilidades activables por el jugador con cooldown propio, atajos `Q/W/E` y click en barra UI:
+
+| ID | Tecla | Efecto | CD | Desbloqueo |
+|---|---|---|---|---|
+| `pulso_esponja` | Q | `sink_area.limpiar_porcentaje(0.5)` | 60s | 1er prestigio |
+| `hora_tendero` | W | `_hab_hora_tendero_seg = 15.0` → ×2 € durante 15s | 120s | 3er prestigio |
+| `ojo_abierto` | E | `GarmentData.forzar_siguiente_alien()` | 90s | 1ª trascendencia |
+
+`HORA_TENDERO_MULT = 2.0` se aplica como factor `hab_mult` en ambos handlers de € apilando con todos los demás. `_hab_hora_tendero_seg` decrementa en `_process(delta)` via `_tick_habilidades()`.
+
+`sink_area.limpiar_porcentaje(pct)` (Fase 20, nuevo) recorre los píxeles de mancha y los borra hasta subir `clean_pct` en `pct`. Si tras la operación se cruza `UMBRAL_ENTREGA`, autocompleta normalmente.
+
+**UI**: `HBoxContainer` en esquina inferior centro (encima del QueuePanel, y=540-610). 3 cards 64×64 con icono grande + label de cooldown superpuesto + atajo (Q/W/E) en la esquina superior derecha. Tooltip nativo con info completa.
+
+**Estados visuales del card**:
+- Listo: modulate normal, sin label de CD
+- En cooldown: modulate gris (0.55, 0.55, 0.65), label central con segundos restantes (`%ds`)
+- No desbloqueado: card oculto (la barra se oculta si no hay ninguna)
+
+**Desbloqueo**: `_chequear_desbloqueo_habilidades()` se llama tras `_ejecutar_prestigio` y tras `_ejecutar_trascendencia`. Notifica al jugador con notif épica + SFX. Persistido en `save.main.habilidades_desbloqueadas`. Saves pre-Fase 20 derivan el estado inicial llamando `_chequear_desbloqueo_habilidades()` tras cargar.
+
+**Cooldowns NO se persisten** (intencional — evita exploit de cerrar+abrir para reset rápido).
+
+Stat nuevo: `habilidades_usadas`. 2 logros nuevos en Hitos: `primer_pulso` (usar Pulso por primera vez), `maestro_habilidades` (3 activaciones acumuladas — proxy razonable de "las has probado").
+
+Input en `_input()` añadido KEY_Q/W/E además de los atajos previos (SPACE, 1-5).
+
 ### El Custodio (Fase 19)
 
 Encuentros especiales con una prenda única (`PRENDA_CUSTODIO` en `GarmentData`). Cada `CUSTODIO_INTERVALO_ALIEN = 15` aliens limpiados (combinado manual + lavadora), Main inserta automáticamente un Custodio al frente de la cola via `queue_panel.insertar_al_frente()`.
@@ -305,6 +334,7 @@ Limitaciones aceptadas: solo simula recompensa promedio de prendas normales (no 
 |---|---|
 | ESPACIO | Entrega la prenda actual si está limpia (`sink_area.intentar_entregar()`) |
 | 1–5 | Asigna el slot N de la cola a una lavadora libre (equivalente a clic en el slot) |
+| Q / W / E | Activa habilidades (Pulso / Hora Tendero / Ojo Abierto) — Fase 20 |
 
 `AudioManager` expone `set_volumen_db(db)` y `get_volumen_db()` (rango -80..6 dB). El panel de opciones (botón ⚙ en la esquina inferior derecha, encima del 📊) tiene un slider de volumen y muestra los atajos disponibles. El volumen se persiste en `save.opciones.volumen_db`.
 
@@ -417,7 +447,8 @@ Save schema (top level):
             aliados_comprados, _ali_mult_euros, _ali_red_velocidad,     # Fase 17
             esencia, num_trascendencias, trascendencia_desbloqueada,
             esencia_compras, _esc_mult_euros, cap_multiplicador,        # Fase 18
-            _ultimo_custodio_threshold },                               # Fase 19
+            _ultimo_custodio_threshold,                                 # Fase 19
+            habilidades_desbloqueadas },                                # Fase 20
   "garment_data":   { suerte_euros, suerte_ceniza },
   "shop_panel":     { upgrades_comprados: [String] },
   "ash_shop_panel": { compras_contador: {String → int} },

@@ -536,6 +536,37 @@ func reset_para_prestigio() -> void:
 	reset_sink()
 
 
+## [Fase 20] Limpia un porcentaje del sink actual (0..1). Borra píxeles de mancha
+## proporcionalmente. Si tras la operación se cruza UMBRAL_ENTREGA, autocompleta.
+func limpiar_porcentaje(pct: float) -> void:
+	if not tiene_prenda or pixeles_mancha_total <= 0 or stain_image == null:
+		return
+	pct = clamp(pct, 0.0, 1.0)
+	# Estima cuántos píxeles borrar para subir clean_pct en `pct`
+	var objetivo_pct: float = clamp(clean_pct + pct, 0.0, 1.0)
+	var objetivo_restante_pixeles: int = int(float(pixeles_mancha_total) * (1.0 - objetivo_pct))
+	if pixeles_mancha_actual <= objetivo_restante_pixeles:
+		return
+	# Hacemos un barrido: recorre la imagen y borra píxeles de mancha hasta llegar al objetivo
+	var sz: Vector2i = stain_image.get_size()
+	var borrar: int = pixeles_mancha_actual - objetivo_restante_pixeles
+	var transparente := Color(0, 0, 0, 0)
+	for y in sz.y:
+		if borrar <= 0:
+			break
+		for x in sz.x:
+			if borrar <= 0:
+				break
+			var c: Color = stain_image.get_pixel(x, y)
+			if c.a > 0.0:
+				stain_image.set_pixel(x, y, transparente)
+				pixeles_mancha_actual -= 1
+				borrar -= 1
+	if stain_image_texture != null:
+		stain_image_texture.update(stain_image)
+	_actualizar_progreso()
+
+
 ## [Debug F5] Completa la limpieza de la prenda actual al instante.
 func limpiar_instantaneo() -> void:
 	if not tiene_prenda:
