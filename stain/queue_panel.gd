@@ -46,6 +46,38 @@ func _ready() -> void:
 	_refrescar_visual()
 
 
+# Fase 23: bobbing sutil de slots + halo pulsante en alien/custodio
+var _anim_time: float = 0.0
+func _process(delta: float) -> void:
+	_anim_time += delta
+	for i in slots.size():
+		var slot: PanelContainer = slots[i]
+		if slot == null or slot.get_child_count() == 0:
+			continue
+		var inner: Control = slot.get_child(0) as Control
+		if inner != null:
+			# Bobbing vertical sutil con desfase por índice
+			inner.position.y = sin(_anim_time * 2.0 + float(i) * 0.6) * 2.5
+		# Halo: pulsamos el color del border si el slot tiene alien/custodio
+		if i < cola.size():
+			var es_alien: bool = bool(cola[i].get("es_alien", false))
+			var es_custodio: bool = bool(cola[i].get("es_custodio", false))
+			var st: StyleBoxFlat = slot.get_theme_stylebox("panel") as StyleBoxFlat
+			if st == null:
+				continue
+			if es_custodio:
+				var pulso: float = 0.5 + 0.5 * sin(_anim_time * 5.0 + float(i) * 0.8)
+				st.border_color = Color("#AA60FF").lerp(Color("#FFD060"), pulso)
+				st.set_border_width_all(3)
+			elif es_alien:
+				var pulso: float = 0.5 + 0.5 * sin(_anim_time * 4.0 + float(i) * 0.8)
+				st.border_color = Color("#5A2A8A").lerp(Color("#CC60FF"), pulso)
+				st.set_border_width_all(2)
+			else:
+				st.border_color = Color("#2A2A4A")
+				st.set_border_width_all(2)
+
+
 # ============================================================
 # API PÚBLICA — para el SINK (FIFO)
 # ============================================================
@@ -240,9 +272,5 @@ func _refrescar_visual() -> void:
 			label.text = ""
 
 
-func _process(_delta: float) -> void:
-	var t: float = Time.get_ticks_msec() / 1000.0
-	for i in min(cola.size(), MAX_COLA):
-		if cola[i].get("es_alien", false):
-			var pulse: float = 0.7 + 0.3 * sin(t * 3.0 + i)
-			slot_iconos[i].modulate.a = pulse
+# NOTE: _process consolidado en Fase 23 (más arriba) — el modulate.a antiguo
+# se integró con el bobbing + halo del border. Esta función se eliminó.

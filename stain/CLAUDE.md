@@ -117,6 +117,25 @@ Las 8 mejoras y sus efectos:
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
 
+### Animaciones temáticas (Fase 23)
+
+Cinco capas de animación sutil para dar vida a la UI sin tocar balance:
+
+1. **Bobbing de slots en la cola** (`queue_panel._process`): el primer hijo (VBoxContainer interno) de cada slot se mueve verticalmente con `sin(t * 2.0 + idx * 0.6) * 2.5`. Desfase por índice para que parezca "olas".
+
+2. **Halo pulsante en alien/custodio**: en el mismo `_process`, se modifica el `border_color` del `StyleBoxFlat` del slot:
+   - Custodio: lerp entre `#AA60FF` y `#FFD060` (púrpura ↔ dorado) con `sin(t * 5.0)`, border width 3
+   - Alien normal: lerp entre `#5A2A8A` y `#CC60FF` con `sin(t * 4.0)`, border width 2
+   - Normal: color base `#2A2A4A`, border 2
+
+3. **Vibración de lavadoras activas** (`machines_panel._process`): cuando una lavadora tiene prenda, se aplica `card.position = random_offset` con intensidad `0.6px` normal, `2.1px` si `pct > 0.85` (final del ciclo). Cuando no hay prenda, vuelve a `(0,0)`.
+
+4. **Pulso de la mancha en sink cuando NO frotas** (`sink_area._process`): si hay prenda y mancha pendiente, `stain_texture.scale` oscila entre `1.0` y `1.04` con `sin(t / 280ms)`. Cuando frotas, vuelve a escala fija `1.0`. Pivot al centro para que pulse uniformemente.
+
+5. **Confetti dorado al completar contrato** (`Main._lanzar_confetti`): instancia un `CPUParticles2D` con `amount=80`, `lifetime=1.6s`, `explosiveness=0.95`, `one_shot=true`. Gradient de 4 colores (dorado, cian, rosa, verde) vía `color_initial_ramp`. Fade-out vía `color_ramp` curva alpha. Auto-cleanup tras `lifetime + 0.3s` via SceneTreeTimer.
+
+Refactor menor: el `_process` antiguo de `queue_panel` (que solo pulsaba `modulate.a` de alien) se eliminó — su efecto se absorbió en el nuevo `_process` consolidado vía pulso del border.
+
 ### Mejoras visuales (Fase 22)
 
 Pulido sensorial sin cambios de balance. Cuatro mejoras:

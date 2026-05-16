@@ -2072,6 +2072,53 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 
 
 # ============================================================
+# FASE 23 — ANIMACIONES (CONFETTI)
+# ============================================================
+## Burst de confetti dorado/multicolor desde el centro superior del HUD.
+## Usado al completar contratos. Se autodestruye tras la vida de las partículas.
+func _lanzar_confetti() -> void:
+	var p := CPUParticles2D.new()
+	p.z_index = 90
+	p.position = Vector2(640, 200)  # centro horizontal, hacia el banner
+	p.amount = 80
+	p.lifetime = 1.6
+	p.explosiveness = 0.95
+	p.randomness = 1.0
+	p.one_shot = true
+	p.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
+	p.emission_sphere_radius = 24.0
+	p.direction = Vector2(0, -1)
+	p.spread = 180.0
+	p.initial_velocity_min = 180.0
+	p.initial_velocity_max = 380.0
+	p.gravity = Vector2(0, 480)
+	p.angular_velocity_min = -360.0
+	p.angular_velocity_max = 360.0
+	p.scale_amount_min = 0.6
+	p.scale_amount_max = 1.4
+	# Color por partícula (variación de spawn): doramente + colores accent
+	var grad_init := Gradient.new()
+	grad_init.add_point(0.0, Color("#FFD060"))
+	grad_init.add_point(0.33, Color("#40D0FF"))
+	grad_init.add_point(0.66, Color("#FF60AA"))
+	grad_init.add_point(1.0, Color("#80FFAA"))
+	p.color_initial_ramp = grad_init
+	# Curva de fade-out a lo largo de la vida
+	var col_curve := Gradient.new()
+	col_curve.add_point(0.0, Color(1, 1, 1, 1))
+	col_curve.add_point(0.7, Color(1, 1, 1, 1))
+	col_curve.add_point(1.0, Color(1, 1, 1, 0))
+	p.color_ramp = col_curve
+	$HUD.add_child(p)
+	p.emitting = true
+	# Auto-cleanup tras la vida + margen
+	get_tree().create_timer(p.lifetime + 0.3).timeout.connect(func():
+		if is_instance_valid(p):
+			p.queue_free()
+	)
+
+
+# ============================================================
 # FASE 22 — MEJORAS VISUALES (SHAKE + SLOWMO)
 # ============================================================
 # Estado del shake (acumulativo: si llega otro durante uno activo, se reinicia)
@@ -3297,6 +3344,7 @@ func _on_contrato_completado(contrato: Dictionary, exito: bool) -> void:
 		mostrar_notificacion("✓ Contrato completado: +%d€ +%d ✧  +1 ✦" % [rec_e, rec_f], false)
 		AudioManager.play_sfx("achievement", 1.1)
 		_anotar_diario("primer_contrato")  # Fase 21
+		_lanzar_confetti()  # Fase 23
 	else:
 		mostrar_notificacion("Contrato fallido", false)
 	# Fade-out del banner

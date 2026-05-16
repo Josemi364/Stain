@@ -267,6 +267,16 @@ func _crear_foam_particles() -> void:
 func _process(delta: float) -> void:
 	_scrub_sfx_cooldown = max(0.0, _scrub_sfx_cooldown - delta)
 
+	# Fase 23: pulso sutil de la mancha cuando hay prenda y NO frotas (llamada
+	# de atención visual). Cuando frotas, se mantiene a escala normal.
+	if stain_texture != null and tiene_prenda and pixeles_mancha_actual > 0:
+		if frotando:
+			stain_texture.scale = Vector2.ONE
+		else:
+			var pulso: float = 1.0 + 0.04 * sin(Time.get_ticks_msec() / 280.0)
+			stain_texture.pivot_offset = stain_texture.size * 0.5
+			stain_texture.scale = Vector2(pulso, pulso)
+
 	if sponge_sprite == null:
 		return
 	var pos_local: Vector2 = get_local_mouse_position()

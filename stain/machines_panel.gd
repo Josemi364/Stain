@@ -255,6 +255,10 @@ func _process(delta: float) -> void:
 
 		if lav["prenda_actual"].is_empty():
 			lav["label_estado"].text = "Esperando asignación..."
+			# Fase 23: card sin prenda vuelve a su posición base
+			var card_idle: Control = lav["card"] as Control
+			if card_idle != null:
+				card_idle.position = Vector2.ZERO
 			continue
 
 		lav["tiempo"] += delta * mult_velocidad_evento
@@ -266,6 +270,15 @@ func _process(delta: float) -> void:
 
 		# Hacer girar el sprite del tambor
 		lav["tambor"].rotation += delta * lav["velocidad_giro"]
+
+		# Fase 23: vibración sutil de la card mientras lava (más intensa al final)
+		var card: Control = lav["card"] as Control
+		if card != null:
+			var intensidad: float = 0.6 + (1.5 if pct > 0.85 else 0.0)
+			card.position = Vector2(
+				randf_range(-intensidad, intensidad),
+				randf_range(-intensidad, intensidad),
+			)
 
 		if lav["tiempo"] >= lav["ciclo_seg"]:
 			var prenda: Dictionary = lav["prenda_actual"]
