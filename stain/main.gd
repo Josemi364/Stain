@@ -270,6 +270,27 @@ var _trasc_dialog: ColorRect  # diálogo de confirmación
 var _hab_bar: HBoxContainer
 var _hab_cards: Dictionary = {}  # id → Control con icono + cooldown
 
+# Fase 21 — Codex (glosario + diario)
+var _codex_overlay: Control
+var _btn_codex: Button
+var diario_entradas: Array = []  # [{id: String, ts: float, icono: String, texto: String}]
+
+# Catálogo de hitos del diario. Main llama _anotar_diario(id) y se busca aquí.
+const DIARIO_HITOS: Dictionary = {
+	"primera_prenda":        {"icono": "🧺", "texto": "Tu primera prenda limpia. Una camiseta. Sencilla. Pero ya nada vuelve a ser igual."},
+	"primer_alien":          {"icono": "👽", "texto": "Algo pulsaba en la tela. No era de aquí. La cobraste igual."},
+	"primera_lavadora":      {"icono": "🌀", "texto": "Compraste tu primera lavadora. El zumbido empezó a acompañarte."},
+	"primer_prestigio":      {"icono": "🔥", "texto": "Cerraste la persiana. El cuenco de ceniza se llenó."},
+	"primer_custodio":       {"icono": "🛸", "texto": "Algo te llamó por tu nombre. No tenía nombre."},
+	"primera_bendicion":     {"icono": "✋", "texto": "Aceptaste una pequeña bendición. No estás seguro de quién la dio."},
+	"primer_aliado":         {"icono": "🤝", "texto": "Contrataste a tu primer aliado. Ya no estás solo en la lavandería."},
+	"primer_evento":         {"icono": "⚡", "texto": "El día se torció por un instante. Lo aprovechaste."},
+	"primer_contrato":       {"icono": "📋", "texto": "Un cliente firmó. Cumpliste. Otros llegarán."},
+	"primera_trascendencia": {"icono": "✺", "texto": "Atravesaste el velo. Lo que estaba detrás te dejó pasar."},
+	"bestiario_completo":    {"icono": "📚", "texto": "Has visto las 13 prendas. Ninguna escapó a tu mirada."},
+	"lavandero":             {"icono": "👑", "texto": "Compraste 'El Lavandero'. La palabra es tuya."},
+}
+
 # Fase 12 — Progreso offline
 const OFFLINE_MAX_SEG: float = 28800.0       # cap a 8h de tiempo offline contabilizado
 const OFFLINE_EFICIENCIA: float = 0.50       # 50% de la ganancia activa
@@ -404,6 +425,10 @@ func _ready() -> void:
 	# Fase 20: barra de habilidades activas
 	_crear_hab_bar()
 	_refrescar_hab_bar()
+
+	# Fase 21: codex (glosario + diario)
+	_crear_codex_overlay()
+	_crear_btn_codex()
 
 	# Autosave periódico
 	_autosave_timer = Timer.new()
@@ -556,8 +581,16 @@ func _on_garment_delivered(prenda: Dictionary, earned: float) -> void:
 	if bool(prenda.get("es_custodio", false)):
 		Stats.incrementar("custodios_limpiados")
 		_celebrar_custodio_limpio()
+		_anotar_diario("primer_custodio")
 	if es_alien:
 		_chequear_custodio_aparicion()
+	# Fase 21: hitos del diario
+	if Stats.get_stat("prendas_total_manual") >= 1:
+		_anotar_diario("primera_prenda")
+	if es_alien:
+		_anotar_diario("primer_alien")
+	if Stats.prendas_investigadas.size() >= 13:
+		_anotar_diario("bestiario_completo")
 
 	# Fase 11A: tutorial — primera entrega + chequear umbrales
 	_notif_tutorial("entrega_completada")
@@ -670,6 +703,7 @@ func _on_lavadora_compra_solicitada(tipo: String, precio: int, ceniza_req: int) 
 		"cuantica": Stats.incrementar("lavadoras_cuanticas_compradas")
 
 	_notif_tutorial("lavadora_comprada")
+	_anotar_diario("primera_lavadora")  # Fase 21
 
 
 # ============================================================
@@ -986,6 +1020,9 @@ func _ejecutar_prestigio() -> void:
 	# Fase 20: desbloquear habilidades que dependan del nuevo num_prestigios
 	_chequear_desbloqueo_habilidades()
 
+	# Fase 21: hito de primer prestigio
+	_anotar_diario("primer_prestigio")
+
 	# Snapshot intermedio: si el jugador cierra durante la selección, no perdemos el prestigio.
 	# guardar_partida() se vuelve a llamar tras la elección en _on_prestige_confirmado.
 	guardar_partida()
@@ -1293,6 +1330,8 @@ func _debug_ejecutar_reset() -> void:
 	habilidades_desbloqueadas.clear()
 	_hab_cooldowns.clear()
 	_hab_hora_tendero_seg = 0.0
+	# Fase 21
+	diario_entradas.clear()
 
 	GarmentData.resetear_suerte()
 	GarmentData.bonus_prob_alien = 0.0
@@ -1479,6 +1518,7 @@ func guardar_partida() -> bool:
 			"volumen_db": AudioManager.get_volumen_db(),
 		},
 		"timestamp_guardado": Time.get_unix_time_from_system(),
+		"diario_entradas": diario_entradas.duplicate(true),
 	}
 
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
@@ -1637,6 +1677,13 @@ func cargar_partida() -> bool:
 	var ts_guardado: float = float(data.get("timestamp_guardado", 0.0))
 	if ts_guardado > 0.0:
 		_aplicar_progreso_offline(ts_guardado)
+
+	# 7. Fase 21: diario
+	diario_entradas.clear()
+	var lst_diario: Array = data.get("diario_entradas", [])
+	for entry_v in lst_diario:
+		if typeof(entry_v) == TYPE_DICTIONARY:
+			diario_entradas.append(entry_v.duplicate(true))
 
 	return true
 
@@ -1906,6 +1953,9 @@ func _on_evento_iniciado(id: String) -> void:
 	if ev.is_empty():
 		return
 
+	# Fase 21: hito del primer evento vivido
+	_anotar_diario("primer_evento")
+
 	# Aplicar modificador
 	match id:
 		"lluvia_alien":
@@ -2019,6 +2069,70 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 		_event_banner_progreso.text = "%d / %d prendas · %.1fs" % [prog, obj, restante]
 	else:
 		_event_banner_progreso.text = "%s · %.1fs" % [String(ev["descripcion"]), restante]
+
+
+# ============================================================
+# FASE 21 — CODEX (GLOSARIO + DIARIO)
+# ============================================================
+func _crear_codex_overlay() -> void:
+	var script: GDScript = load("res://codex_overlay.gd")
+	_codex_overlay = script.new()
+	$HUD.add_child(_codex_overlay)
+
+
+func _crear_btn_codex() -> void:
+	_btn_codex = Button.new()
+	_btn_codex.text = "📖"
+	_btn_codex.tooltip_text = "Codex del Lavandero"
+	_btn_codex.anchor_left = 1.0
+	_btn_codex.anchor_top = 1.0
+	_btn_codex.anchor_right = 1.0
+	_btn_codex.anchor_bottom = 1.0
+	# Encima del botón de esencia (-192 a -154)
+	_btn_codex.offset_left = -64
+	_btn_codex.offset_top = -238
+	_btn_codex.offset_right = -16
+	_btn_codex.offset_bottom = -200
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color("#2A2A4A")
+	s.border_color = Color("#AA80FF")
+	s.set_border_width_all(1)
+	s.set_corner_radius_all(4)
+	_btn_codex.add_theme_stylebox_override("normal", s)
+	_btn_codex.add_theme_stylebox_override("hover", s)
+	_btn_codex.add_theme_stylebox_override("pressed", s)
+	_btn_codex.add_theme_font_size_override("font_size", 16)
+	_btn_codex.add_theme_color_override("font_color", Color("#E0C0FF"))
+	_btn_codex.pressed.connect(_on_btn_codex_pressed)
+	$HUD.add_child(_btn_codex)
+
+
+func _on_btn_codex_pressed() -> void:
+	if _codex_overlay != null:
+		_codex_overlay.mostrar(diario_entradas)
+
+
+## Añade un hito al diario si no estaba ya. Idempotente.
+## Llamado desde los puntos clave del juego (handlers, prestigio, etc.).
+func _anotar_diario(id: String) -> void:
+	if id.is_empty():
+		return
+	# Evitar duplicados
+	for e in diario_entradas:
+		if String(e.get("id", "")) == id:
+			return
+	if not DIARIO_HITOS.has(id):
+		push_warning("Diario: hito desconocido '%s'" % id)
+		return
+	var meta: Dictionary = DIARIO_HITOS[id]
+	diario_entradas.append({
+		"id": id,
+		"ts": Time.get_unix_time_from_system(),
+		"icono": String(meta["icono"]),
+		"texto": String(meta["texto"]),
+	})
+	if _codex_overlay != null and _codex_overlay.has_method("refrescar"):
+		_codex_overlay.refrescar(diario_entradas)
 
 
 # ============================================================
@@ -2354,6 +2468,9 @@ func _on_esencia_solicitada(mejora_id: String, coste: int) -> void:
 	Stats.notificar_evento("primera_esencia")
 	if esencia_compras.size() >= 5:
 		Stats.notificar_evento("ascendido")
+	# Fase 21: hito específico si compras "lavandero"
+	if mejora_id == "lavandero":
+		_anotar_diario("lavandero")
 
 
 func _aplicar_efecto_esencia(id: String) -> void:
@@ -2612,6 +2729,9 @@ func _ejecutar_trascendencia() -> void:
 	# Fase 20: desbloquear habilidades que dependan de num_trascendencias
 	_chequear_desbloqueo_habilidades()
 
+	# Fase 21: hito de primera trascendencia
+	_anotar_diario("primera_trascendencia")
+
 	if conservar_ceniza:
 		ceniza = ceniza_anterior
 		ceniza_changed.emit(ceniza)
@@ -2693,6 +2813,7 @@ func _on_aliado_solicitado(aliado_id: String, coste: int) -> void:
 	Stats.notificar_evento("primer_aliado")
 	if aliados_comprados.size() >= 5:
 		Stats.notificar_evento("circulo_completo")
+	_anotar_diario("primer_aliado")  # Fase 21
 
 
 func _aplicar_efecto_aliado(id: String) -> void:
@@ -2775,6 +2896,10 @@ func _aplicar_bendicion(id: String) -> void:
 			pass  # ninguna bendición elegida
 		_:
 			push_warning("Bendición desconocida: " + id)
+
+	# Fase 21: hito de primera bendición (sólo si realmente eligió algo)
+	if not id.is_empty():
+		_anotar_diario("primera_bendicion")
 
 
 ## Devuelve 3 bendiciones aleatorias del pool, sin repetir.
@@ -3127,6 +3252,7 @@ func _on_contrato_completado(contrato: Dictionary, exito: bool) -> void:
 		_actualizar_favores_label()
 		mostrar_notificacion("✓ Contrato completado: +%d€ +%d ✧  +1 ✦" % [rec_e, rec_f], false)
 		AudioManager.play_sfx("achievement", 1.1)
+		_anotar_diario("primer_contrato")  # Fase 21
 	else:
 		mostrar_notificacion("Contrato fallido", false)
 	# Fade-out del banner

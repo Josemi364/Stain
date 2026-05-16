@@ -39,6 +39,7 @@ Main.gd  ←→  SinkArea.gd               (manual cleaning gameplay)
          ←→  ContractsManager.gd       (Autoload: contratos opcionales, Fase 13)
          ←→  AlliesOverlay.gd          (hijo de HUD: cantina aliados, Fase 17)
          ←→  TranscendOverlay.gd       (hijo de HUD: sala de esencia, Fase 18)
+         ←→  CodexOverlay.gd           (hijo de HUD: glosario + diario, Fase 21)
 ```
 
 ### Key Signal Flows
@@ -115,6 +116,37 @@ Las 8 mejoras y sus efectos:
 | `comunion` | 40✧ | 1 | 20% prob. duplicar fragmentos en limpieza manual de alien |
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
+
+### Codex del Lavandero (Fase 21)
+
+Modal con 2 pestañas accesible vía botón 📖 (esquina inferior derecha, encima de ✺):
+
+**Glosario** (`codex_overlay.gd::GLOSARIO`): 15 entradas fijas en código con icono + nombre + texto explicativo. Cubre las 5 monedas, conceptos (Prestigio, Trascendencia, Custodio, Bendición, Aliado), sistemas (Altar, Eventos, Contratos, Habilidades) y elementos del juego (Lavadora cuántica, Suerte alien).
+
+**Diario**: lista cronológica de hitos personales con timestamp real. Las entradas las añade Main vía `_anotar_diario(id)`, que es idempotente (no añade si ya existe).
+
+12 hitos definidos en `DIARIO_HITOS` (Dictionary id → {icono, texto}):
+
+| Hito | Disparado en |
+|---|---|
+| `primera_prenda` | `_on_garment_delivered` si `prendas_total_manual >= 1` |
+| `primer_alien` | `_on_garment_delivered` si `es_alien` |
+| `primera_lavadora` | `_on_lavadora_compra_solicitada` (cualquier tipo) |
+| `primer_prestigio` | `_ejecutar_prestigio` |
+| `primer_custodio` | `_on_garment_delivered` si `es_custodio` |
+| `primera_bendicion` | `_aplicar_bendicion` con id no vacío |
+| `primer_aliado` | `_on_aliado_solicitado` exitoso |
+| `primer_evento` | `_on_evento_iniciado` |
+| `primer_contrato` | `_on_contrato_completado(true)` |
+| `primera_trascendencia` | `_ejecutar_trascendencia` |
+| `bestiario_completo` | `_on_garment_delivered` si `prendas_investigadas.size() >= 13` |
+| `lavandero` | `_aplicar_efecto_esencia` con id `"lavandero"` |
+
+Cada entrada se guarda como `{id, ts (unix), icono, texto}`. Persistido en `save.diario_entradas`. Ordenado por timestamp ascendente al renderizar.
+
+Saves antiguos (sin sección `diario_entradas`): empiezan con diario vacío. **No retroactivo** — los hitos ya cumplidos NO aparecen, solo los que ocurran de ahora en adelante. F2 reset vacía el diario.
+
+UI: vista vacía muestra mensaje "Aún no has registrado ningún hito. Sigue jugando y volverás aquí a leer tu historia." Las fechas se formatean como `YYYY-MM-DD HH:MM` via `Time.get_datetime_dict_from_unix_time()`.
 
 ### Habilidades activas (Fase 20)
 
@@ -457,7 +489,8 @@ Save schema (top level):
   "sink_area":      { bonus_fuerza, bonus_radio, prenda_actual_id },
   "tutorial":       { paso_actual: int },                 # Fase 11A
   "opciones":       { volumen_db: float },                # Fase 11C
-  "timestamp_guardado": float                             # Fase 12 (unix epoch)
+  "timestamp_guardado": float,                            # Fase 12 (unix epoch)
+  "diario_entradas": [{id, ts, icono, texto}]             # Fase 21
 }
 ```
 
