@@ -2072,6 +2072,45 @@ func _on_evento_actualizado(_id: String, restante: float, datos: Dictionary) -> 
 
 
 # ============================================================
+# FASE 22 — MEJORAS VISUALES (SHAKE + SLOWMO)
+# ============================================================
+# Estado del shake (acumulativo: si llega otro durante uno activo, se reinicia)
+var _shake_tween: Tween
+
+## Sacude el HUD (CanvasLayer no se mueve directamente, así que movemos su offset).
+## intensidad: píxeles de desplazamiento máximo
+## duracion:  segundos totales
+func _screen_shake(intensidad: float = 8.0, duracion: float = 0.35) -> void:
+	var hud := $HUD as CanvasLayer
+	if hud == null:
+		return
+	if _shake_tween != null and _shake_tween.is_valid():
+		_shake_tween.kill()
+	var pasos: int = max(4, int(duracion * 30))
+	_shake_tween = create_tween()
+	for i in pasos:
+		var t: float = float(i) / float(pasos)
+		var atenuacion: float = 1.0 - t
+		var off := Vector2(
+			randf_range(-intensidad, intensidad) * atenuacion,
+			randf_range(-intensidad, intensidad) * atenuacion,
+		)
+		_shake_tween.tween_property(hud, "offset", off, duracion / float(pasos))
+	_shake_tween.tween_property(hud, "offset", Vector2.ZERO, 0.05)
+
+
+## Pausa parcial (slowmo). Usado al entregar Custodio.
+## escala: factor de velocidad (0.3 = 30%)
+## duracion: segundos reales (no escalados) que dura el slowmo
+func _slowmo(escala: float = 0.3, duracion: float = 0.6) -> void:
+	Engine.time_scale = escala
+	# Usar SceneTreeTimer no escalado para volver al ritmo normal
+	var t := get_tree().create_timer(duracion, true, false, true)
+	await t.timeout
+	Engine.time_scale = 1.0
+
+
+# ============================================================
 # FASE 21 — CODEX (GLOSARIO + DIARIO)
 # ============================================================
 func _crear_codex_overlay() -> void:
@@ -2365,6 +2404,8 @@ func _invocar_custodio() -> void:
 	queue_panel.insertar_al_frente(GarmentData.get_prenda_custodio())
 	mostrar_notificacion("🛸 Un Custodio se manifiesta…", true)
 	AudioManager.play_sfx("alien", 0.5)
+	# Fase 22: shake leve al manifestarse
+	_screen_shake(5.0, 0.3)
 	# Pequeño flash dorado en la pantalla
 	var flash := ColorRect.new()
 	flash.color = Color(1.0, 0.85, 0.3, 0.0)
@@ -2386,6 +2427,9 @@ func _invocar_custodio() -> void:
 func _celebrar_custodio_limpio() -> void:
 	mostrar_notificacion("🛸 Custodio sometido. La eternidad te observa.", true)
 	AudioManager.play_sfx("achievement", 0.7)
+	# Fase 22: slowmo + shake épico al entregar Custodio
+	_screen_shake(10.0, 0.4)
+	_slowmo(0.35, 0.55)
 
 
 # ============================================================

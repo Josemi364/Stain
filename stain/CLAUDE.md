@@ -117,6 +117,22 @@ Las 8 mejoras y sus efectos:
 
 **Coste de implementación**: los efectos se almacenan como state directo en `Main`/`GarmentData`/`MachinesPanel`. El `compras_contador` del panel es solo para UI (✓ y disabled); los efectos se persisten por separado en sus owners. Al cargar partida, los efectos se restauran sin "replay" de compras.
 
+### Mejoras visuales (Fase 22)
+
+Pulido sensorial sin cambios de balance. Cuatro mejoras:
+
+1. **Partículas de burbujas mejoradas** (`sink_area._crear_foam_particles()`): `amount 20→36`, `lifetime 0.5→0.75`, `spread 35→55`, `velocity 30-70→25-95`, `scale 0.5-1.2→0.4-1.6`. Gradiente con 4 puntos en vez de 3, tinte ligeramente azulado.
+
+2. **Pulso visual del botón "Entregar"** cuando se autocompleta la limpieza. Tween loop de escala 1.0 ↔ 1.08 con `Tween.TRANS_SINE`. Se inicia en `_autocompletar_limpieza()` y se para en `intentar_entregar()`, `cargar_prenda()` y `reset_sink()`. Refs en `sink_area.gd`: `_iniciar_pulso_deliver()`, `_parar_pulso_deliver()`, `_deliver_pulso_tween`.
+
+3. **Screen shake reutilizable** (`Main._screen_shake(intensidad, duracion)`). Mueve el `offset` del CanvasLayer del HUD con un tween de N pasos atenuados. Usado en:
+   - `_invocar_custodio()`: shake leve (5px, 0.3s) al manifestarse
+   - `_celebrar_custodio_limpio()`: shake fuerte (10px, 0.4s) al entregarlo
+
+4. **Slowmo helper** (`Main._slowmo(escala, duracion)`): pone `Engine.time_scale` a `escala` durante `duracion` segundos reales (usa SceneTreeTimer con `process_always=true` para no escalar el timer). Usado en `_celebrar_custodio_limpio()`: `0.35 × 0.55s` para realzar el momento.
+
+Importante: `_slowmo` usa `Engine.time_scale` que afecta TODO el juego — eventos, contratos, cooldowns. Es deliberado (la sensación es "el tiempo se detiene un instante"). Duración corta evita problemas con sistemas críticos.
+
 ### Codex del Lavandero (Fase 21)
 
 Modal con 2 pestañas accesible vía botón 📖 (esquina inferior derecha, encima de ✺):

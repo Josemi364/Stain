@@ -219,6 +219,8 @@ func cargar_prenda(datos: Dictionary) -> void:
 	progress_bar.value = 0
 	deliver_button.disabled = true
 	frotando = false
+	# Fase 22: nueva prenda en sink — resetear pulso visual del botón
+	_parar_pulso_deliver()
 
 
 # ============================================================
@@ -238,24 +240,26 @@ func _crear_foam_particles() -> void:
 	foam_particles = CPUParticles2D.new()
 	foam_particles.z_index = 99
 	foam_particles.emitting = false
-	foam_particles.amount = 20
-	foam_particles.lifetime = 0.5
+	# Fase 22: más burbujas, más vida, más spread, escalas mayores
+	foam_particles.amount = 36
+	foam_particles.lifetime = 0.75
 	foam_particles.explosiveness = 0.0
-	foam_particles.randomness = 0.7
+	foam_particles.randomness = 0.8
 	foam_particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
-	foam_particles.emission_sphere_radius = 12.0
+	foam_particles.emission_sphere_radius = 18.0
 	foam_particles.direction = Vector2(0, -1)
-	foam_particles.spread = 35.0
-	foam_particles.initial_velocity_min = 30.0
-	foam_particles.initial_velocity_max = 70.0
-	foam_particles.gravity = Vector2(0, -120)
-	foam_particles.scale_amount_min = 0.5
-	foam_particles.scale_amount_max = 1.2
-	# Fade-out por curva de color (alpha)
+	foam_particles.spread = 55.0
+	foam_particles.initial_velocity_min = 25.0
+	foam_particles.initial_velocity_max = 95.0
+	foam_particles.gravity = Vector2(0, -110)
+	foam_particles.scale_amount_min = 0.4
+	foam_particles.scale_amount_max = 1.6
+	# Fade-out por curva de color (alpha) + leve tinte azulado/verdoso
 	var grad := Gradient.new()
-	grad.add_point(0.0, Color(1, 1, 1, 0.85))
-	grad.add_point(0.7, Color(0.85, 0.92, 1.0, 0.55))
-	grad.add_point(1.0, Color(0.85, 0.92, 1.0, 0.0))
+	grad.add_point(0.0, Color(1, 1, 1, 0.95))
+	grad.add_point(0.4, Color(0.90, 0.96, 1.0, 0.75))
+	grad.add_point(0.8, Color(0.80, 0.92, 1.0, 0.35))
+	grad.add_point(1.0, Color(0.75, 0.90, 1.0, 0.0))
 	foam_particles.color_ramp = grad
 	add_child(foam_particles)
 
@@ -506,6 +510,8 @@ func _autocompletar_limpieza() -> void:
 	progress_bar.value = 100.0
 	deliver_button.disabled = false
 	AudioManager.play_sfx("deliver", 1.1)
+	# Fase 22: tween de pulso loop en el botón Entregar para llamar la atención
+	_iniciar_pulso_deliver()
 
 
 # ============================================================
@@ -529,6 +535,7 @@ func reset_sink() -> void:
 	progress_bar.value = 0
 	deliver_button.disabled = true
 	info_label.text = ""
+	_parar_pulso_deliver()
 
 
 ## Compatibilidad con señal prestige_realizado (delega a reset_sink).
@@ -592,9 +599,31 @@ func intentar_entregar() -> bool:
 	tiene_prenda = false
 	frotando = false
 	deliver_button.disabled = true
+	_parar_pulso_deliver()
 
 	garment_delivered.emit(prenda_entregada, recompensa_final)
 	return true
+
+
+# ============================================================
+# FASE 22 — PULSO VISUAL DEL BOTÓN ENTREGAR
+# ============================================================
+var _deliver_pulso_tween: Tween
+
+## Inicia un tween loop de escala en el botón Entregar para señalar que está listo.
+func _iniciar_pulso_deliver() -> void:
+	_parar_pulso_deliver()
+	deliver_button.pivot_offset = deliver_button.size * 0.5
+	_deliver_pulso_tween = create_tween()
+	_deliver_pulso_tween.set_loops()
+	_deliver_pulso_tween.tween_property(deliver_button, "scale", Vector2(1.08, 1.08), 0.45).set_trans(Tween.TRANS_SINE)
+	_deliver_pulso_tween.tween_property(deliver_button, "scale", Vector2(1.0, 1.0), 0.45).set_trans(Tween.TRANS_SINE)
+
+
+func _parar_pulso_deliver() -> void:
+	if _deliver_pulso_tween != null and _deliver_pulso_tween.is_valid():
+		_deliver_pulso_tween.kill()
+	deliver_button.scale = Vector2(1.0, 1.0)
 
 
 # ============================================================
